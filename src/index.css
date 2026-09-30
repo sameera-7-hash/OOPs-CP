@@ -1,0 +1,191 @@
+@import "tailwindcss";
+
+/* =========================================================
+   PATIENTCARE — DESIGN TOKENS
+   Dark palette: #092328 (deep) · #12544F (teal) · #2A835F (primary)
+   · #8BBB92 (sage accent).
+   Light palette: #E8F5E9 (lightest) · #A5D6A7 (light green) ·
+   #66BB6A (primary) · #1B5E20 (deep green text/accent).
+   Toggled by ThemeToggle setting data-theme on <html>.
+   ========================================================= */
+
+:root {
+  --radius: 0.85rem;
+
+  --background: #e8f5e9;
+  --foreground: #1b5e20;
+
+  --card: #ffffff;
+  --card-foreground: #1b5e20;
+
+  --popover: #ffffff;
+  --popover-foreground: #1b5e20;
+
+  --primary: #66bb6a;
+  --primary-foreground: #ffffff;
+
+  --secondary: #a5d6a7;
+  --secondary-foreground: #1b5e20;
+
+  --muted: #e8f5e9;
+  --muted-foreground: color-mix(in srgb, #1b5e20 60%, #a5d6a7 40%);
+
+  --accent: #a5d6a7;
+  --accent-foreground: #1b5e20;
+
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+
+  --success: #1b5e20;
+  --warning: #b8781f;
+
+  --border: color-mix(in srgb, #a5d6a7 55%, white);
+  --input: color-mix(in srgb, #a5d6a7 55%, white);
+  --ring: #66bb6a;
+}
+
+:root[data-theme="dark"] {
+  --background: #071b1f;
+  --foreground: #e7f3ea;
+
+  --card: #0e3230;
+  --card-foreground: #e7f3ea;
+
+  --popover: #0e3230;
+  --popover-foreground: #e7f3ea;
+
+  --primary: #2a835f;
+  --primary-foreground: #f4fbf6;
+
+  --secondary: #12544f;
+  --secondary-foreground: #dcefe0;
+
+  --muted: #103a37;
+  --muted-foreground: #8bbb92;
+
+  --accent: #8bbb92;
+  --accent-foreground: #092328;
+
+  --destructive: #ef4444;
+  --destructive-foreground: #fff5f5;
+
+  --success: #8bbb92;
+  --warning: #e2b04a;
+
+  --border: rgba(139, 187, 146, 0.16);
+  --input: rgba(139, 187, 146, 0.14);
+  --ring: #2a835f;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-brand-deep: #092328;
+  --color-brand-teal: #12544f;
+  --color-brand-green: #2a835f;
+  --color-brand-sage: #8bbb92;
+
+  --radius-sm: calc(var(--radius) - 0.35rem);
+  --radius-md: calc(var(--radius) - 0.15rem);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 0.35rem);
+
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-pulse-glow: pulse-glow 2.4s ease-in-out infinite;
+  --animate-in: fade-in 0.4s ease both;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 color-mix(in srgb, var(--primary) 45%, transparent); }
+  50% { opacity: 0.85; box-shadow: 0 0 0 6px color-mix(in srgb, var(--primary) 0%, transparent); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Tailwind emits its own rules inside `@layer theme, base, utilities`.
+   Unlayered CSS always wins over ANY layered rule regardless of
+   specificity or source order -- so this reset has to live in `@layer
+   base` itself, or it would permanently stomp on every padding/margin
+   utility class (px-4, p-6, ...) no matter how the cascade is ordered. */
+@layer base {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html, body, #root {
+    width: 100%;
+    min-height: 100%;
+  }
+
+  body {
+    font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+    background: var(--background);
+    color: var(--foreground);
+    transition: background-color 0.25s ease, color 0.25s ease;
+  }
+
+  button, input, select, textarea {
+    font-family: inherit;
+  }
+
+  button {
+    cursor: pointer;
+  }
+
+  ::selection {
+    background: color-mix(in srgb, var(--primary) 35%, transparent);
+  }
+}
+
+/* Slim scrollbars everywhere, themed to match. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent) transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--accent) 55%, transparent);
+  border-radius: 8px;
+}
