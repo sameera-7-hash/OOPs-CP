@@ -1,5 +1,7 @@
 # Clinic Appointment Management System
 
+![C++](https://img.shields.io/badge/C%2B%2B-17-blue?style=flat-square) ![Object-Oriented](https://img.shields.io/badge/Paradigm-OOP-darkblue?style=flat-square) ![Status](https://img.shields.io/badge/Status-Active-brightgreen?style=flat-square)
+
 A menu-driven C++17 clinic system demonstrating object-oriented programming. Patients can book appointments, doctors manage schedules and prescriptions, and clinic data is saved in local text files.
 
 ## How It Fits Together
@@ -14,7 +16,7 @@ flowchart LR
     C <--> F[(Text files)]
 ```
 
-`ClinicSystem` coordinates the application. It owns the records, applies booking and billing rules, and loads or saves data. The menus provide the user interface; the model classes represent clinic concepts.
+`ClinicSystem` coordinates the application. It owns the records, applies booking and billing rules, and loads or saves data. The menus provide the user interface; the model classes represent clinic entities.
 
 ## OOP Design
 
@@ -67,13 +69,13 @@ classDiagram
     ClinicSystem o-- Report
 ```
 
-| OOP concept | Where it appears |
+| OOP Concept | Where it appears |
 |---|---|
-| Abstraction | `Person` defines shared identity and the pure virtual `displayInfo()`. |
-| Inheritance | `Doctor` and `Patient` derive from `Person`. |
-| Polymorphism | Each derived class overrides `displayInfo()`. |
-| Encapsulation | Model fields are private or protected and accessed through methods. |
-| Composition | `ClinicSystem` owns collections of doctors, patients, appointments, and reports. |
+| 🔹 **Abstraction** | `Person` defines shared identity and the pure virtual `displayInfo()`. |
+| 🔹 **Inheritance** | `Doctor` and `Patient` derive from `Person`. |
+| 🔹 **Polymorphism** | Each derived class overrides `displayInfo()`. |
+| 🔹 **Encapsulation** | Model fields are private or protected and accessed through methods. |
+| 🔹 **Composition** | `ClinicSystem` owns collections of doctors, patients, appointments, and reports. |
 
 ## Appointment Booking
 
@@ -94,17 +96,17 @@ flowchart TD
     H --> Z
 ```
 
-Priority patients are younger than 10 or older than 60. They receive a 20% fee discount and are placed at the front of the waiting queue. Appointment statuses include pending, confirmed, rejected, rescheduled, and completed.
+**Priority Patients:** Younger than 10 or older than 60. They receive a 20% fee discount and are placed at the front of the waiting queue. Appointment statuses include pending, confirmed, rejected, and completed.
 
 ## Data and Features
 
-- Doctors manage dated time slots; a booked slot is removed and a cancelled appointment reopens it.
-- Patients can view appointment history, fees, prescriptions, and previous reports.
-- Reports can be entered as text or imported from a file. Their content is stored under `reports/`; metadata is stored in `reports_index.txt`.
-- Records are loaded at startup and saved after changes (and again when the application exits).
-- The waiting queue exists in memory only and is cleared when the program exits.
+- ✓ Doctors manage dated time slots; a booked slot is removed and a cancelled appointment reopens it.
+- ✓ Patients can view appointment history, fees, prescriptions, and previous reports.
+- ✓ Reports can be entered as text or imported from a file. Their content is stored under `reports/`; metadata is stored in `reports_index.txt`.
+- ✓ Records are loaded at startup and saved after changes (and again when the application exits).
+- ✓ The waiting queue exists in memory only and is cleared when the program exits.
 
-| File | Stored information |
+| File | Stored Information |
 |---|---|
 | `doctors.txt` | Doctor profiles and availability slots |
 | `patients.txt` | Patient profiles and total expenses |
@@ -112,7 +114,7 @@ Priority patients are younger than 10 or older than 60. They receive a 20% fee d
 | `reports_index.txt` | Report metadata and content-file path |
 | `reports/` | Report content files |
 
-Text fields use `|` as a record delimiter; avoid entering that character in stored values.
+> **Note:** Text fields use `|` as a record delimiter; avoid entering that character in stored values.
 
 ## Build and Run
 
@@ -122,13 +124,13 @@ Requires a C++17 compiler. From the project root:
 g++ -std=c++17 -O2 -o clinic oop-CP.cpp
 ```
 
-Run on Windows:
+**Run on Windows:**
 
 ```powershell
 .\clinic.exe
 ```
 
-Run on Linux or macOS:
+**Run on Linux or macOS:**
 
 ```bash
 ./clinic
