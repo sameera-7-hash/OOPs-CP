@@ -1,12 +1,14 @@
 ---
 title: PatientCare
 sdk: static
-app_file: index.html
+app_build_command: npm run build
+app_file: dist/index.html
 emoji: 🏥
 colorFrom: blue
 colorTo: green
 pinned: false
 ---
+
 
 # Clinic Appointment Management System
 
