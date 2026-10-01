@@ -3,6 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { UserContext } from "./context/UserContext";
 import { logout as logoutApi } from "./Services/api";
 import ProtectedRoute from "./components/ProtectedRoute";
+import CustomCursor from "./components/CustomCursor";
 
 import Home from "./pages/Home";
 import Login from "./pages/Login";
@@ -87,6 +88,7 @@ function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
+        <CustomCursor />
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/role" element={<RoleSelection />} />

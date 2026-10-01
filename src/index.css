@@ -189,3 +189,40 @@
   background: color-mix(in srgb, var(--accent) 55%, transparent);
   border-radius: 8px;
 }
+
+.app-header {
+  width: min(72rem, calc(100% - 1rem));
+  margin: 0.75rem auto 0;
+  border: 1px solid var(--border);
+  border-radius: 9999px;
+}
+
+/* Custom pointer, enabled only after the first mouse movement. */
+.has-custom-cursor,
+.has-custom-cursor * { cursor: none !important; }
+
+#cursor {
+  position: fixed; top: 0; left: 0; width: 0; height: 0;
+  pointer-events: none; z-index: 2147483647; opacity: 0;
+}
+#cursor.visible { opacity: 1; }
+
+#cursor .c {
+  --s: 46px;
+  position: absolute; left: 0; top: 0;
+  width: var(--s); height: var(--s);
+  translate: -50% -50%;
+  box-sizing: border-box;
+  border: 2px dashed #3ddc97;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .04);
+  backdrop-filter: blur(1px);
+  animation: cursor-spin 12s linear infinite;
+  transition: width .15s, height .15s, scale .1s, background-color .15s;
+}
+#cursor.hover .c { --s: 69px; background: rgba(61, 220, 151, .15); }
+#cursor.down .c { scale: .85; }
+
+@keyframes cursor-spin { to { rotate: 360deg; } }
+@media (prefers-reduced-motion: reduce) { #cursor .c { animation: none; } }
+@media (hover: none), (pointer: coarse) { #cursor { display: none; } }
