@@ -9,6 +9,7 @@ const rootDir = import.meta.dirname;
 // same-origin relative paths and avoid dealing with CORS in dev.
 export default defineConfig({
   plugins: [tailwindcss()],
+  base: './',
   resolve: {
     alias: {
       "@": path.resolve(rootDir, "./src"),
