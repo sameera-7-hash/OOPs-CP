@@ -18,7 +18,7 @@ function ServiceDetail() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="flex h-16 items-center justify-between border-b border-border bg-card px-5 sm:px-8">
+      <header className="app-header flex h-16 items-center justify-between border-border bg-card px-5 sm:px-8">
         <Button variant="ghost" size="sm" onClick={() => navigate("/")}>
           <ArrowLeft className="h-4 w-4" />
           Back to Home

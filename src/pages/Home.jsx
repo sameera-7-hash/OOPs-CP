@@ -107,7 +107,7 @@ function Home() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-background/80 px-5 backdrop-blur-md sm:px-8">
+      <header className="app-header sticky top-3 z-30 flex h-16 items-center justify-between border-border bg-background/80 px-5 backdrop-blur-md sm:px-8">
         <div className="flex items-center gap-2.5">
           <div className="grid h-9 w-9 place-items-center rounded-xl bg-accent text-accent-foreground">
             <Plus className="h-5 w-5" strokeWidth={3} />
