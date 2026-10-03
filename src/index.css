@@ -153,7 +153,7 @@
   }
 
   body {
-    font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+    font-family: "Bodoni Moda", Georgia, serif;
     background: var(--background);
     color: var(--foreground);
     transition: background-color 0.25s ease, color 0.25s ease;
@@ -170,6 +170,16 @@
   ::selection {
     background: color-mix(in srgb, var(--primary) 35%, transparent);
   }
+}
+
+#root,
+#root * {
+  font-family: "Bodoni Moda", Georgia, serif;
+  font-weight: 400;
+}
+
+#root :is(h1, h2, h3, h4, h5, h6) {
+  font-weight: 600;
 }
 
 /* Slim scrollbars everywhere, themed to match. */
