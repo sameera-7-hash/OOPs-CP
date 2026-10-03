@@ -135,26 +135,27 @@ function Home() {
         {/* ================= HERO ================= */}
         <section
           ref={heroRef}
-          className="relative overflow-hidden bg-gradient-to-br from-brand-deep via-brand-teal to-brand-green px-5 py-20 text-white sm:px-8 sm:py-28"
+          className="home-hero relative overflow-hidden px-5 py-20 text-brand-ink sm:px-8 sm:py-28"
         >
           <div className="relative z-10 mx-auto flex max-w-6xl flex-col items-center gap-12 lg:flex-row lg:items-center lg:justify-between">
             <div className="max-w-xl text-center lg:text-left">
               <span
                 data-hero
-                className="mb-5 inline-block rounded-full border border-white/25 bg-white/10 px-4 py-1.5 text-[11px] font-medium"
+                className="mb-5 inline-flex items-center gap-2 rounded-full border border-brand-deep/20 bg-white/30 px-4 py-1.5 text-[11px] font-semibold text-brand-ink"
               >
-                🔒 Secure Healthcare Platform
+                <Lock className="h-3.5 w-3.5" />
+                Secure Healthcare Platform
               </span>
 
               <h1 data-hero className="text-4xl font-bold leading-tight sm:text-5xl lg:text-6xl">
-                Welcome To <span className="text-brand-sage">PatientCare</span>
+                Welcome To <span className="text-brand-ink">PatientCare</span>
               </h1>
 
-              <h2 data-hero className="mt-3 text-xl font-semibold text-brand-sage sm:text-2xl">
+              <h2 data-hero className="mt-3 text-xl font-semibold text-brand-ink sm:text-2xl">
                 Your Health, Your Priority
               </h2>
 
-              <p data-hero className="mt-4 text-sm leading-relaxed text-white/80 sm:text-base">
+              <p data-hero className="mt-4 text-sm leading-relaxed text-brand-deep/90 sm:text-base">
                 A secure and reliable healthcare management platform designed to connect
                 patients, doctors and nurses in one place.
               </p>
@@ -164,14 +165,14 @@ function Home() {
                   Login to PatientCare
                   <ArrowRight className="h-4 w-4" />
                 </Button>
-                <Button size="lg" variant="outline" className="border-white/40 text-white hover:bg-white/10" asChild>
+                <Button size="lg" variant="outline" className="border-brand-deep/40 text-brand-ink hover:bg-white/20" asChild>
                   <a href="#about">Learn More</a>
                 </Button>
               </div>
             </div>
 
             <FadeIn delay={0.3} className="w-full max-w-md flex-shrink-0 lg:w-[26rem]">
-              <span className="mb-4 block text-center text-[11px] font-bold uppercase tracking-widest text-brand-sage lg:text-left">
+              <span                             className="mb-4 block text-center text-[11px] font-bold uppercase tracking-widest text-brand-ink lg:text-left">
                 Our Services
               </span>
 
@@ -182,12 +183,12 @@ function Home() {
                     <Link
                       key={service.slug}
                       to={`/services/${service.slug}`}
-                      className="group flex flex-col items-center gap-2 rounded-xl border border-white/15 bg-white/5 p-2.5 text-center transition-all duration-200 hover:-translate-y-1 hover:border-brand-sage/60 hover:bg-white/10 sm:p-3"
+                      className="group flex flex-col items-center gap-2 rounded-xl border border-brand-deep/15 bg-white/20 p-2.5 text-center transition-all duration-200 hover:-translate-y-1 hover:border-brand-deep/40 hover:bg-white/40 sm:p-3"
                     >
-                      <span className="grid h-9 w-9 place-items-center rounded-full bg-white/10 text-brand-sage transition-colors duration-200 group-hover:bg-brand-sage group-hover:text-brand-deep sm:h-10 sm:w-10">
+                      <span className="grid h-9 w-9 place-items-center rounded-full bg-white/30 text-brand-deep transition-colors duration-200 group-hover:bg-brand-sage group-hover:text-brand-deep sm:h-10 sm:w-10">
                         <Icon className="h-4 w-4 sm:h-4.5 sm:w-4.5" />
                       </span>
-                      <span className="text-[9px] font-semibold leading-tight text-white/90 sm:text-[10px]">
+                      <span className="text-[9px] font-semibold leading-tight text-brand-ink sm:text-[10px]">
                         {service.title}
                       </span>
                     </Link>

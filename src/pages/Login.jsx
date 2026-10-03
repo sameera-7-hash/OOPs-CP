@@ -215,7 +215,7 @@ function Login() {
         </FadeIn>
       </div>
 
-      <div className="relative hidden flex-1 flex-col items-center justify-center overflow-hidden bg-gradient-to-br from-brand-teal to-brand-deep p-10 text-center text-white lg:flex">
+      <div className="relative hidden flex-1 flex-col items-center justify-center overflow-hidden bg-gradient-to-br from-brand-light via-brand-sage to-brand-teal p-10 text-center text-brand-ink lg:flex">
         <HeroScene className="pointer-events-none absolute inset-0 opacity-80" />
         <div className="relative z-10">
           <h2 className="text-3xl font-bold leading-tight">
@@ -223,7 +223,7 @@ function Login() {
             <br />
             Our Priority.
           </h2>
-          <p className="mx-auto mt-3 max-w-sm text-sm text-white/80">
+          <p className="mx-auto mt-3 max-w-sm text-sm text-brand-deep">
             PatientCare provides secure access to your healthcare information anytime, anywhere.
           </p>
         </div>

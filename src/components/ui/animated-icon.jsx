@@ -7,11 +7,11 @@ import { cn } from "@/lib/utils";
 // (scale + tilt on hover, the default), "float" (continuous gentle bob) or
 // "pulse" (continuous soft glow pulse).
 const gradients = {
-  green: "from-brand-green to-brand-teal",
+  green: "from-brand-green to-brand-sage",
   sage: "from-brand-sage to-brand-green",
-  deep: "from-brand-teal to-brand-deep",
-  amber: "from-amber-300 to-orange-500",
-  rose: "from-rose-400 to-pink-600",
+  deep: "from-brand-primary to-brand-deep",
+  amber: "from-brand-primary to-brand-deep",
+  rose: "from-brand-sage to-brand-green",
 };
 
 const sizes = {
@@ -22,6 +22,9 @@ const sizes = {
 };
 
 export function AnimatedIcon({ icon: Icon, gradient = "green", size = "md", animate = "hover", className }) {
+  const foreground = gradient === "deep" || gradient === "amber"
+    ? "text-brand-light"
+    : "text-brand-deep";
   const floatAnim =
     animate === "float"
       ? { y: [0, -6, 0] }
@@ -32,7 +35,8 @@ export function AnimatedIcon({ icon: Icon, gradient = "green", size = "md", anim
   return (
     <motion.span
       className={cn(
-        "inline-flex flex-shrink-0 items-center justify-center bg-gradient-to-br text-white shadow-md shadow-black/10",
+        "inline-flex flex-shrink-0 items-center justify-center bg-gradient-to-br shadow-md shadow-black/10",
+        foreground,
         gradients[gradient],
         sizes[size],
         className

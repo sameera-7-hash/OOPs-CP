@@ -5,7 +5,7 @@ import { Float, MeshDistortMaterial, Sparkles } from "@react-three/drei";
 // Slowly tumbling, softly distorted blob in the brand palette, sitting
 // behind the Home/Login hero copy. Decorative only -- pointer-events are
 // disabled on the wrapping <Canvas> so it never intercepts clicks.
-function Blob({ position = [0, 0, 0], scale = 1, color = "#2a835f", speed = 1 }) {
+function Blob({ position = [0, 0, 0], scale = 1, color = "#659287", speed = 1 }) {
   const mesh = useRef(null);
 
   useFrame((_, delta) => {
@@ -40,14 +40,14 @@ function HeroScene({ className }) {
         gl={{ alpha: true, antialias: true }}
       >
         <ambientLight intensity={0.7} />
-        <pointLight position={[4, 4, 4]} intensity={1.4} color="#8bbb92" />
-        <pointLight position={[-4, -2, 2]} intensity={0.8} color="#2a835f" />
+        <pointLight position={[4, 4, 4]} intensity={1.4} color="#b1d3b9" />
+        <pointLight position={[-4, -2, 2]} intensity={0.8} color="#659287" />
 
-        <Blob position={[1.4, 0.4, 0]} scale={1.5} color="#2a835f" speed={1} />
-        <Blob position={[-1.6, -0.6, -1]} scale={0.85} color="#8bbb92" speed={1.4} />
-        <Blob position={[0.4, -1.3, -0.5]} scale={0.55} color="#12544f" speed={0.8} />
+        <Blob position={[1.4, 0.4, 0]} scale={1.5} color="#659287" speed={1} />
+        <Blob position={[-1.6, -0.6, -1]} scale={0.85} color="#b1d3b9" speed={1.4} />
+        <Blob position={[0.4, -1.3, -0.5]} scale={0.55} color="#88bda4" speed={0.8} />
 
-        <Sparkles count={40} scale={6} size={2} speed={0.3} color="#8bbb92" opacity={0.5} />
+        <Sparkles count={40} scale={6} size={2} speed={0.3} color="#b1d3b9" opacity={0.5} />
       </Canvas>
     </div>
   );

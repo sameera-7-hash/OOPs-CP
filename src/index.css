@@ -1,80 +1,73 @@
 @import "tailwindcss";
 
-/* =========================================================
-   PATIENTCARE — DESIGN TOKENS
-   Dark palette: #092328 (deep) · #12544F (teal) · #2A835F (primary)
-   · #8BBB92 (sage accent).
-   Light palette: #E8F5E9 (lightest) · #A5D6A7 (light green) ·
-   #66BB6A (primary) · #1B5E20 (deep green text/accent).
-   Toggled by ThemeToggle setting data-theme on <html>.
-   ========================================================= */
+/* ThemeToggle sets data-theme on <html> to switch between these palettes. */
 
 :root {
   --radius: 0.85rem;
 
-  --background: #e8f5e9;
-  --foreground: #1b5e20;
+  --background: #e6f2dd;
+  --foreground: #29423a;
 
-  --card: #ffffff;
-  --card-foreground: #1b5e20;
+  --card: #f7faf4;
+  --card-foreground: #29423a;
 
   --popover: #ffffff;
-  --popover-foreground: #1b5e20;
+  --popover-foreground: #29423a;
 
-  --primary: #66bb6a;
-  --primary-foreground: #ffffff;
+  --primary: #659287;
+  --primary-foreground: #10251e;
 
-  --secondary: #a5d6a7;
-  --secondary-foreground: #1b5e20;
+  --secondary: #b1d3b9;
+  --secondary-foreground: #29423a;
 
-  --muted: #e8f5e9;
-  --muted-foreground: color-mix(in srgb, #1b5e20 60%, #a5d6a7 40%);
+  --muted: #e6f2dd;
+  --muted-foreground: #49685e;
 
-  --accent: #a5d6a7;
-  --accent-foreground: #1b5e20;
+  --accent: #88bda4;
+  --accent-foreground: #29423a;
 
   --destructive: #dc2626;
   --destructive-foreground: #ffffff;
 
-  --success: #1b5e20;
+  --success: #49685e;
   --warning: #b8781f;
 
-  --border: color-mix(in srgb, #a5d6a7 55%, white);
-  --input: color-mix(in srgb, #a5d6a7 55%, white);
-  --ring: #66bb6a;
+  --border: color-mix(in srgb, #659287 35%, #e6f2dd);
+  --input: color-mix(in srgb, #659287 35%, #e6f2dd);
+  --ring: #659287;
 }
 
 :root[data-theme="dark"] {
-  --background: #071b1f;
-  --foreground: #e7f3ea;
+  --background: #192d27;
+  --foreground: #e6f2dd;
 
-  --card: #0e3230;
-  --card-foreground: #e7f3ea;
+  --card: #243b33;
+  --card-foreground: #e6f2dd;
 
-  --popover: #0e3230;
-  --popover-foreground: #e7f3ea;
+  --popover: #243b33;
+  --popover-foreground: #e6f2dd;
 
-  --primary: #2a835f;
-  --primary-foreground: #f4fbf6;
+  --primary: #88bda4;
+  --primary-foreground: #192d27;
 
-  --secondary: #12544f;
-  --secondary-foreground: #dcefe0;
+  --secondary: #36564a;
+  --secondary-foreground: #e6f2dd;
 
-  --muted: #103a37;
-  --muted-foreground: #8bbb92;
+  --muted: #243b33;
+  --muted-foreground: #b1d3b9;
 
-  --accent: #8bbb92;
-  --accent-foreground: #092328;
+  --accent: #b1d3b9;
+  --accent-foreground: #192d27;
 
   --destructive: #ef4444;
   --destructive-foreground: #fff5f5;
 
-  --success: #8bbb92;
+  --success: #b1d3b9;
   --warning: #e2b04a;
 
-  --border: rgba(139, 187, 146, 0.16);
-  --input: rgba(139, 187, 146, 0.14);
-  --ring: #2a835f;
+  --border: rgba(177, 211, 185, 0.2);
+  --input: rgba(177, 211, 185, 0.18);
+  --ring: #88bda4;
 }
 
 @theme inline {
@@ -109,10 +102,13 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
 
-  --color-brand-deep: #092328;
-  --color-brand-teal: #12544f;
-  --color-brand-green: #2a835f;
-  --color-brand-sage: #8bbb92;
+  --color-brand-deep: #29423a;
+  --color-brand-teal: #659287;
+  --color-brand-primary: #659287;
+  --color-brand-green: #88bda4;
+  --color-brand-sage: #b1d3b9;
+  --color-brand-light: #e6f2dd;
+  --color-brand-ink: #10251e;
 
   --radius-sm: calc(var(--radius) - 0.35rem);
   --radius-md: calc(var(--radius) - 0.15rem);
@@ -197,6 +193,12 @@
   border-radius: 9999px;
 }
 
+.home-hero {
+  background-image:
+    linear-gradient(to bottom, var(--background), transparent 5rem),
+    linear-gradient(to bottom right, #e6f2dd, #b1d3b9 35%, #88bda4 68%, #659287);
+}
+
 /* Custom pointer, enabled only after the first mouse movement. */
 .has-custom-cursor,
 .has-custom-cursor * { cursor: none !important; }
@@ -213,14 +215,14 @@
   width: var(--s); height: var(--s);
   translate: -50% -50%;
   box-sizing: border-box;
-  border: 2px dashed #3ddc97;
+  border: 2px dashed var(--primary);
   border-radius: 50%;
   background: rgba(255, 255, 255, .04);
   backdrop-filter: blur(1px);
   animation: cursor-spin 12s linear infinite;
   transition: width .15s, height .15s, scale .1s, background-color .15s;
 }
-#cursor.hover .c { --s: 69px; background: rgba(61, 220, 151, .15); }
+#cursor.hover .c { --s: 69px; background: color-mix(in srgb, var(--primary) 15%, transparent); }
 #cursor.down .c { scale: .85; }
 
 @keyframes cursor-spin { to { rotate: 360deg; } }
