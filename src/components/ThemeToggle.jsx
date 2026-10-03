@@ -5,16 +5,16 @@ import { cn } from "@/lib/utils";
 
 function readStoredTheme() {
   try {
-    return localStorage.getItem("pc_theme") || "dark";
+    return localStorage.getItem("pc_theme_v2") || "light";
   } catch {
-    return "dark";
+    return "light";
   }
 }
 
 function applyTheme(theme) {
   document.documentElement.setAttribute("data-theme", theme);
   try {
-    localStorage.setItem("pc_theme", theme);
+    localStorage.setItem("pc_theme_v2", theme);
   } catch {
     // Private browsing / blocked storage -- theme just won't persist.
   }

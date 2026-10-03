@@ -21,7 +21,7 @@ function SpinningOrb({ color }) {
 // used as a decorative accent next to dashboard page headings instead of a
 // flat emoji. Fixed pixel size so it drops into a header without affecting
 // layout.
-function DashboardOrb({ size = 44, color = "#2a835f", className }) {
+function DashboardOrb({ size = 44, color = "#659287", className }) {
   return (
     <div
       style={{ width: size, height: size }}
@@ -30,7 +30,7 @@ function DashboardOrb({ size = 44, color = "#2a835f", className }) {
     >
       <Canvas camera={{ position: [0, 0, 2.6], fov: 40 }} dpr={[1, 1.5]} gl={{ alpha: true }}>
         <ambientLight intensity={0.8} />
-        <pointLight position={[2, 2, 2]} intensity={1.2} color="#8bbb92" />
+        <pointLight position={[2, 2, 2]} intensity={1.2} color="#b1d3b9" />
         <SpinningOrb color={color} />
       </Canvas>
     </div>

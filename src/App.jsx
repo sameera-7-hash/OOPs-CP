@@ -52,7 +52,7 @@ function AuthProvider({ children }) {
   // screens, not just after a dashboard (with its own ThemeToggle) mounts.
   useEffect(() => {
     try {
-      document.documentElement.setAttribute("data-theme", localStorage.getItem("pc_theme") || "dark");
+      document.documentElement.setAttribute("data-theme", localStorage.getItem("pc_theme_v2") || "light");
     } catch {
       // ignore
     }
