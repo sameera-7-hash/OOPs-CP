@@ -1,8 +1,10 @@
 import { defineConfig } from "vite";
-import path from "path";
+import { fileURLToPath } from "node:url";
+import path from "node:path";
 import tailwindcss from "@tailwindcss/vite";
 
-const rootDir = import.meta.dirname;
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Proxies /api/* to the C++ patient_server (see patient_dashboard/backend,
 // run with `patient_server` listening on :8080) so the frontend can call
@@ -12,7 +14,7 @@ export default defineConfig({
   base: './',
   resolve: {
     alias: {
-      "@": path.resolve(rootDir, "./src"),
+      "@": path.resolve(__dirname, "./src"),
     },
   },
   server: {
