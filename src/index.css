@@ -35,6 +35,8 @@
   --border: color-mix(in srgb, #659287 35%, #e6f2dd);
   --input: color-mix(in srgb, #659287 35%, #e6f2dd);
   --ring: #659287;
+  --pattern-accent: #659287;
+  --pattern-soft: #b1d3b9;
 }
 
 :root[data-theme="dark"] {
@@ -68,6 +70,8 @@
   --border: rgba(177, 211, 185, 0.2);
   --input: rgba(177, 211, 185, 0.18);
   --ring: #88bda4;
+  --pattern-accent: #88bda4;
+  --pattern-soft: #36564a;
 }
 
 @theme inline {
@@ -182,6 +186,24 @@
   font-weight: 600;
 }
 
+#root .home-hero .home-hero-brand {
+  font-weight: 700;
+}
+
+#root .login-hero-title {
+  font-weight: 700;
+}
+
+.login-page label {
+  color: var(--foreground);
+  font-weight: 600;
+}
+
+.login-page input::placeholder {
+  color: color-mix(in srgb, var(--foreground) 62%, transparent);
+  opacity: 1;
+}
+
 /* Slim scrollbars everywhere, themed to match. */
 * {
   scrollbar-width: thin;
@@ -201,6 +223,85 @@
   margin: 0.75rem auto 0;
   border: 1px solid var(--border);
   border-radius: 9999px;
+}
+
+.dashboard-background {
+  background-color: color-mix(in srgb, var(--background) 78%, var(--pattern-soft));
+  background-image:
+    linear-gradient(
+      color-mix(in srgb, var(--background) 66%, transparent),
+      color-mix(in srgb, var(--background) 66%, transparent)
+    ),
+    url("../more-leaves.png");
+  background-position: center, center;
+  background-repeat: no-repeat, repeat;
+  background-size: cover, 560px auto;
+  background-attachment: fixed;
+}
+
+.medical-page-pattern {
+  position: relative;
+  isolation: isolate;
+  border-radius: var(--radius);
+}
+
+.prescription-card {
+  box-shadow: 0 10px 18px -11px color-mix(in srgb, var(--primary) 58%, transparent);
+}
+
+#root .role-selection-title {
+  font-weight: 700;
+  text-shadow: 0 6px 14px color-mix(in srgb, var(--primary) 48%, transparent);
+}
+
+.role-selection-card {
+  box-shadow: 0 5px 14px color-mix(in srgb, var(--primary) 16%, transparent);
+}
+
+.medical-page-pattern::before {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  border-radius: inherit;
+  background-color: var(--background);
+  background-image:
+    repeating-linear-gradient(
+      to right,
+      color-mix(in srgb, var(--pattern-soft) 62%, transparent) 0,
+      color-mix(in srgb, var(--pattern-soft) 62%, transparent) 5px,
+      transparent 5px,
+      transparent 10px
+    ),
+    linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--pattern-accent) 64%, transparent) 1px,
+      transparent 1px
+    );
+  background-size: 100% 100%, 100% 25px;
+  content: "";
+  opacity: 0.95;
+  pointer-events: none;
+}
+
+.role-selection-background {
+  background-color: var(--background);
+  background-image:
+    radial-gradient(
+      circle at 10px 100%,
+      transparent 9px,
+      color-mix(in srgb, var(--pattern-accent) 66%, transparent) 9px,
+      color-mix(in srgb, var(--pattern-accent) 66%, transparent) 10px,
+      transparent 10px
+    ),
+    radial-gradient(
+      circle at 10px 0%,
+      transparent 9px,
+      color-mix(in srgb, var(--pattern-accent) 66%, transparent) 9px,
+      color-mix(in srgb, var(--pattern-accent) 66%, transparent) 10px,
+      transparent 10px
+    );
+  background-position: 0 0, 10px 0;
+  background-size: 20px 10px;
 }
 
 .home-hero {

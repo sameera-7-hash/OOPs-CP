@@ -4,6 +4,7 @@ import { ArrowLeft, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import FadeIn from "@/components/FadeIn";
+import BrandMark from "@/components/BrandMark";
 import { SERVICES, getServiceBySlug } from "@/lib/services";
 
 function ServiceDetail() {
@@ -25,9 +26,7 @@ function ServiceDetail() {
         </Button>
 
         <div className="flex items-center gap-2.5">
-          <div className="grid h-9 w-9 place-items-center rounded-xl bg-primary text-primary-foreground">
-            <Plus className="h-5 w-5" strokeWidth={3} />
-          </div>
+          <BrandMark />
           <div>
             <h2 className="text-sm font-bold leading-none">PatientCare</h2>
             <p className="mt-1 text-[10px] text-muted-foreground">Secure Healthcare Management</p>

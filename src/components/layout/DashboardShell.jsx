@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
-import { LogOut, Menu, Plus } from "lucide-react";
+import { LogOut, Menu } from "lucide-react";
 import { useCurrentUser } from "@/context/UserContext";
+import BrandMark from "@/components/BrandMark";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
@@ -13,9 +14,7 @@ import { cn } from "@/lib/utils";
 function Brand() {
   return (
     <div className="mb-6 flex items-center gap-2.5 px-2">
-      <div className="grid h-9 w-9 place-items-center rounded-xl bg-accent text-lg font-bold text-accent-foreground">
-        <Plus className="h-5 w-5" strokeWidth={3} />
-      </div>
+      <BrandMark />
       <div>
         <h2 className="text-sm font-bold leading-none text-secondary-foreground">PatientCare</h2>
         <p className="mt-1 text-[10px] text-secondary-foreground/60">Secure Healthcare Management</p>
@@ -92,7 +91,7 @@ function DashboardShell({ role, menu, title, children }) {
   const initial = user?.name ? user.name.charAt(0).toUpperCase() : role.charAt(0);
 
   return (
-    <div className="flex min-h-screen bg-background text-foreground">
+    <div className="dashboard-background flex min-h-screen text-foreground">
       {/* Desktop sidebar */}
       <aside className="hidden w-64 flex-shrink-0 flex-col bg-secondary p-4 lg:flex">
         <Brand />

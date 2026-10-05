@@ -32,6 +32,7 @@ export const doctorMenu = [
 
 export const nurseMenu = [
   { label: "Dashboard", icon: LayoutDashboard, path: "/nurse/dashboard" },
+  { label: "Patients", icon: Users, path: "/nurse/patients" },
   { label: "Patient Queue", icon: ListOrdered, path: "/nurse/queue" },
   { label: "Priority Queue", icon: AlertTriangle, path: "/nurse/priority" },
   { label: "Vitals", icon: HeartPulse, path: "/nurse/vitals" },

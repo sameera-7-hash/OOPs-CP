@@ -1,14 +1,15 @@
 import React, { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Eye, EyeOff, Lock, Mail, ShieldHalf, User as UserIcon, BadgeCheck, Stethoscope, Plus as PlusIcon } from "lucide-react";
+import { motion, useReducedMotion } from "motion/react";
 import { login as loginApi, signup as signupApi } from "@/Services/api";
 import { useCurrentUser } from "@/context/UserContext";
+import BrandMark from "@/components/BrandMark";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import FadeIn from "@/components/FadeIn";
-import HeroScene from "@/components/scene/HeroScene";
 
 const ROLE_META = {
   Patient: {
@@ -34,10 +35,29 @@ const DASHBOARD_PATH = {
   Nurse: "/nurse/dashboard",
 };
 
+const LOGIN_HERO = {
+  Patient: {
+    video: "/patient.mp4",
+    headline: ["Your Health.", "Our Priority."],
+    description: "PatientCare provides secure access to your healthcare information anytime, anywhere.",
+  },
+  Doctor: {
+    video: "/doctor.mp4",
+    headline: ["Precision Care.", "Empowered Decisions."],
+    description: "PatientCare equips clinicians with comprehensive patient histories, efficient diagnostic tracking, and secure, real-time clinical insights anywhere.",
+  },
+  Nurse: {
+    video: "/nurse.mp4",
+    headline: ["Compassionate Support.", "Connected Care."],
+    description: "PatientCare empowers nursing teams with instant access to vital patient records, care plans, and seamless shift coordination at the bedside or on the go.",
+  },
+};
+
 function Login() {
   const { role } = useParams();
   const navigate = useNavigate();
   const { login } = useCurrentUser();
+  const reduceMotion = useReducedMotion();
 
   const [mode, setMode] = useState("login"); // "login" | "signup"
 
@@ -49,6 +69,7 @@ function Login() {
   const [error, setError] = useState("");
 
   const meta = ROLE_META[role] || ROLE_META.Patient;
+  const hero = LOGIN_HERO[role] || LOGIN_HERO.Patient;
   const RoleIcon = meta.icon;
 
   const handleSubmit = async (e) => {
@@ -82,16 +103,14 @@ function Login() {
   };
 
   return (
-    <div className="flex min-h-screen bg-background text-foreground">
+    <div className="login-page flex min-h-screen bg-background text-foreground">
       <div className="flex w-full flex-col bg-card p-6 sm:p-10 lg:w-[55%]">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="grid h-9 w-9 place-items-center rounded-xl bg-accent text-accent-foreground">
-              <PlusIcon className="h-5 w-5" strokeWidth={3} />
-            </div>
+            <BrandMark />
             <div>
-              <h2 className="text-sm font-bold leading-none text-primary">PatientCare</h2>
-              <p className="mt-1 text-[10px] text-muted-foreground">Secure Healthcare Management</p>
+              <h2 className="text-sm font-bold leading-none text-foreground">PatientCare</h2>
+              <p className="mt-1 text-[10px] text-foreground/75">Secure Healthcare Management</p>
             </div>
           </div>
 
@@ -106,15 +125,15 @@ function Login() {
             <RoleIcon className="h-6 w-6" />
           </span>
 
-          <h1 className="text-2xl font-bold text-primary sm:text-3xl">
+          <h1 className="text-2xl font-bold text-foreground sm:text-3xl">
             {role} {mode === "signup" ? "Sign Up" : "Login"}
           </h1>
 
-          <p className="mt-1.5 text-sm font-medium text-foreground/80">
+          <p className="mt-1.5 text-sm font-semibold text-foreground">
             {mode === "signup" ? "Create your account to get started." : "Welcome back! Please login to your account."}
           </p>
 
-          <p className="mt-1 text-xs text-muted-foreground">{meta.description}</p>
+          <p className="mt-1 text-xs text-foreground/80">{meta.description}</p>
 
           <Tabs
             value={mode}
@@ -135,7 +154,7 @@ function Login() {
               <div>
                 <Label htmlFor="name">Full Name</Label>
                 <div className="relative mt-1.5">
-                  <UserIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <UserIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground/70" />
                   <Input
                     id="name"
                     type="text"
@@ -151,7 +170,7 @@ function Login() {
             <div>
               <Label htmlFor="email">Email</Label>
               <div className="relative mt-1.5">
-                <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground/70" />
                 <Input
                   id="email"
                   type="email"
@@ -166,7 +185,7 @@ function Login() {
             <div>
               <Label htmlFor="password">Password</Label>
               <div className="relative mt-1.5">
-                <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground/70" />
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
@@ -207,7 +226,7 @@ function Login() {
                 <Icon className="h-4 w-4" />
                 <span className="flex flex-col">
                   <strong className="text-[10px] text-foreground/80">{title}</strong>
-                  <small className="text-[9px] text-muted-foreground">{text}</small>
+                  <small className="text-[9px] text-foreground/75">{text}</small>
                 </span>
               </div>
             ))}
@@ -216,15 +235,35 @@ function Login() {
       </div>
 
       <div className="relative hidden flex-1 flex-col items-center justify-center overflow-hidden bg-gradient-to-br from-brand-light via-brand-sage to-brand-teal p-10 text-center text-brand-ink lg:flex">
-        <HeroScene className="pointer-events-none absolute inset-0 opacity-80" />
-        <div className="relative z-10">
-          <h2 className="text-3xl font-bold leading-tight">
-            Your Health.
-            <br />
-            Our Priority.
-          </h2>
-          <p className="mx-auto mt-3 max-w-sm text-sm text-brand-deep">
-            PatientCare provides secure access to your healthcare information anytime, anywhere.
+        <video
+          className="absolute inset-0 h-full w-full object-cover"
+          src={hero.video}
+          autoPlay
+          muted
+          loop
+          playsInline
+          aria-hidden="true"
+          tabIndex={-1}
+        />
+        <div className="absolute inset-0 bg-gradient-to-br from-brand-light/65 via-brand-sage/58 to-brand-teal/65" />
+        <div className="relative z-10 px-5">
+          <motion.div
+            initial={{ opacity: 0, x: reduceMotion ? 0 : -36, y: reduceMotion ? 0 : 12 }}
+            animate={{ opacity: 1, x: 0, y: 0 }}
+            transition={{ duration: reduceMotion ? 0 : 0.8, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <motion.h2
+              className="login-hero-title text-3xl leading-tight"
+              animate={reduceMotion ? undefined : { y: [0, -5, 0] }}
+              transition={reduceMotion ? undefined : { duration: 4, repeat: Infinity, ease: "easeInOut" }}
+            >
+              {hero.headline[0]}
+              <br />
+              {hero.headline[1]}
+            </motion.h2>
+          </motion.div>
+          <p className="mx-auto mt-3 max-w-sm text-sm text-brand-ink">
+            {hero.description}
           </p>
         </div>
       </div>

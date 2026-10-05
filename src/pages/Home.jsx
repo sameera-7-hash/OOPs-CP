@@ -12,7 +12,6 @@ import {
   ShieldHalf,
   BadgeCheck,
   ArrowRight,
-  Plus,
   Building2,
   Waves,
   Landmark,
@@ -25,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { AnimatedIcon } from "@/components/ui/animated-icon";
 import FadeIn from "@/components/FadeIn";
+import BrandMark from "@/components/BrandMark";
 import { SERVICES } from "@/lib/services";
 import { cn } from "@/lib/utils";
 
@@ -97,10 +97,18 @@ function Home() {
   useEffect(() => {
     if (!heroRef.current) return;
     const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
+    const heroItems = heroRef.current.querySelectorAll("[data-hero]");
     tl.fromTo(
-      heroRef.current.querySelectorAll("[data-hero]"),
-      { opacity: 0, y: 24 },
-      { opacity: 1, y: 0, duration: 0.7, stagger: 0.12 }
+      heroItems,
+      {
+        opacity: 0,
+        x: (_, element) => (
+          element.dataset.heroDirection === "left" ? -48 :
+            element.dataset.heroDirection === "right" ? 48 : 0
+        ),
+        y: (_, element) => element.dataset.heroDirection ? 0 : 24,
+      },
+      { opacity: 1, x: 0, y: 0, duration: 0.95, stagger: 0.16 }
     );
     return () => tl.kill();
   }, []);
@@ -109,9 +117,7 @@ function Home() {
     <div className="min-h-screen bg-background text-foreground">
       <header className="app-header sticky top-3 z-30 flex h-16 items-center justify-between border-border bg-background/80 px-5 backdrop-blur-md sm:px-8">
         <div className="flex items-center gap-2.5">
-          <div className="grid h-9 w-9 place-items-center rounded-xl bg-accent text-accent-foreground">
-            <Plus className="h-5 w-5" strokeWidth={3} />
-          </div>
+          <BrandMark />
           <div>
             <h2 className="text-sm font-bold leading-none">PatientCare</h2>
             <p className="mt-1 text-[10px] text-muted-foreground">Secure Healthcare Management</p>
@@ -147,11 +153,12 @@ function Home() {
                 Secure Healthcare Platform
               </span>
 
-              <h1 data-hero className="text-4xl font-bold leading-tight sm:text-5xl lg:text-6xl">
-                Welcome To <span className="text-brand-ink">PatientCare</span>
+              <h1 data-hero data-hero-direction="left" className="text-4xl font-bold leading-tight sm:text-5xl lg:text-6xl">
+                <span className="block text-3xl sm:text-4xl lg:text-5xl">Welcome To</span>
+                <span className="home-hero-brand block text-brand-ink">PatientCare</span>
               </h1>
 
-              <h2 data-hero className="mt-3 text-xl font-semibold text-brand-ink sm:text-2xl">
+              <h2 data-hero data-hero-direction="right" className="mt-3 text-xl font-semibold text-brand-ink sm:text-2xl">
                 Your Health, Your Priority
               </h2>
 

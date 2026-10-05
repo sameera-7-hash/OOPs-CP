@@ -85,67 +85,69 @@ function MedicalRecords() {
         description="Upload your own documents, and see reports your care team has shared with you."
       />
 
-      <div
-        className={cn(
-          "mb-6 flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 border-dashed border-border bg-card p-10 text-center transition-colors",
-          dragOver && "border-primary bg-primary/5"
-        )}
-        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-        onDragLeave={() => setDragOver(false)}
-        onDrop={onDrop}
-        onClick={() => fileInputRef.current?.click()}
-      >
-        <input
-          ref={fileInputRef}
-          type="file"
-          multiple
-          accept={ACCEPTED_EXTENSIONS.join(",")}
-          className="hidden"
-          onChange={(e) => { if (e.target.files?.length) uploadFiles(e.target.files); e.target.value = ""; }}
-        />
-        <UploadCloud className="h-8 w-8 text-primary" />
-        <p className="text-sm"><strong>Drag & drop</strong> a file here, or click to browse.</p>
-        <small className="text-xs text-muted-foreground">Accepted: .txt, .doc, .docx, .pdf</small>
-        {uploading && <p className="text-xs text-muted-foreground">Uploading...</p>}
-      </div>
+      <div className="medical-page-pattern p-4 sm:p-6">
+        <div
+          className={cn(
+            "mb-6 flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 border-dashed border-border bg-card p-10 text-center transition-colors",
+            dragOver && "border-primary bg-primary/5"
+          )}
+          onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+          onDragLeave={() => setDragOver(false)}
+          onDrop={onDrop}
+          onClick={() => fileInputRef.current?.click()}
+        >
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            accept={ACCEPTED_EXTENSIONS.join(",")}
+            className="hidden"
+            onChange={(e) => { if (e.target.files?.length) uploadFiles(e.target.files); e.target.value = ""; }}
+          />
+          <UploadCloud className="h-8 w-8 text-primary" />
+          <p className="text-sm"><strong>Drag & drop</strong> a file here, or click to browse.</p>
+          <small className="text-xs text-muted-foreground">Accepted: .txt, .doc, .docx, .pdf</small>
+          {uploading && <p className="text-xs text-muted-foreground">Uploading...</p>}
+        </div>
 
-      <div className="flex flex-col gap-3">
-        {!loading && documents.length === 0 && (
-          <p className="text-sm text-muted-foreground">No reports yet. Upload one above, or check back after your next visit.</p>
-        )}
+        <div className="flex flex-col gap-3">
+          {!loading && documents.length === 0 && (
+            <p className="text-sm text-muted-foreground">No reports yet. Upload one above, or check back after your next visit.</p>
+          )}
 
-        {documents.map((doc) => {
-          const Icon = iconFor(doc.filename);
-          return (
-            <Card key={doc.id} className="flex items-center gap-4 p-4">
-              <span
-                className={cn(
-                  "grid h-11 w-11 flex-shrink-0 place-items-center rounded-xl",
-                  doc.uploaderRole === "Nurse" ? "bg-success/15 text-success" : "bg-primary/10 text-primary"
-                )}
-              >
-                <Icon className="h-5 w-5" />
-              </span>
+          {documents.map((doc) => {
+            const Icon = iconFor(doc.filename);
+            return (
+              <Card key={doc.id} className="flex items-center gap-4 p-4">
+                <span
+                  className={cn(
+                    "grid h-11 w-11 flex-shrink-0 place-items-center rounded-xl",
+                    doc.uploaderRole === "Nurse" ? "bg-success/15 text-success" : "bg-primary/10 text-primary"
+                  )}
+                >
+                  <Icon className="h-5 w-5" />
+                </span>
 
-              <div className="min-w-0 flex-1">
-                <h3 className="truncate text-sm font-bold">{doc.filename}</h3>
-                <p className="mt-0.5 text-xs text-muted-foreground">
-                  {doc.uploaderRole === "Nurse" ? `From ${doc.uploaderName || "your nurse"}` : "Uploaded by you"}
-                  {" · "}
-                  {new Date(doc.createdAt).toLocaleDateString()}
-                </p>
-                {doc.note && <p className="mt-1 text-xs text-foreground/80">{doc.note}</p>}
-              </div>
+                <div className="min-w-0 flex-1">
+                  <h3 className="truncate text-sm font-bold">{doc.filename}</h3>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    {doc.uploaderRole === "Nurse" ? `From ${doc.uploaderName || "your nurse"}` : "Uploaded by you"}
+                    {" · "}
+                    {new Date(doc.createdAt).toLocaleDateString()}
+                  </p>
+                  {doc.note && <p className="mt-1 text-xs text-foreground/80">{doc.note}</p>}
+                </div>
 
-              <a href={documentContentUrl(doc.id)} target="_blank" rel="noreferrer">
-                <Button variant="outline" size="sm">
-                  <ExternalLink className="h-3.5 w-3.5" />
-                  View
-                </Button>
-              </a>
-            </Card>
-          );
-        })}
+                <a href={documentContentUrl(doc.id)} target="_blank" rel="noreferrer">
+                  <Button variant="outline" size="sm">
+                    <ExternalLink className="h-3.5 w-3.5" />
+                    View
+                  </Button>
+                </a>
+              </Card>
+            );
+          })}
+        </div>
       </div>
     </DashboardShell>
   );
