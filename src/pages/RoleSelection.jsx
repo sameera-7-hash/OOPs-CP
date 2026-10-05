@@ -4,6 +4,7 @@ import { ArrowLeft, Lock, ShieldHalf, DatabaseZap, User, Stethoscope, Plus as Pl
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import FadeIn from "@/components/FadeIn";
+import BrandMark from "@/components/BrandMark";
 
 const ROLES = [
   {
@@ -36,7 +37,7 @@ function RoleSelection() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="role-selection-background min-h-screen text-foreground">
       <header className="app-header flex h-16 items-center justify-between border-border bg-card px-5 sm:px-8">
         <Button variant="ghost" size="sm" onClick={() => navigate("/")}>
           <ArrowLeft className="h-4 w-4" />
@@ -44,9 +45,7 @@ function RoleSelection() {
         </Button>
 
         <div className="flex items-center gap-2.5">
-          <div className="grid h-9 w-9 place-items-center rounded-xl bg-primary text-primary-foreground">
-            <PlusIcon className="h-5 w-5" strokeWidth={3} />
-          </div>
+          <BrandMark />
           <div>
             <h2 className="text-sm font-bold leading-none">PatientCare</h2>
             <p className="mt-1 text-[10px] text-muted-foreground">Secure Healthcare Management</p>
@@ -59,7 +58,7 @@ function RoleSelection() {
       </header>
 
       <main className="mx-auto max-w-5xl px-5 py-14 sm:px-8">
-        <FadeIn as="h1" className="text-center text-2xl font-bold sm:text-3xl">
+        <FadeIn as="h1" className="role-selection-title text-center text-2xl font-bold sm:text-3xl">
           Select Your Role To Continue
         </FadeIn>
         <FadeIn as="p" delay={0.05} className="mx-auto mt-2 max-w-md text-center text-sm text-muted-foreground">
@@ -69,7 +68,7 @@ function RoleSelection() {
         <div className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-3">
           {ROLES.map(({ role, icon: Icon, text, tint }, i) => (
             <FadeIn key={role} delay={i * 0.1}>
-              <Card className="group flex h-full flex-col items-center p-7 text-center transition-transform duration-200 hover:-translate-y-1.5 hover:shadow-lg">
+              <Card className="role-selection-card group flex h-full flex-col items-center p-7 text-center transition-transform duration-200 hover:-translate-y-1.5 hover:shadow-lg">
                 <span className={`mb-4 grid h-16 w-16 place-items-center rounded-full text-2xl ${tint}`}>
                   <Icon className="h-7 w-7" />
                 </span>

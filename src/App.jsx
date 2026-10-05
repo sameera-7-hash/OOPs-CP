@@ -26,6 +26,7 @@ import UndoRedo from "./pages/doctor/UndoRedo";
 import BackupRestore from "./pages/doctor/BackupRestore";
 
 import NurseDashboard from "./pages/nurse/NurseDashboard";
+import NursePatients from "./pages/nurse/Patients";
 import PatientQueue from "./pages/nurse/PatientQueue";
 import PriorityQueue from "./pages/nurse/PriorityQueue";
 import Vitals from "./pages/nurse/Vitals";
@@ -114,6 +115,7 @@ function App() {
 
           {/* ================= NURSE ================= */}
           <Route path="/nurse/dashboard" element={<ProtectedRoute role="Nurse"><NurseDashboard /></ProtectedRoute>} />
+          <Route path="/nurse/patients" element={<ProtectedRoute role="Nurse"><NursePatients /></ProtectedRoute>} />
           <Route path="/nurse/queue" element={<ProtectedRoute role="Nurse"><PatientQueue /></ProtectedRoute>} />
           <Route path="/nurse/priority" element={<ProtectedRoute role="Nurse"><PriorityQueue /></ProtectedRoute>} />
           <Route path="/nurse/vitals" element={<ProtectedRoute role="Nurse"><Vitals /></ProtectedRoute>} />
