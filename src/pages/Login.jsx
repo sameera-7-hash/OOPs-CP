@@ -37,17 +37,17 @@ const DASHBOARD_PATH = {
 
 const LOGIN_HERO = {
   Patient: {
-    video: "/patient.mp4",
+    video: "https://raw.githubusercontent.com/sameera-7-hash/Media-Assets/main/patient.mp4",
     headline: ["Your Health.", "Our Priority."],
     description: "PatientCare provides secure access to your healthcare information anytime, anywhere.",
   },
   Doctor: {
-    video: "/doctor.mp4",
+    video: "https://raw.githubusercontent.com/sameera-7-hash/Media-Assets/main/Doctor.mp4",
     headline: ["Precision Care.", "Empowered Decisions."],
     description: "PatientCare equips clinicians with comprehensive patient histories, efficient diagnostic tracking, and secure, real-time clinical insights anywhere.",
   },
   Nurse: {
-    video: "/nurse.mp4",
+    video: "https://raw.githubusercontent.com/sameera-7-hash/Media-Assets/main/Nurse.mp4",
     headline: ["Compassionate Support.", "Connected Care."],
     description: "PatientCare empowers nursing teams with instant access to vital patient records, care plans, and seamless shift coordination at the bedside or on the go.",
   },
