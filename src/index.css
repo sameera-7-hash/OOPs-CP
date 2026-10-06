@@ -254,6 +254,18 @@
   text-shadow: 0 6px 14px color-mix(in srgb, var(--primary) 48%, transparent);
 }
 
+.role-selection-heading-backdrop {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--background) 55%, transparent) 12%,
+    var(--background) 30%,
+    var(--background) 70%,
+    color-mix(in srgb, var(--background) 55%, transparent) 88%,
+    transparent 100%
+  );
+}
+
 .role-selection-card {
   box-shadow: 0 5px 14px color-mix(in srgb, var(--primary) 16%, transparent);
 }

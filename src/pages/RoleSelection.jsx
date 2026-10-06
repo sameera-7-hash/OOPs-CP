@@ -58,7 +58,7 @@ function RoleSelection() {
       </header>
 
       <main className="mx-auto max-w-5xl px-5 py-14 sm:px-8">
-        <div className="mx-auto w-fit max-w-full rounded-xl bg-background px-5 py-3 text-center">
+        <div className="role-selection-heading-backdrop mx-auto w-full max-w-3xl px-5 py-3 text-center">
           <FadeIn as="h1" className="role-selection-title text-2xl font-bold sm:text-3xl">
             Select Your Role To Continue
           </FadeIn>
