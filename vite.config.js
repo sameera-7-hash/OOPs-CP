@@ -18,9 +18,6 @@ export default defineConfig({
     },
   },
   server: {
-    watch: {
-      ignored: ["**/patient.mp4"],
-    },
     proxy: {
       "/api": {
         target: "http://localhost:8080",
