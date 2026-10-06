@@ -6,10 +6,8 @@ colorFrom: blue
 colorTo: green
 pinned: false
 app_file: dist/index.html
+app_build_command: npm run build
 ---
-
-
-
 
 # Clinic Appointment Management System
 
