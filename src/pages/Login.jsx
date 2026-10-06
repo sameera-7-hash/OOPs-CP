@@ -247,8 +247,8 @@ function Login() {
         >
           <source src={hero.video} type="video/mp4" />
         </video>
-        <div className="absolute inset-0 bg-gradient-to-br from-brand-light/45 via-brand-sage/40 to-brand-teal/45" />
-        <div className="absolute inset-y-0 left-0 w-2/3 bg-gradient-to-r from-card via-card/70 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-br from-brand-light/25 via-brand-sage/20 to-brand-teal/25" />
+        <div className="absolute inset-y-0 left-0 w-1/2 bg-gradient-to-r from-card/45 via-card/15 to-transparent" />
         <div className="relative z-10 px-5">
           <motion.div
             initial={{ opacity: 0, x: reduceMotion ? 0 : -36, y: reduceMotion ? 0 : 12 }}
