@@ -37,17 +37,17 @@ const DASHBOARD_PATH = {
 
 const LOGIN_HERO = {
   Patient: {
-    video: "https://raw.githubusercontent.com/sameera-7-hash/Media-Assets/main/patient.mp4",
+    video: "https://raw.githubusercontent.com/sameera-7-hash/Media-Assets/1f2c4dd01ecdd0d4e9437fe3aeeba75604b9ef98/patient.mp4",
     headline: ["Your Health.", "Our Priority."],
     description: "PatientCare provides secure access to your healthcare information anytime, anywhere.",
   },
   Doctor: {
-    video: "https://raw.githubusercontent.com/sameera-7-hash/Media-Assets/main/Doctor.mp4",
+    video: "https://raw.githubusercontent.com/sameera-7-hash/Media-Assets/1f2c4dd01ecdd0d4e9437fe3aeeba75604b9ef98/Doctor.mp4",
     headline: ["Precision Care.", "Empowered Decisions."],
     description: "PatientCare equips clinicians with comprehensive patient histories, efficient diagnostic tracking, and secure, real-time clinical insights anywhere.",
   },
   Nurse: {
-    video: "https://raw.githubusercontent.com/sameera-7-hash/Media-Assets/main/Nurse.mp4",
+    video: "https://raw.githubusercontent.com/sameera-7-hash/Media-Assets/1f2c4dd01ecdd0d4e9437fe3aeeba75604b9ef98/Nurse.mp4",
     headline: ["Compassionate Support.", "Connected Care."],
     description: "PatientCare empowers nursing teams with instant access to vital patient records, care plans, and seamless shift coordination at the bedside or on the go.",
   },
@@ -103,7 +103,7 @@ function Login() {
   };
 
   return (
-    <div className="login-page flex min-h-screen bg-background text-foreground">
+    <div className="login-page flex min-h-screen flex-col-reverse bg-background text-foreground lg:flex-row">
       <div className="flex w-full flex-col bg-card p-6 sm:p-10 lg:w-[55%]">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
@@ -234,18 +234,20 @@ function Login() {
         </FadeIn>
       </div>
 
-      <div className="relative hidden flex-1 flex-col items-center justify-center overflow-hidden bg-gradient-to-br from-brand-light via-brand-sage to-brand-teal p-10 text-center text-brand-ink lg:flex">
+      <div className="relative flex min-h-56 flex-1 flex-col items-center justify-center overflow-hidden bg-gradient-to-br from-brand-light via-brand-sage to-brand-teal p-6 text-center text-brand-ink sm:p-10 lg:min-h-0">
         <video
           className="absolute inset-0 h-full w-full object-cover"
-          src={hero.video}
           autoPlay
           muted
           loop
           playsInline
+          preload="auto"
           aria-hidden="true"
           tabIndex={-1}
-        />
-        <div className="absolute inset-0 bg-gradient-to-br from-brand-light/65 via-brand-sage/58 to-brand-teal/65" />
+        >
+          <source src={hero.video} type="video/mp4" />
+        </video>
+        <div className="absolute inset-0 bg-gradient-to-br from-brand-light/45 via-brand-sage/40 to-brand-teal/45" />
         <div className="relative z-10 px-5">
           <motion.div
             initial={{ opacity: 0, x: reduceMotion ? 0 : -36, y: reduceMotion ? 0 : 12 }}
