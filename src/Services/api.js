@@ -1,8 +1,15 @@
-// Thin client for the C++ patient-records backend (patient_dashboard/backend).
-// In dev, Vite proxies "/api" to http://localhost:8080 (see vite.config.js),
-// so requests below always use same-origin relative paths.
+// Thin client for the C++ patient-records backend.
+// When VITE_API_URL is unset, Vite proxies "/api" to localhost in development.
 
-const BASE = "/api";
+const configuredApiUrl = import.meta.env.VITE_API_URL?.trim().replace(/\/+$/, "");
+const apiUrl = configuredApiUrl
+  ? (/^https?:\/\//i.test(configuredApiUrl)
+      ? configuredApiUrl
+      : `https://${configuredApiUrl}`)
+  : "";
+const BASE = apiUrl
+  ? `${apiUrl}${apiUrl.endsWith("/api") ? "" : "/api"}`
+  : "/api";
 
 export function getToken() {
   try {
@@ -35,7 +42,7 @@ async function request(path, options = {}) {
     });
   } catch (err) {
     throw new Error(
-      "Could not reach the backend. Is the patient_server running on port 8080?"
+      "Could not reach the backend. Check VITE_API_URL and confirm the backend is running."
     );
   }
 
