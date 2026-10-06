@@ -58,12 +58,14 @@ function RoleSelection() {
       </header>
 
       <main className="mx-auto max-w-5xl px-5 py-14 sm:px-8">
-        <FadeIn as="h1" className="role-selection-title text-center text-2xl font-bold sm:text-3xl">
-          Select Your Role To Continue
-        </FadeIn>
-        <FadeIn as="p" delay={0.05} className="mx-auto mt-2 max-w-md text-center text-sm text-muted-foreground">
-          Choose your role to access your personalized dashboard.
-        </FadeIn>
+        <div className="mx-auto w-fit max-w-full rounded-xl bg-background px-5 py-3 text-center">
+          <FadeIn as="h1" className="role-selection-title text-2xl font-bold sm:text-3xl">
+            Select Your Role To Continue
+          </FadeIn>
+          <FadeIn as="p" delay={0.05} className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
+            Choose your role to access your personalized dashboard.
+          </FadeIn>
+        </div>
 
         <div className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-3">
           {ROLES.map(({ role, icon: Icon, text, tint }, i) => (
