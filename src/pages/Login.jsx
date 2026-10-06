@@ -103,8 +103,8 @@ function Login() {
   };
 
   return (
-    <div className="login-page flex min-h-screen flex-col-reverse bg-background text-foreground lg:flex-row">
-      <div className="flex w-full flex-col bg-card p-6 sm:p-10 lg:w-[55%]">
+    <div className="login-page relative isolate flex min-h-screen flex-col-reverse bg-background text-foreground lg:flex-row">
+      <div className="relative z-10 flex w-full flex-col bg-card/55 p-6 backdrop-blur-[2px] sm:p-10 lg:static lg:z-auto lg:w-[55%] lg:bg-card lg:backdrop-blur-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <BrandMark />
@@ -234,7 +234,7 @@ function Login() {
         </FadeIn>
       </div>
 
-      <div className="relative flex min-h-[42vh] flex-1 flex-col items-center justify-center overflow-hidden bg-gradient-to-br from-brand-light via-brand-sage to-brand-teal p-6 text-center text-brand-ink sm:min-h-[46vh] sm:p-10 lg:min-h-0">
+      <div className="absolute inset-0 z-0 flex flex-col items-center justify-center overflow-hidden bg-gradient-to-br from-brand-light via-brand-sage to-brand-teal p-6 text-center text-brand-ink lg:relative lg:inset-auto lg:z-auto lg:flex-1 lg:min-h-0 lg:p-10">
         <video
           className="absolute inset-0 h-full w-full object-cover"
           autoPlay
@@ -250,7 +250,7 @@ function Login() {
         <div className="absolute inset-0 bg-white/45 lg:hidden" />
         <div className="absolute inset-0 hidden bg-gradient-to-br from-brand-light/25 via-brand-sage/20 to-brand-teal/25 lg:block" />
         <div className="absolute inset-y-0 left-0 hidden w-1/2 bg-gradient-to-r from-card/45 via-card/15 to-transparent lg:block" />
-        <div className="relative z-10 px-5">
+        <div className="relative z-10 hidden px-5 lg:block">
           <motion.div
             initial={{ opacity: 0, x: reduceMotion ? 0 : -36, y: reduceMotion ? 0 : 12 }}
             animate={{ opacity: 1, x: 0, y: 0 }}
