@@ -232,7 +232,7 @@
       color-mix(in srgb, var(--background) 66%, transparent),
       color-mix(in srgb, var(--background) 66%, transparent)
     ),
-    url("../more-leaves.png");
+    url("https://raw.githubusercontent.com/sameera-7-hash/OOPs-CP-frontend/c93a367476c211b0ec52852ca275dc8db3da8b6f/more-leaves.png");
   background-position: center, center;
   background-repeat: no-repeat, repeat;
   background-size: cover, 560px auto;
