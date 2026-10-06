@@ -1,11 +1,10 @@
 ---
 title: PatientCare
-sdk: static
 emoji: 🏥
 colorFrom: blue
 colorTo: green
+sdk: docker
 pinned: false
-app_file: dist/index.html
 ---
 
 # Clinic Appointment Management System
