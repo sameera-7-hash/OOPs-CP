@@ -11,14 +11,14 @@ export const SelectTrigger = React.forwardRef(({ className, children, ...props }
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
-      "flex h-10 w-full items-center justify-between gap-2 rounded-lg border border-input bg-card px-3 text-sm text-foreground outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/25 disabled:opacity-50",
+      "flex h-11 w-full items-center justify-between gap-2 rounded-lg border border-input bg-card px-4 text-sm text-foreground transition-colors hover:border-muted-foreground focus-visible:border-primary focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ring disabled:opacity-50 data-[placeholder]:text-muted-foreground",
       className
     )}
     {...props}
   >
     {children}
     <SelectPrimitive.Icon asChild>
-      <ChevronDown className="h-4 w-4 opacity-60" />
+      <ChevronDown aria-hidden="true" className="h-4 w-4 text-muted-foreground" />
     </SelectPrimitive.Icon>
   </SelectPrimitive.Trigger>
 ));
@@ -46,7 +46,7 @@ export const SelectItem = React.forwardRef(({ className, children, ...props }, r
   <SelectPrimitive.Item
     ref={ref}
     className={cn(
-      "relative flex w-full cursor-pointer select-none items-center rounded-md py-2 pl-8 pr-3 text-sm outline-none data-[highlighted]:bg-muted data-[state=checked]:text-primary",
+      "relative flex min-h-10 w-full cursor-pointer select-none items-center rounded-md py-2 pl-8 pr-4 text-sm outline-none data-[highlighted]:bg-secondary data-[state=checked]:font-semibold data-[state=checked]:text-primary",
       className
     )}
     {...props}

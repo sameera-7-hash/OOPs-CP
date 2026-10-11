@@ -1,101 +1,84 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Lock, ShieldHalf, DatabaseZap, User, Stethoscope, Plus as PlusIcon } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import FadeIn from "@/components/FadeIn";
+import SplitText from "@/components/SplitText";
+import Photo from "@/components/Photo";
 import BrandMark from "@/components/BrandMark";
+import { CalendarCheckArt, ClipboardChartArt, StethoscopeArt } from "@/components/art/Illustrations";
 
 const ROLES = [
   {
     role: "Patient",
-    icon: User,
-    text: "View your health records, appointments and prescriptions",
-    tint: "bg-brand-sage/20 text-brand-teal",
+    photo: "bedside",
+    art: CalendarCheckArt,
+    text: "Book appointments, upload reports and see what your care team shares with you.",
   },
   {
     role: "Doctor",
-    icon: Stethoscope,
-    text: "Manage patients, appointments, diagnosis and prescriptions",
-    tint: "bg-primary/15 text-primary",
+    photo: "doctor",
+    art: StethoscopeArt,
+    text: "Publish availability, see your booked appointments and manage patient records.",
   },
   {
     role: "Nurse",
-    icon: PlusIcon,
-    text: "View patient queue, vitals, tasks and care reports",
-    tint: "bg-brand-teal/20 text-brand-teal",
+    photo: "nurse",
+    art: ClipboardChartArt,
+    text: "Look up patient records and add care reports to a patient's file.",
   },
-];
-
-const SECURITY = [
-  { icon: Lock, title: "End-to-End Encryption", text: "Your data is protected" },
-  { icon: ShieldHalf, title: "Integrity Protected", text: "Tamper-evident records" },
-  { icon: DatabaseZap, title: "Secure Backup", text: "Always have a backup" },
 ];
 
 function RoleSelection() {
   const navigate = useNavigate();
 
   return (
-    <div className="role-selection-background min-h-screen text-foreground">
-      <header className="app-header flex h-16 items-center justify-between border-border bg-card px-5 sm:px-8">
-        <Button variant="ghost" size="sm" onClick={() => navigate("/")}>
-          <ArrowLeft className="h-4 w-4" />
-          Back to Home
-        </Button>
-
-        <div className="flex items-center gap-2.5">
-          <BrandMark />
-          <div>
-            <h2 className="text-sm font-bold leading-none">PatientCare</h2>
-            <p className="mt-1 text-[10px] text-muted-foreground">Secure Healthcare Management</p>
-          </div>
+    <div className="hero-glow min-h-screen text-foreground">
+      <header className="border-b border-border bg-card">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
+          <Button variant="ghost" size="sm" onClick={() => navigate("/")}>
+            <ArrowLeft aria-hidden="true" />
+            Home
+          </Button>
+          <Link to="/" className="flex items-center gap-3 text-foreground no-underline">
+            <BrandMark />
+            <span className="hidden text-base font-semibold sm:inline">PatientCare</span>
+          </Link>
         </div>
-
-        <span className="hidden text-[11px] font-bold text-primary sm:inline">
-          🔒 Secure • Encrypted • Trusted
-        </span>
       </header>
 
-      <main className="mx-auto max-w-5xl px-5 py-14 sm:px-8">
-        <div className="role-selection-heading-backdrop mx-auto w-full max-w-3xl px-5 py-3 text-center">
-          <FadeIn as="h1" className="role-selection-title text-2xl font-bold sm:text-3xl">
-            Select Your Role To Continue
-          </FadeIn>
-          <FadeIn as="p" delay={0.05} className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-            Choose your role to access your personalized dashboard.
-          </FadeIn>
-        </div>
+      <main className="mx-auto max-w-5xl px-4 py-12 sm:px-6 sm:py-16">
+        <FadeIn className="mx-auto max-w-2xl text-center">
+          <SplitText as="h1" text="Who's signing in?" className="text-3xl sm:text-4xl" />
+          <p className="mt-3 text-base text-muted-foreground">Choose your role to go to the right portal.</p>
+        </FadeIn>
 
-        <div className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-3">
-          {ROLES.map(({ role, icon: Icon, text, tint }, i) => (
-            <FadeIn key={role} delay={i * 0.1}>
-              <Card className="role-selection-card group flex h-full flex-col items-center p-7 text-center transition-transform duration-200 hover:-translate-y-1.5 hover:shadow-lg">
-                <span className={`mb-4 grid h-16 w-16 place-items-center rounded-full text-2xl ${tint}`}>
-                  <Icon className="h-7 w-7" />
-                </span>
-                <h2 className="text-lg font-bold">{role}</h2>
-                <p className="mt-2 min-h-10 text-xs leading-relaxed text-muted-foreground">{text}</p>
-                <Button className="mt-5 w-full" onClick={() => navigate(`/login/${role}`)}>
-                  Continue as {role}
-                </Button>
-              </Card>
-            </FadeIn>
-          ))}
-        </div>
-
-        <div className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-3">
-          {SECURITY.map(({ icon: Icon, title, text }, i) => (
-            <FadeIn key={title} delay={i * 0.08}>
-              <div className="flex items-center gap-3 rounded-xl border border-border bg-card p-3.5">
-                <span className="grid h-9 w-9 flex-shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
-                  <Icon className="h-4 w-4" />
-                </span>
-                <div>
-                  <strong className="block text-xs">{title}</strong>
-                  <p className="text-[11px] text-muted-foreground">{text}</p>
+        <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-3">
+          {ROLES.map(({ role, photo, art: Art, text }, i) => (
+            <FadeIn key={role} delay={i * 0.06} className="h-full">
+              <Card className="card-lift group flex h-full flex-col overflow-hidden text-center">
+                <div className="relative">
+                  <Photo
+                    name={photo}
+                    aspect={4 / 3}
+                    decorative
+                    sizes="(min-width: 768px) 320px, 100vw"
+                    imgClassName="transition-transform duration-500 ease-out group-hover:scale-105"
+                  />
+                  <span className="icon-tile absolute -bottom-8 left-1/2 grid h-16 w-16 -translate-x-1/2 place-items-center rounded-2xl border-4 border-card bg-secondary shadow-md">
+                    <Art className="h-10 w-10" />
+                  </span>
                 </div>
-              </div>
+                <div className="flex flex-1 flex-col items-center px-6 pb-8 pt-12">
+                  <h2 className="text-xl">{role}</h2>
+                  <p className="mt-2 flex-1 text-sm text-muted-foreground">{text}</p>
+                  <Button className="mt-6 w-full" onClick={() => navigate(`/login/${role}`)}>
+                    Continue as {role.toLowerCase()}
+                    <ArrowRight aria-hidden="true" />
+                  </Button>
+                </div>
+              </Card>
             </FadeIn>
           ))}
         </div>

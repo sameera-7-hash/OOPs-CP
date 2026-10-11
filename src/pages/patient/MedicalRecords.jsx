@@ -1,9 +1,13 @@
 import React, { useEffect, useRef, useState } from "react";
-import { UploadCloud, FileText, FileType2, ExternalLink } from "lucide-react";
+import { ExternalLink, FileText, FileType2, LoaderCircle, UploadCloud } from "lucide-react";
 import { useCurrentUser } from "@/context/UserContext";
+import { useToast } from "@/context/ToastContext";
 import { getDocuments, uploadDocument, fileToBase64, documentContentUrl } from "@/Services/api";
 import DashboardShell from "@/components/layout/DashboardShell";
 import PageHeading from "@/components/layout/PageHeading";
+import EmptyState from "@/components/feedback/EmptyState";
+import { SkeletonRows } from "@/components/feedback/Skeleton";
+import { FolderCrossArt } from "@/components/art/Illustrations";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -24,8 +28,10 @@ function isAccepted(file) {
 
 function MedicalRecords() {
   const { user } = useCurrentUser();
+  const notify = useToast();
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef(null);
@@ -34,8 +40,11 @@ function MedicalRecords() {
     if (!user) return;
     setLoading(true);
     getDocuments(user.id)
-      .then((data) => setDocuments([...data].sort((a, b) => b.createdAt.localeCompare(a.createdAt))))
-      .catch(() => {})
+      .then((data) => {
+        setDocuments([...data].sort((a, b) => b.createdAt.localeCompare(a.createdAt)));
+        setLoadError("");
+      })
+      .catch((err) => setLoadError(err.message))
       .finally(() => setLoading(false));
   };
 
@@ -45,7 +54,7 @@ function MedicalRecords() {
     if (!user) return;
     const files = Array.from(fileList).filter(isAccepted);
     if (files.length === 0) {
-      alert("Only .txt, .doc, .docx and .pdf files are accepted.");
+      notify({ tone: "error", message: "Only .txt, .doc, .docx and .pdf files are accepted." });
       return;
     }
 
@@ -63,9 +72,10 @@ function MedicalRecords() {
           dataBase64,
         });
       }
+      notify({ message: files.length === 1 ? `${files[0].name} uploaded.` : `${files.length} files uploaded.` });
       loadDocuments();
     } catch (err) {
-      alert("Could not upload file: " + err.message);
+      notify({ tone: "error", message: `Could not upload file: ${err.message}` });
     } finally {
       setUploading(false);
     }
@@ -80,75 +90,101 @@ function MedicalRecords() {
   return (
     <DashboardShell role="Patient" menu={patientMenu} title="My Reports">
       <PageHeading
-        eyebrow="Medical Records"
-        title="My Reports"
+        eyebrow="Medical records"
+        title="My reports"
         description="Upload your own documents, and see reports your care team has shared with you."
       />
 
-      <div className="medical-page-pattern p-4 sm:p-6">
-        <div
-          className={cn(
-            "mb-6 flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 border-dashed border-border bg-card p-10 text-center transition-colors",
-            dragOver && "border-primary bg-primary/5"
-          )}
-          onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-          onDragLeave={() => setDragOver(false)}
-          onDrop={onDrop}
-          onClick={() => fileInputRef.current?.click()}
-        >
-          <input
-            ref={fileInputRef}
-            type="file"
-            multiple
-            accept={ACCEPTED_EXTENSIONS.join(",")}
-            className="hidden"
-            onChange={(e) => { if (e.target.files?.length) uploadFiles(e.target.files); e.target.value = ""; }}
-          />
-          <UploadCloud className="h-8 w-8 text-primary" />
-          <p className="text-sm"><strong>Drag & drop</strong> a file here, or click to browse.</p>
-          <small className="text-xs text-muted-foreground">Accepted: .txt, .doc, .docx, .pdf</small>
-          {uploading && <p className="text-xs text-muted-foreground">Uploading...</p>}
-        </div>
+      <div
+        className={cn(
+          "mb-8 flex flex-col items-center gap-3 rounded-xl border-2 border-dashed bg-card px-6 py-10 text-center transition-colors duration-150",
+          dragOver ? "border-primary bg-secondary" : "border-border"
+        )}
+        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+        onDragLeave={() => setDragOver(false)}
+        onDrop={onDrop}
+      >
+        <input
+          ref={fileInputRef}
+          id="report-file"
+          type="file"
+          multiple
+          accept={ACCEPTED_EXTENSIONS.join(",")}
+          className="sr-only"
+          tabIndex={-1}
+          onChange={(e) => { if (e.target.files?.length) uploadFiles(e.target.files); e.target.value = ""; }}
+        />
+        {uploading ? (
+          <LoaderCircle aria-hidden="true" className="h-10 w-10 animate-spin text-primary motion-reduce:animate-none" />
+        ) : (
+          <UploadCloud aria-hidden="true" className="h-10 w-10 text-primary" />
+        )}
+        <p className="text-base">
+          <strong>Drag and drop</strong> a file here, or
+        </p>
+        <Button type="button" variant="outline" disabled={uploading} onClick={() => fileInputRef.current?.click()}>
+          Choose a file
+        </Button>
+        <small className="text-sm text-muted-foreground">Accepted: .txt, .doc, .docx, .pdf</small>
+        <p aria-live="polite" className="text-sm font-medium text-primary">{uploading ? "Uploading…" : ""}</p>
+      </div>
 
-        <div className="flex flex-col gap-3">
-          {!loading && documents.length === 0 && (
-            <p className="text-sm text-muted-foreground">No reports yet. Upload one above, or check back after your next visit.</p>
-          )}
+      <h2 className="mb-4 text-lg">Your documents</h2>
 
-          {documents.map((doc) => {
-            const Icon = iconFor(doc.filename);
-            return (
-              <Card key={doc.id} className="flex items-center gap-4 p-4">
+      {loading && documents.length === 0 && <SkeletonRows rows={3} label="Loading reports…" />}
+      {!loading && loadError && (
+        <p role="alert" className="text-sm text-destructive">Couldn&apos;t load your reports: {loadError}</p>
+      )}
+      {!loading && !loadError && documents.length === 0 && (
+        <Card>
+          <EmptyState
+            art={FolderCrossArt}
+            title="No reports yet"
+            action={<Button variant="outline" onClick={() => fileInputRef.current?.click()}>Upload a report</Button>}
+          >
+            Upload one above, or check back after your next visit.
+          </EmptyState>
+        </Card>
+      )}
+
+      <ul className="stagger flex flex-col gap-3">
+        {documents.map((doc) => {
+          const Icon = iconFor(doc.filename);
+          const fromNurse = doc.uploaderRole === "Nurse";
+          return (
+            <li key={doc.id}>
+              <Card className="flex flex-wrap items-center gap-4 p-4 sm:flex-nowrap">
                 <span
                   className={cn(
-                    "grid h-11 w-11 flex-shrink-0 place-items-center rounded-xl",
-                    doc.uploaderRole === "Nurse" ? "bg-success/15 text-success" : "bg-primary/10 text-primary"
+                    "grid h-11 w-11 shrink-0 place-items-center rounded-lg",
+                    fromNurse ? "bg-success/10 text-success" : "bg-secondary text-primary"
                   )}
                 >
-                  <Icon className="h-5 w-5" />
+                  <Icon aria-hidden="true" className="h-5 w-5" />
                 </span>
 
                 <div className="min-w-0 flex-1">
-                  <h3 className="truncate text-sm font-bold">{doc.filename}</h3>
-                  <p className="mt-0.5 text-xs text-muted-foreground">
-                    {doc.uploaderRole === "Nurse" ? `From ${doc.uploaderName || "your nurse"}` : "Uploaded by you"}
+                  <h3 className="truncate text-base">{doc.filename}</h3>
+                  <p className="mt-0.5 text-sm text-muted-foreground">
+                    {fromNurse ? `From ${doc.uploaderName || "your nurse"}` : "Uploaded by you"}
                     {" · "}
                     {new Date(doc.createdAt).toLocaleDateString()}
                   </p>
-                  {doc.note && <p className="mt-1 text-xs text-foreground/80">{doc.note}</p>}
+                  {doc.note && <p className="mt-1 text-sm text-foreground/90">{doc.note}</p>}
                 </div>
 
-                <a href={documentContentUrl(doc.id)} target="_blank" rel="noreferrer">
-                  <Button variant="outline" size="sm">
-                    <ExternalLink className="h-3.5 w-3.5" />
+                <Button variant="outline" size="sm" asChild>
+                  <a href={documentContentUrl(doc.id)} target="_blank" rel="noreferrer">
+                    <ExternalLink aria-hidden="true" />
                     View
-                  </Button>
-                </a>
+                    <span className="sr-only">{doc.filename} (opens in a new tab)</span>
+                  </a>
+                </Button>
               </Card>
-            );
-          })}
-        </div>
-      </div>
+            </li>
+          );
+        })}
+      </ul>
     </DashboardShell>
   );
 }

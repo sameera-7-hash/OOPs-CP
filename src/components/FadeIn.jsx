@@ -1,18 +1,40 @@
-import React from "react";
-import { motion } from "motion/react";
+import React, { useEffect, useRef, useState } from "react";
+import { cn } from "@/lib/utils";
 
-// Fades/slides children into place the moment they scroll into view (once
-// only). `delay` (seconds) staggers a group of siblings; `as` picks the
-// motion element tag so this can render a <div>, an <li>, an <h2>, etc.
-function FadeIn({ children, delay = 0, className, as = "div", y = 18 }) {
-  const Tag = motion[as] || motion.div;
+// Fades and rises children into place the first time they scroll into
+// view. `delay` is in seconds so a group of siblings can stagger
+// (multiples of 0.06 match the design's 60ms stagger). `as` picks the
+// element tag. Motion is CSS-only (.reveal in index.css) and is skipped
+// entirely under prefers-reduced-motion.
+function FadeIn({ children, delay = 0, className, as: Tag = "div", y = 16, ...rest }) {
+  const ref = useRef(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const node = ref.current;
+    if (!node || !("IntersectionObserver" in window)) {
+      setVisible(true);
+      return undefined;
+    }
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.15 }
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <Tag
-      className={className}
-      initial={{ opacity: 0, y }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.2 }}
-      transition={{ duration: 0.5, delay, ease: [0.16, 1, 0.3, 1] }}
+      ref={ref}
+      className={cn("reveal", visible && "is-visible", className)}
+      style={{ "--reveal-delay": `${Math.round(delay * 1000)}ms`, "--reveal-y": `${y}px` }}
+      {...rest}
     >
       {children}
     </Tag>

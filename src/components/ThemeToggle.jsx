@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { Moon, Sun } from "lucide-react";
-import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 
 function readStoredTheme() {
@@ -20,11 +19,8 @@ function applyTheme(theme) {
   }
 }
 
-// Light/dark switch for the top bar: a small sun shape and moon shape
-// (lucide vector icons, not emoji) sit at either end of a pill track, and
-// a sliding knob shows which one is active. Applies data-theme to <html>
-// so it takes effect regardless of which page/layout is currently
-// mounted.
+// Light/dark switch for the top bar. Applies data-theme to <html> so it
+// takes effect regardless of which page/layout is currently mounted.
 function ThemeToggle() {
   const [theme, setTheme] = useState(readStoredTheme);
   const isDark = theme === "dark";
@@ -45,21 +41,21 @@ function ThemeToggle() {
       onClick={toggle}
       role="switch"
       aria-checked={isDark}
-      title={isDark ? "Switch to light mode" : "Switch to dark mode"}
-      className="relative inline-flex h-7 w-14 flex-shrink-0 items-center justify-between rounded-full border border-border bg-muted p-0.5 transition-colors"
+      aria-label="Dark mode"
+      className="relative inline-flex h-8 w-16 shrink-0 items-center justify-between rounded-full border border-border bg-muted p-1"
     >
-      <motion.span
-        className="absolute top-0.5 h-6 w-6 rounded-full bg-card shadow-sm shadow-black/10"
-        animate={{ x: isDark ? 28 : 2 }}
-        transition={{ type: "spring", stiffness: 500, damping: 32 }}
+      <span
+        aria-hidden="true"
+        className={cn(
+          "absolute left-1 top-1 h-6 w-6 rounded-full bg-card shadow-sm transition-transform duration-200 ease-out",
+          isDark && "translate-x-8"
+        )}
       />
-
       <span className="relative z-10 grid h-6 w-6 place-items-center">
-        <Sun className={cn("h-3.5 w-3.5 transition-colors", !isDark ? "text-warning" : "text-muted-foreground/40")} />
+        <Sun aria-hidden="true" className={cn("h-4 w-4", isDark ? "text-muted-foreground" : "text-warning")} />
       </span>
-
       <span className="relative z-10 grid h-6 w-6 place-items-center">
-        <Moon className={cn("h-3.5 w-3.5 transition-colors", isDark ? "text-primary" : "text-muted-foreground/40")} />
+        <Moon aria-hidden="true" className={cn("h-4 w-4", isDark ? "text-primary" : "text-muted-foreground")} />
       </span>
     </button>
   );

@@ -1,33 +1,34 @@
 import React, { useState } from "react";
-import { AnimatePresence, motion } from "motion/react";
-import { ArrowRight, Plus } from "lucide-react";
+import { ArrowRight, ListOrdered, Plus } from "lucide-react";
+import { useToast } from "@/context/ToastContext";
 import DashboardShell from "@/components/layout/DashboardShell";
 import PageHeading from "@/components/layout/PageHeading";
 import Panel from "@/components/layout/Panel";
+import Notice from "@/components/feedback/Notice";
+import EmptyState from "@/components/feedback/EmptyState";
+import PriorityBadge from "@/components/feedback/PriorityBadge";
+import { ClipboardChartArt } from "@/components/art/Illustrations";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import { nurseMenu } from "@/lib/nav";
 
-const PRIORITY_TONE = {
-  critical: "bg-destructive/15 text-destructive",
-  high: "bg-warning/20 text-warning",
-  medium: "bg-warning/15 text-warning",
-  normal: "bg-success/15 text-success",
-};
+// SAMPLE DATA: a local demonstration of a FIFO queue. These patients are
+// not loaded from the backend.
+const SAMPLE_QUEUE = [
+  { id: "P101", name: "Amit Sharma", priority: "Critical", room: "Room 204" },
+  { id: "P104", name: "Neha Verma", priority: "High", room: "Room 108" },
+  { id: "P110", name: "Ravi Patel", priority: "Medium", room: "Room 312" },
+  { id: "P115", name: "Sneha Iyer", priority: "Normal", room: "Room 305" },
+];
 
 function PatientQueue() {
-  const [queue, setQueue] = useState([
-    { id: "P101", name: "Amit Sharma", priority: "Critical", room: "Room 204" },
-    { id: "P104", name: "Neha Verma", priority: "High", room: "Room 108" },
-    { id: "P110", name: "Ravi Patel", priority: "Medium", room: "Room 312" },
-    { id: "P115", name: "Sneha Iyer", priority: "Normal", room: "Room 305" },
-  ]);
+  const notify = useToast();
+  const [queue, setQueue] = useState(SAMPLE_QUEUE);
 
   const nextPatient = () => {
     if (queue.length === 0) return;
     const next = queue[0];
     setQueue(queue.slice(1));
-    alert(`${next.name} is now being attended.`);
+    notify({ message: `${next.name} is now being attended.` });
   };
 
   const addPatient = () => {
@@ -36,53 +37,55 @@ function PatientQueue() {
 
   return (
     <DashboardShell role="Nurse" menu={nurseMenu} title="Patient Queue">
-      <PageHeading eyebrow="Nurse Portal" title="Patient Queue" description="Manage patients waiting for consultation." />
+      <PageHeading
+        eyebrow="Nurse portal"
+        title="Patient queue"
+        description="Patients waiting for consultation."
+        sample="A local demonstration of a queue. These patients aren't loaded from the backend."
+      />
 
       <Panel>
-        <div className="flex items-center gap-3 overflow-x-auto py-2">
-          <strong className="flex-shrink-0 text-[10px] uppercase tracking-wider text-muted-foreground">FRONT</strong>
-
-          <AnimatePresence initial={false}>
-            {queue.map((patient, index) => (
-              <React.Fragment key={patient.id}>
-                <motion.div
-                  layout
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  className="flex min-w-32 flex-shrink-0 flex-col gap-1 rounded-lg border border-border bg-card p-3 text-xs"
-                >
-                  <strong>{patient.id}</strong>
-                  <span className="truncate">{patient.name}</span>
-                  <span className={cn("w-fit rounded-full px-2 py-0.5 text-[10px] font-bold", PRIORITY_TONE[patient.priority.toLowerCase()])}>
-                    {patient.priority}
-                  </span>
-                  <small className="text-muted-foreground">{patient.room}</small>
-                </motion.div>
-
-                {index < queue.length - 1 && <ArrowRight className="h-4 w-4 flex-shrink-0 text-muted-foreground" />}
-              </React.Fragment>
-            ))}
-          </AnimatePresence>
-
-          <strong className="flex-shrink-0 text-[10px] uppercase tracking-wider text-muted-foreground">REAR</strong>
-        </div>
+        {queue.length === 0 ? (
+          <EmptyState
+            art={ClipboardChartArt}
+            title="The queue is empty"
+            action={<Button variant="outline" onClick={addPatient}><Plus aria-hidden="true" />Add patient</Button>}
+          >
+            Nobody is waiting right now.
+          </EmptyState>
+        ) : (
+          <div className="relative flex items-center gap-3 overflow-x-auto py-2">
+            <strong className="shrink-0 text-xs uppercase tracking-wider text-muted-foreground">Front</strong>
+            <ol className="flex items-center gap-3" aria-label="Queue, front first">
+              {queue.map((patient, index) => (
+                <li key={patient.id} className="flex items-center gap-3">
+                  <div className="flex w-40 shrink-0 animate-rise flex-col gap-2 rounded-lg border border-border bg-card p-4 text-sm">
+                    <strong>{patient.id}</strong>
+                    <span className="truncate">{patient.name}</span>
+                    <PriorityBadge priority={patient.priority} />
+                    <small className="text-muted-foreground">{patient.room}</small>
+                  </div>
+                  {index < queue.length - 1 && <ArrowRight aria-hidden="true" className="h-4 w-4 shrink-0 text-muted-foreground" />}
+                </li>
+              ))}
+            </ol>
+            <strong className="shrink-0 text-xs uppercase tracking-wider text-muted-foreground">Rear</strong>
+          </div>
+        )}
       </Panel>
 
       <div className="flex flex-wrap gap-2">
         <Button variant="outline" onClick={addPatient}>
-          <Plus className="h-4 w-4" />
-          Add Patient
+          <Plus aria-hidden="true" />
+          Add patient
         </Button>
-        <Button onClick={nextPatient}>
-          <ArrowRight className="h-4 w-4" />
-          Next Patient
+        <Button onClick={nextPatient} disabled={queue.length === 0}>
+          <ArrowRight aria-hidden="true" />
+          Next patient
         </Button>
       </div>
 
-      <p className="mt-5 rounded-lg border border-success/30 bg-success/10 px-4 py-3 text-xs font-medium text-success">
-        📚 Queue follows FIFO — First In, First Out.
-      </p>
+      <Notice icon={ListOrdered} className="mt-6">A queue is FIFO: first in, first out.</Notice>
     </DashboardShell>
   );
 }

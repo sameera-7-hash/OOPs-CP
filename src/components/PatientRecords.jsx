@@ -1,13 +1,18 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { RefreshCw, Search } from "lucide-react";
+import { ArrowDownUp, RefreshCw, Search, ShieldAlert } from "lucide-react";
 import { getPatients } from "@/Services/api";
 import DashboardShell from "@/components/layout/DashboardShell";
 import PageHeading from "@/components/layout/PageHeading";
 import Panel from "@/components/layout/Panel";
+import Notice from "@/components/feedback/Notice";
+import EmptyState from "@/components/feedback/EmptyState";
+import { SkeletonRows } from "@/components/feedback/Skeleton";
+import { ClipboardChartArt } from "@/components/art/Illustrations";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 
 function PatientRecords({ role, menu }) {
@@ -48,91 +53,114 @@ function PatientRecords({ role, menu }) {
     });
 
   const isDoctor = role === "Doctor";
+  const columns = isDoctor ? 7 : 6;
 
   return (
     <DashboardShell role={role} menu={menu} title="Patient Records">
       <PageHeading
-        eyebrow={`${role} Portal`}
-        title="Patient Records"
-        description="View patient records shared with your care team."
+        eyebrow={`${role} portal`}
+        title="Patient records"
+        description="Records shared with your care team."
       />
 
       <Panel>
-        <div className="mb-4 flex flex-col gap-2.5 sm:flex-row">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              className="pl-9"
-              placeholder="Search by ID, name or diagnosis..."
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-            />
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end">
+          <div className="flex flex-1 flex-col gap-2">
+            <Label htmlFor="patient-search">Search</Label>
+            <div className="relative">
+              <Search aria-hidden="true" className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                id="patient-search"
+                type="search"
+                className="pl-10"
+                placeholder="ID, name or diagnosis"
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+              />
+            </div>
           </div>
 
-          <Select value={sort} onValueChange={setSort}>
-            <SelectTrigger className="sm:w-48">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="name">Sort by Name</SelectItem>
-              <SelectItem value="age">Sort by Age</SelectItem>
-              <SelectItem value="id">Sort by Patient ID</SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="flex flex-col gap-2 sm:w-52">
+            <Label htmlFor="patient-sort">Sort by</Label>
+            <Select value={sort} onValueChange={setSort}>
+              <SelectTrigger id="patient-sort">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="name">Name</SelectItem>
+                <SelectItem value="age">Age</SelectItem>
+                <SelectItem value="id">Patient ID</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
           <Button variant="outline" onClick={refreshPatients} disabled={loading}>
-            <RefreshCw className="h-4 w-4" />
+            <RefreshCw aria-hidden="true" />
             Refresh
           </Button>
         </div>
 
-        <p className="mb-2 text-xs text-muted-foreground">
-          {patients.length} patient record(s); list refreshes automatically every 15 seconds.
+        <p className="mb-4 text-sm text-muted-foreground" aria-live="polite">
+          {patients.length} patient record{patients.length === 1 ? "" : "s"}. The list refreshes every 15 seconds.
         </p>
-        {loading && <p className="text-sm text-muted-foreground">Loading patients...</p>}
-        {error && <p role="alert" className="text-sm text-destructive">Could not load patients: {error}</p>}
 
-        {!loading && (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
+        {loading && <SkeletonRows rows={4} label="Loading patients…" />}
+        {error && (
+          <Notice tone="danger" role="alert" title="Couldn't load patients" className="mb-4">{error}</Notice>
+        )}
+
+        {!loading && !error && patients.length === 0 && (
+          <EmptyState
+            art={ClipboardChartArt}
+            title="No patient records yet"
+            action={isDoctor && <Button onClick={() => navigate("/doctor/add-patient")}>Add a patient</Button>}
+          >
+            {isDoctor ? "Add the first patient to get started." : "Records appear here once a doctor adds them."}
+          </EmptyState>
+        )}
+
+        {!loading && patients.length > 0 && (
+          <div className="relative -mx-6 overflow-x-auto px-6">
+            <table className="w-full min-w-[640px] text-left text-sm">
               <thead>
-                <tr className="border-b border-border text-[10px] uppercase text-muted-foreground">
-                  <th className="py-2 pr-3">ID</th>
-                  <th className="py-2 pr-3">Name</th>
-                  <th className="py-2 pr-3">Age</th>
-                  <th className="py-2 pr-3">Gender</th>
-                  <th className="py-2 pr-3">Diagnosis</th>
-                  <th className="py-2 pr-3">Encryption</th>
-                  {isDoctor && <th className="py-2 pr-3">Action</th>}
+                <tr className="border-b border-border text-xs uppercase tracking-wide text-muted-foreground">
+                  <th scope="col" className="py-2 pr-4 font-semibold">ID</th>
+                  <th scope="col" className="py-2 pr-4 font-semibold">Name</th>
+                  <th scope="col" className="py-2 pr-4 font-semibold">Age</th>
+                  <th scope="col" className="py-2 pr-4 font-semibold">Gender</th>
+                  <th scope="col" className="py-2 pr-4 font-semibold">Diagnosis</th>
+                  <th scope="col" className="py-2 pr-4 font-semibold">Encryption</th>
+                  {isDoctor && <th scope="col" className="py-2 pr-4 font-semibold"><span className="sr-only">Action</span></th>}
                 </tr>
               </thead>
               <tbody>
-                {filtered.length === 0 && !error && (
+                {filtered.length === 0 && (
                   <tr>
-                    <td colSpan={isDoctor ? 7 : 6} className="py-4 text-muted-foreground">
-                      No patients yet.
+                    <td colSpan={columns} className="py-6 text-center text-muted-foreground">
+                      No patients match &ldquo;{search}&rdquo;.
                     </td>
                   </tr>
                 )}
                 {filtered.map((patient, index) => (
                   patient.ok ? (
-                    <tr key={patient.id} className="border-b border-border last:border-0">
-                      <td className="py-2.5 pr-3 font-semibold">{patient.id}</td>
-                      <td className="py-2.5 pr-3">{patient.name}</td>
-                      <td className="py-2.5 pr-3">{patient.age}</td>
-                      <td className="py-2.5 pr-3">{patient.gender}</td>
-                      <td className="py-2.5 pr-3">{patient.diagnosis}</td>
-                      <td className="py-2.5 pr-3">
+                    <tr key={patient.id} className="border-b border-border last:border-0 hover:bg-muted/60">
+                      <td className="py-3 pr-4 font-semibold">{patient.id}</td>
+                      <td className="py-3 pr-4">{patient.name}</td>
+                      <td className="py-3 pr-4 tabular-nums">{patient.age}</td>
+                      <td className="py-3 pr-4">{patient.gender}</td>
+                      <td className="py-3 pr-4 text-muted-foreground">{patient.diagnosis}</td>
+                      <td className="py-3 pr-4">
                         <Badge variant={patient.algo && patient.algo.startsWith("DES") ? "warning" : "default"}>
                           {patient.algo}
                         </Badge>
                       </td>
                       {isDoctor && (
-                        <td className="py-2.5 pr-3">
+                        <td className="py-3 pr-4 text-right">
                           <Button
                             size="sm"
                             variant="outline"
                             onClick={() => navigate(`/doctor/patients/${patient.id}`)}
+                            aria-label={`View ${patient.name}`}
                           >
                             View
                           </Button>
@@ -141,8 +169,11 @@ function PatientRecords({ role, menu }) {
                     </tr>
                   ) : (
                     <tr key={`invalid-${index}`} className="border-b border-border last:border-0">
-                      <td colSpan={isDoctor ? 7 : 6} className="py-2.5 pr-3 text-destructive">
-                        Record could not be verified: {patient.problem || "integrity check failed"}
+                      <td colSpan={columns} className="py-3 pr-4 text-destructive">
+                        <span className="flex items-center gap-2">
+                          <ShieldAlert aria-hidden="true" className="h-4 w-4" />
+                          Record could not be verified: {patient.problem || "integrity check failed"}
+                        </span>
                       </td>
                     </tr>
                   )
@@ -154,9 +185,9 @@ function PatientRecords({ role, menu }) {
       </Panel>
 
       {isDoctor && (
-        <p className="rounded-lg border border-success/30 bg-success/10 px-4 py-3 text-xs font-medium text-success">
-          🔎 Patient ID Search → Hash Map concept &nbsp;|&nbsp; ↕ Sorting → Sorting algorithm
-        </p>
+        <Notice icon={ArrowDownUp}>
+          Patient ID search uses a hash map, and the list is ordered with a sorting algorithm.
+        </Notice>
       )}
     </DashboardShell>
   );

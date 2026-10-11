@@ -1,32 +1,84 @@
-import React from "react";
-import { motion } from "motion/react";
+import React, { useEffect, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
+import SampleTag from "@/components/feedback/SampleTag";
+import IconTile from "@/components/IconTile";
 import { cn } from "@/lib/utils";
 
-function StatCard({ label, value, note, icon: Icon, delay = 0, noteTone = "success" }) {
+const COUNT_MS = 600;
+
+const reducedMotion = () => window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+
+// Counts a numeric value up from 0 once, when the card scrolls into view.
+// Non-numeric values ("OK", "…") are shown as-is.
+function useCountUp(value) {
+  const ref = useRef(null);
+  const numeric = typeof value === "number" || /^\d+$/.test(String(value));
+  const target = numeric ? Number(value) : 0;
+  const [shown, setShown] = useState(numeric ? 0 : value);
+  const started = useRef(false);
+
+  useEffect(() => {
+    if (!numeric) {
+      setShown(value);
+      return undefined;
+    }
+    const node = ref.current;
+    let frame;
+    const run = () => {
+      if (reducedMotion() || target === 0 || started.current) {
+        setShown(target);
+        return;
+      }
+      started.current = true;
+      const begin = performance.now();
+      const tick = (now) => {
+        const t = Math.min(1, (now - begin) / COUNT_MS);
+        setShown(Math.round(target * (1 - (1 - t) ** 3)));
+        if (t < 1) frame = requestAnimationFrame(tick);
+      };
+      frame = requestAnimationFrame(tick);
+    };
+    if (!node || !("IntersectionObserver" in window)) {
+      run();
+      return () => cancelAnimationFrame(frame);
+    }
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        observer.disconnect();
+        run();
+      }
+    });
+    observer.observe(node);
+    return () => {
+      observer.disconnect();
+      cancelAnimationFrame(frame);
+    };
+  }, [numeric, target, value]);
+
+  return [ref, shown];
+}
+
+// `sample` marks a value that is hard-coded rather than from the backend.
+// `tone` picks the icon tile's hue (teal, blue, amber, green, rose).
+function StatCard({ label, value, note, icon, tone = "teal", noteTone = "muted", sample = false }) {
+  const [ref, shown] = useCountUp(value);
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 14 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay }}
-    >
-      <Card className="p-4 sm:p-5">
-        <div className="flex items-start justify-between">
-          <span className="text-xs font-medium text-muted-foreground">{label}</span>
-          {Icon && (
-            <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary/10 text-primary">
-              <Icon className="h-4 w-4" />
-            </span>
-          )}
-        </div>
-        <strong className="mt-2 block text-2xl font-bold text-foreground">{value}</strong>
+    <Card ref={ref} className="card-lift p-6">
+      <div className="flex items-start justify-between gap-2">
+        <span className="text-sm font-medium text-muted-foreground">{label}</span>
+        {icon && <IconTile icon={icon} tone={tone} />}
+      </div>
+      <strong className="mt-2 block text-3xl font-semibold tabular-nums text-foreground">{shown}</strong>
+      <div className="mt-2 flex flex-wrap items-center gap-2">
         {note && (
-          <small className={cn("mt-1 block text-[11px]", noteTone === "success" ? "text-success" : "text-muted-foreground")}>
+          <small className={cn("text-sm", noteTone === "success" ? "text-success" : "text-muted-foreground")}>
             {note}
           </small>
         )}
-      </Card>
-    </motion.div>
+        {sample && <SampleTag />}
+      </div>
+    </Card>
   );
 }
 

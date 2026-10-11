@@ -1,15 +1,18 @@
 import React, { useEffect, useState } from "react";
-import { Plus, X } from "lucide-react";
+import { Clock, Plus, UserRound, X } from "lucide-react";
 import { useCurrentUser } from "@/context/UserContext";
+import { useToast } from "@/context/ToastContext";
 import { getAvailability, setAvailability, getAppointments } from "@/Services/api";
 import DashboardShell from "@/components/layout/DashboardShell";
 import PageHeading from "@/components/layout/PageHeading";
 import Panel from "@/components/layout/Panel";
+import StatusBadge from "@/components/feedback/StatusBadge";
+import EmptyState from "@/components/feedback/EmptyState";
+import { Skeleton, SkeletonRows } from "@/components/feedback/Skeleton";
+import { CalendarCheckArt } from "@/components/art/Illustrations";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { cn } from "@/lib/utils";
 import { doctorMenu } from "@/lib/nav";
 
 function todayIso() {
@@ -18,6 +21,7 @@ function todayIso() {
 
 function Appointments() {
   const { user } = useCurrentUser();
+  const notify = useToast();
 
   const [date, setDate] = useState(todayIso());
   const [slots, setSlots] = useState([]); // [{time, booked, patientName}]
@@ -27,6 +31,7 @@ function Appointments() {
 
   const [appointments, setAppointments] = useState([]);
   const [loadingAppointments, setLoadingAppointments] = useState(true);
+  const [appointmentsError, setAppointmentsError] = useState("");
 
   useEffect(() => {
     if (!user) return;
@@ -55,7 +60,9 @@ function Appointments() {
         if (cancelled) return;
         setAppointments([...data].sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time)));
       })
-      .catch(() => {})
+      .catch((err) => {
+        if (!cancelled) setAppointmentsError(err.message);
+      })
       .finally(() => {
         if (!cancelled) setLoadingAppointments(false);
       });
@@ -87,9 +94,9 @@ function Appointments() {
         slots: slots.map((s) => s.time),
       });
       setSlots(record.slots || []);
-      alert(`Availability saved for ${date}.`);
+      notify({ message: `Availability saved for ${date}.` });
     } catch (err) {
-      alert("Could not save availability: " + err.message);
+      notify({ tone: "error", message: `Could not save availability: ${err.message}` });
     } finally {
       setSavingAvailability(false);
     }
@@ -97,26 +104,27 @@ function Appointments() {
 
   return (
     <DashboardShell role="Doctor" menu={doctorMenu} title="Appointments">
-      <PageHeading eyebrow="Doctor Portal" title="Appointments" description="Set your availability and manage booked consultations." />
+      <PageHeading eyebrow="Doctor portal" title="Appointments" description="Set your availability and see booked consultations." />
 
-      <Panel title="My Availability">
-        <div className="mb-4 flex flex-col gap-4 sm:flex-row">
-          <div className="sm:w-48">
-            <Label>Date</Label>
-            <Input type="date" className="mt-1.5" value={date} min={todayIso()} onChange={(e) => setDate(e.target.value)} />
+      <Panel title="My availability" description="Add the times you're free on a date, then save.">
+        <div className="mb-6 flex flex-col gap-4 sm:flex-row">
+          <div className="flex flex-col gap-2 sm:w-52">
+            <Label htmlFor="availability-date">Date</Label>
+            <Input id="availability-date" type="date" value={date} min={todayIso()} onChange={(e) => setDate(e.target.value)} />
           </div>
 
-          <div className="flex-1">
-            <Label>Add a time slot</Label>
-            <div className="mt-1.5 flex gap-2">
+          <div className="flex flex-1 flex-col gap-2">
+            <Label htmlFor="slot-input">Add a time slot</Label>
+            <div className="flex gap-2">
               <Input
+                id="slot-input"
                 placeholder="e.g. 09:00 AM"
                 value={slotInput}
                 onChange={(e) => setSlotInput(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addSlot(); } }}
               />
               <Button type="button" variant="outline" onClick={addSlot}>
-                <Plus className="h-4 w-4" />
+                <Plus aria-hidden="true" />
                 Add
               </Button>
             </div>
@@ -124,64 +132,82 @@ function Appointments() {
         </div>
 
         {loadingSlots ? (
-          <p className="text-sm text-muted-foreground">Loading slots...</p>
+          <div role="status" className="mb-6 flex flex-wrap gap-2">
+            <span className="sr-only">Loading slots…</span>
+            {[0, 1, 2].map((i) => <Skeleton key={i} className="h-10 w-28 rounded-full" />)}
+          </div>
         ) : (
-          <div className="mb-4 flex flex-wrap gap-2">
-            {slots.length === 0 && <p className="text-sm text-muted-foreground">No slots set for this date yet.</p>}
+          <ul aria-label={`Time slots for ${date}`} className="mb-6 flex flex-wrap gap-2">
+            {slots.length === 0 && <li className="text-sm text-muted-foreground">No slots set for this date yet.</li>}
             {slots.map((s) => (
-              <span
+              <li
                 key={s.time}
-                className={cn(
-                  "flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold",
-                  s.booked ? "border-warning/40 bg-warning/10 text-warning" : "border-border bg-card"
-                )}
+                className={
+                  s.booked
+                    ? "flex h-10 items-center gap-2 rounded-full border border-warning/30 bg-warning/10 px-4 text-sm font-semibold text-warning"
+                    : "flex h-10 items-center gap-2 rounded-full border border-border bg-card pl-4 pr-1 text-sm font-semibold"
+                }
               >
+                {s.booked ? <UserRound aria-hidden="true" className="h-4 w-4" /> : <Clock aria-hidden="true" className="h-4 w-4 text-primary" />}
                 {s.time}
                 {s.booked ? (
-                  ` · booked (${s.patientName || "patient"})`
+                  <span className="font-medium">· booked by {s.patientName || "a patient"}</span>
                 ) : (
-                  <button type="button" onClick={() => removeSlot(s.time)} className="text-muted-foreground hover:text-destructive">
-                    <X className="h-3 w-3" />
+                  <button
+                    type="button"
+                    onClick={() => removeSlot(s.time)}
+                    aria-label={`Remove ${s.time}`}
+                    className="grid h-8 w-8 place-items-center rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                  >
+                    <X aria-hidden="true" className="h-4 w-4" />
                   </button>
                 )}
-              </span>
+              </li>
             ))}
-          </div>
+          </ul>
         )}
 
         <Button onClick={saveAvailability} disabled={savingAvailability}>
-          {savingAvailability ? "Saving..." : "Save Availability"}
+          {savingAvailability ? "Saving…" : "Save availability"}
         </Button>
       </Panel>
 
-      <Panel title="Booked Appointments">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead>
-              <tr className="border-b border-border text-[10px] uppercase text-muted-foreground">
-                <th className="py-2 pr-3">Date</th>
-                <th className="py-2 pr-3">Time</th>
-                <th className="py-2 pr-3">Patient</th>
-                <th className="py-2 pr-3">Reason</th>
-                <th className="py-2 pr-3">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {!loadingAppointments && appointments.length === 0 && (
-                <tr><td colSpan={5} className="py-4 text-muted-foreground">No appointments booked yet.</td></tr>
-              )}
-              {appointments.map((a) => (
-                <tr key={a.id} className="border-b border-border last:border-0">
-                  <td className="py-2.5 pr-3">{a.date}</td>
-                  <td className="py-2.5 pr-3">{a.time}</td>
-                  <td className="py-2.5 pr-3">{a.patientName}</td>
-                  <td className="py-2.5 pr-3">{a.reason || "—"}</td>
-                  <td className="py-2.5 pr-3"><Badge variant="success">{a.status}</Badge></td>
+      <Panel title="Booked appointments">
+        {loadingAppointments && <SkeletonRows rows={3} label="Loading appointments…" />}
+        {!loadingAppointments && appointmentsError && (
+          <p role="alert" className="text-sm text-destructive">Couldn&apos;t load appointments: {appointmentsError}</p>
+        )}
+        {!loadingAppointments && !appointmentsError && appointments.length === 0 && (
+          <EmptyState art={CalendarCheckArt} title="No appointments yet">
+            When a patient books one of your open slots, it will show up here.
+          </EmptyState>
+        )}
+        {!loadingAppointments && appointments.length > 0 && (
+          <div className="relative -mx-6 overflow-x-auto px-6">
+            <table className="w-full min-w-[560px] text-left text-sm">
+              <thead>
+                <tr className="border-b border-border text-xs uppercase tracking-wide text-muted-foreground">
+                  <th scope="col" className="py-2 pr-4 font-semibold">Date</th>
+                  <th scope="col" className="py-2 pr-4 font-semibold">Time</th>
+                  <th scope="col" className="py-2 pr-4 font-semibold">Patient</th>
+                  <th scope="col" className="py-2 pr-4 font-semibold">Reason</th>
+                  <th scope="col" className="py-2 pr-4 font-semibold">Status</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {appointments.map((a) => (
+                  <tr key={a.id} className="border-b border-border last:border-0">
+                    <td className="py-3 pr-4">{a.date}</td>
+                    <td className="py-3 pr-4">{a.time}</td>
+                    <td className="py-3 pr-4 font-medium">{a.patientName}</td>
+                    <td className="py-3 pr-4 text-muted-foreground">{a.reason || "—"}</td>
+                    <td className="py-3 pr-4"><StatusBadge status={a.status} /></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </Panel>
     </DashboardShell>
   );

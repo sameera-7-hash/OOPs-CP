@@ -1,60 +1,84 @@
-import React from "react";
-import { motion } from "motion/react";
+import React, { useEffect, useState } from "react";
 import DashboardShell from "@/components/layout/DashboardShell";
 import PageHeading from "@/components/layout/PageHeading";
 import StatCard from "@/components/layout/StatCard";
 import Panel from "@/components/layout/Panel";
-import { Users, UserPlus, ShieldAlert, CheckCircle2 } from "lucide-react";
+import { Users, UserPlus, ShieldAlert, CircleCheck } from "lucide-react";
 import { doctorMenu } from "@/lib/nav";
+
+// SAMPLE DATA: every number on this page is a hard-coded placeholder.
+// The backend has no analytics endpoint yet.
+const PRIORITY = [
+  ["Critical", 8],
+  ["High", 17],
+  ["Medium", 39],
+  ["Normal", 60],
+];
+
+const AGE_GROUPS = [
+  ["0–18", 12],
+  ["19–30", 28],
+  ["31–50", 45],
+  ["51–70", 29],
+  ["70+", 10],
+];
 
 function Analytics() {
   return (
     <DashboardShell role="Doctor" menu={doctorMenu} title="Analytics">
-      <PageHeading eyebrow="Doctor Portal" title="Analytics" description="Overview of patient and clinical statistics." />
+      <PageHeading
+        eyebrow="Doctor portal"
+        title="Analytics"
+        description="Overview of patient and clinical statistics."
+        sample="These figures are placeholders. The backend doesn't provide analytics yet."
+      />
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard icon={Users} label="Total Patients" value="124" note="Current records" />
-        <StatCard icon={UserPlus} label="New This Week" value="12" note="↑ 8%" />
-        <StatCard icon={ShieldAlert} label="Critical Patients" value="8" note="Needs attention" noteTone="muted" />
-        <StatCard icon={CheckCircle2} label="Completed Visits" value="96" note="This month" />
+      <div className="stagger mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard tone="teal" icon={Users} label="Total patients" value="124" note="Current records" sample />
+        <StatCard tone="blue" icon={UserPlus} label="New this week" value="12" sample />
+        <StatCard tone="rose" icon={ShieldAlert} label="Critical patients" value="8" note="Needs attention" sample />
+        <StatCard tone="green" icon={CircleCheck} label="Completed visits" value="96" note="This month" sample />
       </div>
 
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-        <Panel title="Patients by Priority">
-          <Bar label="Critical" value="8" width="25%" />
-          <Bar label="High" value="17" width="45%" />
-          <Bar label="Medium" value="39" width="70%" />
-          <Bar label="Normal" value="60" width="90%" />
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <Panel title="Patients by priority">
+          <Bars rows={PRIORITY} />
         </Panel>
-
-        <Panel title="Patients by Age Group">
-          <Bar label="0–18" value="12" width="25%" />
-          <Bar label="19–30" value="28" width="50%" />
-          <Bar label="31–50" value="45" width="80%" />
-          <Bar label="51–70" value="29" width="55%" />
-          <Bar label="70+" value="10" width="20%" />
+        <Panel title="Patients by age group">
+          <Bars rows={AGE_GROUPS} />
         </Panel>
       </div>
     </DashboardShell>
   );
 }
 
-function Bar({ label, value, width }) {
+// Horizontal bars scaled to the largest value. They grow in with a
+// transform (scaleX), not a width animation.
+function Bars({ rows }) {
+  const max = Math.max(...rows.map(([, v]) => v));
+  const [grown, setGrown] = useState(false);
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => setGrown(true));
+    return () => cancelAnimationFrame(frame);
+  }, []);
+
   return (
-    <div className="mb-4 last:mb-0">
-      <div className="mb-1.5 flex justify-between text-xs">
-        <span className="text-muted-foreground">{label}</span>
-        <strong>{value}</strong>
-      </div>
-      <div className="h-2 overflow-hidden rounded-full bg-muted">
-        <motion.div
-          className="h-full rounded-full bg-primary"
-          initial={{ width: 0 }}
-          animate={{ width }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-        />
-      </div>
-    </div>
+    <dl className="flex flex-col gap-4">
+      {rows.map(([label, value]) => (
+        <div key={label}>
+          <div className="mb-2 flex justify-between text-sm">
+            <dt className="text-muted-foreground">{label}</dt>
+            <dd className="font-semibold tabular-nums">{value}</dd>
+          </div>
+          <div className="h-2 overflow-hidden rounded-full bg-muted">
+            <div
+              className="h-full origin-left rounded-full bg-primary transition-transform duration-500 ease-out"
+              style={{ transform: `scaleX(${grown ? value / max : 0})` }}
+            />
+          </div>
+        </div>
+      ))}
+    </dl>
   );
 }
 

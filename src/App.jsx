@@ -1,38 +1,50 @@
-import React, { useEffect, useState } from "react";
+import React, { Suspense, lazy, useEffect, useState } from "react";
+import { LoaderCircle } from "lucide-react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { UserContext } from "./context/UserContext";
 import { logout as logoutApi } from "./Services/api";
 import ProtectedRoute from "./components/ProtectedRoute";
-import CustomCursor from "./components/CustomCursor";
+import ServerStatus from "./components/feedback/ServerStatus";
+import { ToastProvider } from "./context/ToastContext";
 
+// Home is loaded eagerly for the fastest first paint; every other page
+// is its own chunk, fetched when its route is first visited.
 import Home from "./pages/Home";
-import Login from "./pages/Login";
-import RoleSelection from "./pages/RoleSelection";
-import ServiceDetail from "./pages/ServiceDetail";
+const Login = lazy(() => import("./pages/Login"));
+const RoleSelection = lazy(() => import("./pages/RoleSelection"));
 
-import PatientDashboard from "./pages/patient/PatientDashboard";
-import PatientAppointments from "./pages/patient/Appointments";
-import MedicalRecords from "./pages/patient/MedicalRecords";
-import Prescriptions from "./pages/patient/Prescriptions";
-import MedicalHistory from "./pages/patient/MedicalHistory";
+const PatientDashboard = lazy(() => import("./pages/patient/PatientDashboard"));
+const PatientAppointments = lazy(() => import("./pages/patient/Appointments"));
+const MedicalRecords = lazy(() => import("./pages/patient/MedicalRecords"));
+const Prescriptions = lazy(() => import("./pages/patient/Prescriptions"));
+const MedicalHistory = lazy(() => import("./pages/patient/MedicalHistory"));
 
-import DoctorDashboard from "./pages/doctor/DoctorDashboard";
-import Patients from "./pages/doctor/Patients";
-import AddPatient from "./pages/doctor/AddPatient";
-import PatientDetails from "./pages/doctor/PatientDetails";
-import DoctorAppointments from "./pages/doctor/Appointments";
-import Analytics from "./pages/doctor/Analytics";
-import UndoRedo from "./pages/doctor/UndoRedo";
-import BackupRestore from "./pages/doctor/BackupRestore";
+const DoctorDashboard = lazy(() => import("./pages/doctor/DoctorDashboard"));
+const Patients = lazy(() => import("./pages/doctor/Patients"));
+const AddPatient = lazy(() => import("./pages/doctor/AddPatient"));
+const PatientDetails = lazy(() => import("./pages/doctor/PatientDetails"));
+const DoctorAppointments = lazy(() => import("./pages/doctor/Appointments"));
+const Analytics = lazy(() => import("./pages/doctor/Analytics"));
+const UndoRedo = lazy(() => import("./pages/doctor/UndoRedo"));
+const BackupRestore = lazy(() => import("./pages/doctor/BackupRestore"));
 
-import NurseDashboard from "./pages/nurse/NurseDashboard";
-import NursePatients from "./pages/nurse/Patients";
-import PatientQueue from "./pages/nurse/PatientQueue";
-import PriorityQueue from "./pages/nurse/PriorityQueue";
-import Vitals from "./pages/nurse/Vitals";
-import Tasks from "./pages/nurse/Tasks";
-import Alerts from "./pages/nurse/Alerts";
-import NurseReports from "./pages/nurse/Reports";
+const NurseDashboard = lazy(() => import("./pages/nurse/NurseDashboard"));
+const NursePatients = lazy(() => import("./pages/nurse/Patients"));
+const PatientQueue = lazy(() => import("./pages/nurse/PatientQueue"));
+const PriorityQueue = lazy(() => import("./pages/nurse/PriorityQueue"));
+const Vitals = lazy(() => import("./pages/nurse/Vitals"));
+const Tasks = lazy(() => import("./pages/nurse/Tasks"));
+const Alerts = lazy(() => import("./pages/nurse/Alerts"));
+const NurseReports = lazy(() => import("./pages/nurse/Reports"));
+
+function PageFallback() {
+  return (
+    <div role="status" className="grid min-h-screen place-items-center bg-background">
+      <span className="sr-only">Loading page…</span>
+      <LoaderCircle aria-hidden="true" className="h-8 w-8 animate-spin text-primary motion-reduce:animate-none" />
+    </div>
+  );
+}
 
 function loadStoredUser() {
   try {
@@ -88,44 +100,47 @@ function AuthProvider({ children }) {
 function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <CustomCursor />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/role" element={<RoleSelection />} />
-          <Route path="/login/:role" element={<Login />} />
-          <Route path="/services/:slug" element={<ServiceDetail />} />
+      <ToastProvider>
+        <BrowserRouter>
+          <ServerStatus />
+          <Suspense fallback={<PageFallback />}>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/role" element={<RoleSelection />} />
+              <Route path="/login/:role" element={<Login />} />
 
-          {/* ================= PATIENT ================= */}
-          <Route path="/patient/dashboard" element={<ProtectedRoute role="Patient"><PatientDashboard /></ProtectedRoute>} />
-          <Route path="/patient/appointments" element={<ProtectedRoute role="Patient"><PatientAppointments /></ProtectedRoute>} />
-          <Route path="/patient/reports" element={<ProtectedRoute role="Patient"><MedicalRecords /></ProtectedRoute>} />
-          <Route path="/patient/prescriptions" element={<ProtectedRoute role="Patient"><Prescriptions /></ProtectedRoute>} />
-          <Route path="/patient/history" element={<ProtectedRoute role="Patient"><MedicalHistory /></ProtectedRoute>} />
+              {/* ================= PATIENT ================= */}
+              <Route path="/patient/dashboard" element={<ProtectedRoute role="Patient"><PatientDashboard /></ProtectedRoute>} />
+              <Route path="/patient/appointments" element={<ProtectedRoute role="Patient"><PatientAppointments /></ProtectedRoute>} />
+              <Route path="/patient/reports" element={<ProtectedRoute role="Patient"><MedicalRecords /></ProtectedRoute>} />
+              <Route path="/patient/prescriptions" element={<ProtectedRoute role="Patient"><Prescriptions /></ProtectedRoute>} />
+              <Route path="/patient/history" element={<ProtectedRoute role="Patient"><MedicalHistory /></ProtectedRoute>} />
 
-          {/* ================= DOCTOR ================= */}
-          <Route path="/doctor/dashboard" element={<ProtectedRoute role="Doctor"><DoctorDashboard /></ProtectedRoute>} />
-          <Route path="/doctor/patients" element={<ProtectedRoute role="Doctor"><Patients /></ProtectedRoute>} />
-          <Route path="/doctor/patients/:id" element={<ProtectedRoute role="Doctor"><PatientDetails /></ProtectedRoute>} />
-          <Route path="/doctor/add-patient" element={<ProtectedRoute role="Doctor"><AddPatient /></ProtectedRoute>} />
-          <Route path="/doctor/appointments" element={<ProtectedRoute role="Doctor"><DoctorAppointments /></ProtectedRoute>} />
-          <Route path="/doctor/analytics" element={<ProtectedRoute role="Doctor"><Analytics /></ProtectedRoute>} />
-          <Route path="/doctor/undo-redo" element={<ProtectedRoute role="Doctor"><UndoRedo /></ProtectedRoute>} />
-          <Route path="/doctor/backup-restore" element={<ProtectedRoute role="Doctor"><BackupRestore /></ProtectedRoute>} />
+              {/* ================= DOCTOR ================= */}
+              <Route path="/doctor/dashboard" element={<ProtectedRoute role="Doctor"><DoctorDashboard /></ProtectedRoute>} />
+              <Route path="/doctor/patients" element={<ProtectedRoute role="Doctor"><Patients /></ProtectedRoute>} />
+              <Route path="/doctor/patients/:id" element={<ProtectedRoute role="Doctor"><PatientDetails /></ProtectedRoute>} />
+              <Route path="/doctor/add-patient" element={<ProtectedRoute role="Doctor"><AddPatient /></ProtectedRoute>} />
+              <Route path="/doctor/appointments" element={<ProtectedRoute role="Doctor"><DoctorAppointments /></ProtectedRoute>} />
+              <Route path="/doctor/analytics" element={<ProtectedRoute role="Doctor"><Analytics /></ProtectedRoute>} />
+              <Route path="/doctor/undo-redo" element={<ProtectedRoute role="Doctor"><UndoRedo /></ProtectedRoute>} />
+              <Route path="/doctor/backup-restore" element={<ProtectedRoute role="Doctor"><BackupRestore /></ProtectedRoute>} />
 
-          {/* ================= NURSE ================= */}
-          <Route path="/nurse/dashboard" element={<ProtectedRoute role="Nurse"><NurseDashboard /></ProtectedRoute>} />
-          <Route path="/nurse/patients" element={<ProtectedRoute role="Nurse"><NursePatients /></ProtectedRoute>} />
-          <Route path="/nurse/queue" element={<ProtectedRoute role="Nurse"><PatientQueue /></ProtectedRoute>} />
-          <Route path="/nurse/priority" element={<ProtectedRoute role="Nurse"><PriorityQueue /></ProtectedRoute>} />
-          <Route path="/nurse/vitals" element={<ProtectedRoute role="Nurse"><Vitals /></ProtectedRoute>} />
-          <Route path="/nurse/tasks" element={<ProtectedRoute role="Nurse"><Tasks /></ProtectedRoute>} />
-          <Route path="/nurse/alerts" element={<ProtectedRoute role="Nurse"><Alerts /></ProtectedRoute>} />
-          <Route path="/nurse/reports" element={<ProtectedRoute role="Nurse"><NurseReports /></ProtectedRoute>} />
+              {/* ================= NURSE ================= */}
+              <Route path="/nurse/dashboard" element={<ProtectedRoute role="Nurse"><NurseDashboard /></ProtectedRoute>} />
+              <Route path="/nurse/patients" element={<ProtectedRoute role="Nurse"><NursePatients /></ProtectedRoute>} />
+              <Route path="/nurse/queue" element={<ProtectedRoute role="Nurse"><PatientQueue /></ProtectedRoute>} />
+              <Route path="/nurse/priority" element={<ProtectedRoute role="Nurse"><PriorityQueue /></ProtectedRoute>} />
+              <Route path="/nurse/vitals" element={<ProtectedRoute role="Nurse"><Vitals /></ProtectedRoute>} />
+              <Route path="/nurse/tasks" element={<ProtectedRoute role="Nurse"><Tasks /></ProtectedRoute>} />
+              <Route path="/nurse/alerts" element={<ProtectedRoute role="Nurse"><Alerts /></ProtectedRoute>} />
+              <Route path="/nurse/reports" element={<ProtectedRoute role="Nurse"><NurseReports /></ProtectedRoute>} />
 
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </BrowserRouter>
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </Suspense>
+        </BrowserRouter>
+      </ToastProvider>
     </AuthProvider>
   );
 }

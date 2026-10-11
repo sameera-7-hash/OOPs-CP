@@ -6,65 +6,68 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { useToast } from "@/context/ToastContext";
 import { nurseMenu } from "@/lib/nav";
 
+// SAMPLE DATA: patients and default readings are placeholders. Saving
+// stays on this page -- the backend has no vitals endpoint yet.
 const VITALS = [
-  { label: "Blood Pressure", value: "120 / 80", unit: "mmHg" },
-  { label: "SpO₂", value: "98", unit: "%" },
-  { label: "Heart Rate", value: "78", unit: "BPM" },
-  { label: "Respiratory Rate", value: "16", unit: "/min" },
-  { label: "Temperature", value: "98.6", unit: "°F" },
+  { id: "bp", label: "Blood pressure", value: "120 / 80", unit: "mmHg" },
+  { id: "spo2", label: "SpO₂", value: "98", unit: "%" },
+  { id: "hr", label: "Heart rate", value: "78", unit: "BPM" },
+  { id: "rr", label: "Respiratory rate", value: "16", unit: "/min" },
+  { id: "temp", label: "Temperature", value: "98.6", unit: "°F" },
 ];
 
 function Vitals() {
+  const notify = useToast();
   const [patient, setPatient] = useState("P101");
-  const [saved, setSaved] = useState(false);
 
   const saveVitals = (e) => {
     e.preventDefault();
-    setSaved(true);
+    notify({ message: "Vitals recorded on this page (not saved to the backend)." });
   };
 
   return (
     <DashboardShell role="Nurse" menu={nurseMenu} title="Vitals">
-      <PageHeading eyebrow="Nurse Portal" title="Patient Vitals" description="Record and monitor patient vital signs." />
+      <PageHeading
+        eyebrow="Nurse portal"
+        title="Patient vitals"
+        description="Record and monitor patient vital signs."
+        sample="Patients and readings here are placeholders, and saving doesn't reach the backend yet."
+      />
 
-      <Panel title="Patient">
-        <Select value={patient} onValueChange={setPatient}>
-          <SelectTrigger className="max-w-xs">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="P101">P101 - Amit Sharma</SelectItem>
-            <SelectItem value="P104">P104 - Neha Verma</SelectItem>
-            <SelectItem value="P110">P110 - Ravi Patel</SelectItem>
-          </SelectContent>
-        </Select>
-      </Panel>
+      <form onSubmit={saveVitals}>
+        <Panel>
+          <div className="mb-6 flex max-w-xs flex-col gap-2">
+            <Label htmlFor="vitals-patient">Patient</Label>
+            <Select value={patient} onValueChange={setPatient}>
+              <SelectTrigger id="vitals-patient">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="P101">P101 - Amit Sharma</SelectItem>
+                <SelectItem value="P104">P104 - Neha Verma</SelectItem>
+                <SelectItem value="P110">P110 - Ravi Patel</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-      <Panel>
-        <form onSubmit={saveVitals} className="flex flex-col gap-4">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
             {VITALS.map((v) => (
-              <div key={v.label}>
-                <Label>{v.label}</Label>
-                <div className="mt-1.5 flex items-center gap-2">
-                  <Input defaultValue={v.value} />
-                  <span className="text-xs text-muted-foreground">{v.unit}</span>
+              <div key={v.id} className="flex flex-col gap-2">
+                <Label htmlFor={`vital-${v.id}`}>{v.label}</Label>
+                <div className="flex items-center gap-2">
+                  <Input id={`vital-${v.id}`} defaultValue={v.value} aria-describedby={`vital-${v.id}-unit`} />
+                  <span id={`vital-${v.id}-unit`} className="w-14 text-sm text-muted-foreground">{v.unit}</span>
                 </div>
               </div>
             ))}
           </div>
 
-          <Button type="submit" className="self-start">Save Vitals</Button>
-        </form>
-      </Panel>
-
-      {saved && (
-        <p className="rounded-lg border border-success/30 bg-success/10 px-4 py-3 text-xs font-medium text-success">
-          ✓ Vitals recorded successfully.
-        </p>
-      )}
+          <Button type="submit" className="mt-6">Save vitals</Button>
+        </Panel>
+      </form>
     </DashboardShell>
   );
 }

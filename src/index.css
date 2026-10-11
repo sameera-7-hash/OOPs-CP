@@ -1,154 +1,217 @@
 @import "tailwindcss";
 
-/* ThemeToggle sets data-theme on <html> to switch between these palettes. */
-
+/* =====================================================================
+   Design tokens -- "calm clinical".
+   Every colour, radius and shadow in the app comes from this block.
+   Component classes reference the semantic names below (bg-primary,
+   text-muted-foreground, ...) -- never raw hex values.
+   ===================================================================== */
 :root {
-  --radius: 0.85rem;
+  /* Brand palette (from the design brief) */
+  --surface: #f6fafa;
+  --card: #ffffff;
+  --border: #dce8e8;
+  --ink: #0e2a33;
+  --ink-muted: #5b7480;
+  --teal: #0f766e;
+  --teal-hover: #0b5f59;
+  --teal-tint: #d8f0ec;
+  --urgent: #d64550;
+  --amber: #b7791f;
+  --blue: #2b6cb0;
+  /* The brief maps "Completed" to muted green without giving a hex; this
+     is the one palette value added beyond the brief. */
+  --green: #3f7d5c;
 
-  --background: #e6f2dd;
-  --foreground: #29423a;
+  /* Semantic roles used by components.
+     Raw amber/red/blue/green are too light for small text on white
+     (amber is ~3.6:1), so text-bearing roles mix each hue 70% toward ink.
+     That keeps the hue and clears WCAG AA (>= 4.5:1) on card and tint. */
+  --background: var(--surface);
+  --foreground: var(--ink);
+  --card-foreground: var(--ink);
+  --popover: var(--card);
+  --popover-foreground: var(--ink);
+  --primary: var(--teal);
+  --primary-hover: var(--teal-hover);
+  --primary-foreground: var(--card);
+  --secondary: var(--teal-tint);
+  --secondary-foreground: var(--ink);
+  --muted: color-mix(in srgb, var(--border) 45%, var(--card));
+  --muted-foreground: var(--ink-muted);
+  --accent: var(--teal-tint);
+  --accent-foreground: var(--teal-hover);
+  --destructive: color-mix(in srgb, var(--urgent) 70%, var(--ink));
+  --destructive-foreground: var(--card);
+  --warning: color-mix(in srgb, var(--amber) 70%, var(--ink));
+  --info: color-mix(in srgb, var(--blue) 70%, var(--ink));
+  --success: color-mix(in srgb, var(--green) 70%, var(--ink));
+  --urgent-raw: var(--urgent);
+  --input: var(--border);
+  --ring: var(--teal);
+  --scrim: color-mix(in srgb, var(--ink) 40%, transparent);
+  --shadow-color: var(--ink);
 
-  --card: #f7faf4;
-  --card-foreground: #29423a;
-
-  --popover: #ffffff;
-  --popover-foreground: #29423a;
-
-  --primary: #659287;
-  --primary-foreground: #10251e;
-
-  --secondary: #b1d3b9;
-  --secondary-foreground: #29423a;
-
-  --muted: #e6f2dd;
-  --muted-foreground: #49685e;
-
-  --accent: #88bda4;
-  --accent-foreground: #29423a;
-
-  --destructive: #dc2626;
-  --destructive-foreground: #ffffff;
-
-  --success: #49685e;
-  --warning: #b8781f;
-
-  --border: color-mix(in srgb, #659287 35%, #e6f2dd);
-  --input: color-mix(in srgb, #659287 35%, #e6f2dd);
-  --ring: #659287;
-  --pattern-accent: #659287;
-  --pattern-soft: #b1d3b9;
+  /* Brand surfaces that add depth: a deep-teal sidebar and soft glows. */
+  --sidebar: #0c3b40;
+  --sidebar-foreground: #e6f4f2;
+  --sidebar-muted: #9cc3c0;
+  --sidebar-active: color-mix(in srgb, #4fbfb2 22%, transparent);
+  --sidebar-border: color-mix(in srgb, #ffffff 12%, transparent);
+  --glow-teal: color-mix(in srgb, var(--teal) 18%, transparent);
+  --glow-blue: color-mix(in srgb, var(--blue) 12%, transparent);
+  --glow-amber: color-mix(in srgb, var(--amber) 10%, transparent);
+  --primary-shadow: color-mix(in srgb, var(--teal) 35%, transparent);
 }
 
+/* Dark theme: the same roles re-pointed. ThemeToggle sets data-theme. */
 :root[data-theme="dark"] {
-  --background: #192d27;
-  --foreground: #e6f2dd;
+  --surface: #0b2128;
+  --card: #10303a;
+  --border: #1f4652;
+  --ink: #e4f1f1;
+  --ink-muted: #9db6bf;
+  --teal: #4fbfb2;
+  --teal-hover: #73d1c6;
+  --teal-tint: #143f42;
+  --urgent: #f07882;
+  --amber: #e2ad57;
+  --blue: #7fb0e6;
+  --green: #86c3a0;
 
-  --card: #243b33;
-  --card-foreground: #e6f2dd;
-
-  --popover: #243b33;
-  --popover-foreground: #e6f2dd;
-
-  --primary: #88bda4;
-  --primary-foreground: #192d27;
-
-  --secondary: #36564a;
-  --secondary-foreground: #e6f2dd;
-
-  --muted: #243b33;
-  --muted-foreground: #b1d3b9;
-
-  --accent: #b1d3b9;
-  --accent-foreground: #192d27;
-
-  --destructive: #ef4444;
-  --destructive-foreground: #fff5f5;
-
-  --success: #b1d3b9;
-  --warning: #e2b04a;
-
-  --border: rgba(177, 211, 185, 0.2);
-  --input: rgba(177, 211, 185, 0.18);
-  --ring: #88bda4;
-  --pattern-accent: #88bda4;
-  --pattern-soft: #36564a;
+  --primary-foreground: #0b2128;
+  --destructive: var(--urgent);
+  --destructive-foreground: #0b2128;
+  --warning: var(--amber);
+  --info: var(--blue);
+  --success: var(--green);
+  --scrim: color-mix(in srgb, #000000 60%, transparent);
+  --shadow-color: #000000;
+  --sidebar: #081c21;
+  --sidebar-border: color-mix(in srgb, #ffffff 8%, transparent);
+  --primary-shadow: color-mix(in srgb, #000000 40%, transparent);
 }
 
 @theme inline {
+  /* Drop Tailwind's default palette so only tokens can be used. */
+  --color-*: initial;
+  --color-transparent: transparent;
+  --color-current: currentColor;
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
-
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
-
   --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
   --color-primary-foreground: var(--primary-foreground);
-
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
-
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
-
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
-
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
-
-  --color-success: var(--success);
+  --color-urgent: var(--urgent-raw);
   --color-warning: var(--warning);
-
+  --color-info: var(--info);
+  --color-success: var(--success);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-scrim: var(--scrim);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-muted: var(--sidebar-muted);
+  --color-sidebar-active: var(--sidebar-active);
+  --color-sidebar-border: var(--sidebar-border);
 
-  --color-brand-deep: #29423a;
-  --color-brand-teal: #659287;
-  --color-brand-primary: #659287;
-  --color-brand-green: #88bda4;
-  --color-brand-sage: #b1d3b9;
-  --color-brand-light: #e6f2dd;
-  --color-brand-ink: #10251e;
+  /* Type: humanist sans for UI, one serif for page titles only. */
+  --font-sans: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-serif: "Fraunces", Georgia, "Times New Roman", serif;
 
-  --radius-sm: calc(var(--radius) - 0.35rem);
-  --radius-md: calc(var(--radius) - 0.15rem);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 0.35rem);
+  /* Radius: 12px cards, 8px controls, 999px chips. */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-2xl: 12px;
+  --radius-full: 999px;
 
-  --animate-float: float 6s ease-in-out infinite;
-  --animate-pulse-glow: pulse-glow 2.4s ease-in-out infinite;
-  --animate-in: fade-in 0.4s ease both;
+  /* Soft, low-opacity shadows only. */
+  --shadow-sm: 0 1px 2px color-mix(in srgb, var(--shadow-color) 4%, transparent),
+    0 2px 8px color-mix(in srgb, var(--shadow-color) 4%, transparent);
+  --shadow-md: 0 4px 12px color-mix(in srgb, var(--shadow-color) 6%, transparent),
+    0 12px 32px color-mix(in srgb, var(--shadow-color) 8%, transparent);
+  --shadow-lg: var(--shadow-md);
+  --shadow-xl: var(--shadow-md);
+  --shadow-2xl: 0 8px 24px color-mix(in srgb, var(--shadow-color) 10%, transparent),
+    0 24px 48px color-mix(in srgb, var(--shadow-color) 10%, transparent);
+
+  /* Motion tokens */
+  --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --animate-in: fade-in 200ms var(--ease-out) both;
+  --animate-rise: rise-in 240ms var(--ease-out) both;
+  --animate-toast: toast-in 240ms var(--ease-out) both;
+  --animate-shimmer: shimmer 1.4s linear infinite;
+  --animate-pulse-once: pulse-once 1.2s var(--ease-out) 1.8s 1 both;
 }
 
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
-}
-
-@keyframes pulse-glow {
-  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 color-mix(in srgb, var(--primary) 45%, transparent); }
-  50% { opacity: 0.85; box-shadow: 0 0 0 6px color-mix(in srgb, var(--primary) 0%, transparent); }
-}
-
+/* =====================================================================
+   Keyframes. Transform and opacity only, except the ECG stroke draw and
+   status-badge colour change, which the brief asks for explicitly.
+   ===================================================================== */
 @keyframes fade-in {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; }
 }
 
-/* Tailwind emits its own rules inside `@layer theme, base, utilities`.
-   Unlayered CSS always wins over ANY layered rule regardless of
-   specificity or source order -- so this reset has to live in `@layer
-   base` itself, or it would permanently stomp on every padding/margin
-   utility class (px-4, p-6, ...) no matter how the cascade is ordered. */
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(16px); }
+}
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateX(24px); }
+}
+
+@keyframes shimmer {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(100%); }
+}
+
+/* A single soft pulse on the primary hero action, via a pseudo ring. */
+@keyframes pulse-once {
+  0% { opacity: 0.5; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.12); }
+}
+
+/* Headings reveal letter by letter (SplitText.jsx sets --d per letter). */
+@keyframes letter-in {
+  from { opacity: 0; transform: translateY(0.45em); }
+}
+
+@keyframes ecg-draw {
+  to { stroke-dashoffset: 0; }
+}
+
+/* After drawing, a short bright segment travels along the trace. */
+@keyframes ecg-trace {
+  from { stroke-dashoffset: 60; }
+  to { stroke-dashoffset: -1000; }
+}
+
 @layer base {
   * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
   }
 
   html, body, #root {
@@ -157,10 +220,12 @@
   }
 
   body {
-    font-family: "Bodoni Moda", Georgia, serif;
+    font-family: var(--font-sans);
     background: var(--background);
     color: var(--foreground);
-    transition: background-color 0.25s ease, color 0.25s ease;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
   }
 
   button, input, select, textarea {
@@ -171,183 +236,192 @@
     cursor: pointer;
   }
 
+  /* Page titles (h1) use the serif; everything else stays sans. */
+  h1 {
+    font-family: var(--font-serif);
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+
+  h2, h3, h4 {
+    font-weight: 600;
+  }
+
   ::selection {
-    background: color-mix(in srgb, var(--primary) 35%, transparent);
+    background: var(--accent);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
   }
 }
 
-#root,
-#root * {
-  font-family: "Bodoni Moda", Georgia, serif;
-  font-weight: 400;
+/* =====================================================================
+   Small shared component classes that are awkward as utilities.
+   ===================================================================== */
+
+/* Scroll reveal, driven by FadeIn.jsx (adds .is-visible). */
+.reveal {
+  opacity: 0;
+  transform: translateY(var(--reveal-y, 16px));
+  transition: opacity 240ms var(--ease-out), transform 240ms var(--ease-out);
+  transition-delay: var(--reveal-delay, 0ms);
 }
 
-#root :is(h1, h2, h3, h4, h5, h6) {
-  font-weight: 600;
-}
-
-#root .home-hero .home-hero-brand {
-  font-weight: 700;
-}
-
-#root .login-hero-title {
-  font-weight: 700;
-}
-
-.login-page label {
-  color: var(--foreground);
-  font-weight: 600;
-}
-
-.login-page input::placeholder {
-  color: color-mix(in srgb, var(--foreground) 62%, transparent);
+.reveal.is-visible {
   opacity: 1;
+  transform: none;
 }
 
-/* Slim scrollbars everywhere, themed to match. */
-* {
-  scrollbar-width: thin;
-  scrollbar-color: var(--accent) transparent;
-}
-*::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-*::-webkit-scrollbar-thumb {
-  background: color-mix(in srgb, var(--accent) 55%, transparent);
+/* Skeleton shimmer: a translucent band slides across a muted block. */
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--muted);
   border-radius: 8px;
 }
 
-.app-header {
-  width: min(72rem, calc(100% - 1rem));
-  margin: 0.75rem auto 0;
-  border: 1px solid var(--border);
-  border-radius: 9999px;
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--card) 70%, transparent), transparent);
+  animation: var(--animate-shimmer);
 }
 
-.dashboard-background {
-  background-color: color-mix(in srgb, var(--background) 78%, var(--pattern-soft));
-  background-image:
-    linear-gradient(
-      color-mix(in srgb, var(--background) 66%, transparent),
-      color-mix(in srgb, var(--background) 66%, transparent)
-    ),
-    url("https://raw.githubusercontent.com/sameera-7-hash/OOPs-CP-frontend/c93a367476c211b0ec52852ca275dc8db3da8b6f/more-leaves.png");
-  background-position: center, center;
-  background-repeat: no-repeat, repeat;
-  background-size: cover, 560px auto;
-  background-attachment: fixed;
-}
-
-.medical-page-pattern {
+/* Primary hero button: one soft pulse after the ECG finishes drawing. */
+.pulse-once {
   position: relative;
   isolation: isolate;
-  border-radius: var(--radius);
 }
 
-.prescription-card {
-  box-shadow: 0 10px 18px -11px color-mix(in srgb, var(--primary) 58%, transparent);
-}
-
-#root .role-selection-title {
-  font-weight: 700;
-  text-shadow: 0 6px 14px color-mix(in srgb, var(--primary) 48%, transparent);
-}
-
-.role-selection-heading-backdrop {
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    color-mix(in srgb, var(--background) 55%, transparent) 12%,
-    var(--background) 30%,
-    var(--background) 70%,
-    color-mix(in srgb, var(--background) 55%, transparent) 88%,
-    transparent 100%
-  );
-}
-
-.role-selection-card {
-  box-shadow: 0 5px 14px color-mix(in srgb, var(--primary) 16%, transparent);
-}
-
-.medical-page-pattern::before {
-  position: absolute;
-  z-index: -1;
-  inset: 0;
-  border-radius: inherit;
-  background-color: var(--background);
-  background-image:
-    repeating-linear-gradient(
-      to right,
-      color-mix(in srgb, var(--pattern-soft) 62%, transparent) 0,
-      color-mix(in srgb, var(--pattern-soft) 62%, transparent) 5px,
-      transparent 5px,
-      transparent 10px
-    ),
-    linear-gradient(
-      to bottom,
-      color-mix(in srgb, var(--pattern-accent) 64%, transparent) 1px,
-      transparent 1px
-    );
-  background-size: 100% 100%, 100% 25px;
+.pulse-once::after {
   content: "";
-  opacity: 0.95;
-  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: var(--primary);
+  opacity: 0;
+  animation: var(--animate-pulse-once);
 }
 
-.role-selection-background {
-  background-color: var(--background);
+/* ECG line art: draws itself, then a highlight travels along it. */
+.ecg-line {
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: ecg-draw 1.6s var(--ease-out) forwards;
+}
+
+/* Both paths use pathLength="1000". The trace's 60-unit dash starts just
+   before the path (offset 60 = hidden) and runs off the far end. */
+.ecg-trace {
+  stroke-dasharray: 60 2000;
+  stroke-dashoffset: 60;
+  animation: ecg-trace 3.2s linear 1.6s infinite both;
+}
+
+/* Letter-by-letter heading reveal. Words stay unbroken so lines wrap
+   naturally; the full text is on the parent's aria-label. */
+.split-word {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.split-letter {
+  display: inline-block;
+  animation: letter-in 420ms var(--ease-out) both;
+  animation-delay: var(--d, 0ms);
+}
+
+/* Cards rise in one after another (60ms apart). */
+.stagger > * {
+  animation: rise-in 360ms var(--ease-out) both;
+}
+.stagger > :nth-child(2) { animation-delay: 60ms; }
+.stagger > :nth-child(3) { animation-delay: 120ms; }
+.stagger > :nth-child(4) { animation-delay: 180ms; }
+.stagger > :nth-child(5) { animation-delay: 240ms; }
+.stagger > :nth-child(6) { animation-delay: 300ms; }
+.stagger > :nth-child(7) { animation-delay: 360ms; }
+.stagger > :nth-child(n + 8) { animation-delay: 420ms; }
+
+/* Hero backdrop: soft teal/blue/amber glows, not a loud gradient. */
+.hero-glow {
+  background-color: var(--card);
   background-image:
-    radial-gradient(
-      circle at 10px 100%,
-      transparent 9px,
-      color-mix(in srgb, var(--pattern-accent) 66%, transparent) 9px,
-      color-mix(in srgb, var(--pattern-accent) 66%, transparent) 10px,
-      transparent 10px
-    ),
-    radial-gradient(
-      circle at 10px 0%,
-      transparent 9px,
-      color-mix(in srgb, var(--pattern-accent) 66%, transparent) 9px,
-      color-mix(in srgb, var(--pattern-accent) 66%, transparent) 10px,
-      transparent 10px
-    );
-  background-position: 0 0, 10px 0;
-  background-size: 20px 10px;
+    radial-gradient(60% 80% at 85% 10%, var(--glow-teal), transparent 70%),
+    radial-gradient(50% 60% at 10% 100%, var(--glow-blue), transparent 70%),
+    radial-gradient(30% 40% at 55% 45%, var(--glow-amber), transparent 70%);
 }
 
-.home-hero {
-  background-image:
-    linear-gradient(to bottom, var(--background), transparent 5rem),
-    linear-gradient(to bottom right, #e6f2dd, #b1d3b9 35%, #88bda4 68%, #659287);
+/* Status badges animate colour when a status changes. */
+.status-badge {
+  transition: background-color 240ms var(--ease-out), color 240ms var(--ease-out),
+    border-color 240ms var(--ease-out);
 }
 
-/* Custom pointer, enabled only after the first mouse movement. */
-.has-custom-cursor,
-.has-custom-cursor * { cursor: none !important; }
-
-#cursor {
-  position: fixed; top: 0; left: 0; width: 0; height: 0;
-  pointer-events: none; z-index: 2147483647; opacity: 0;
+/* Cards that respond to hover: 2px lift and a deeper shadow. */
+.card-lift {
+  transition: transform 160ms var(--ease-out), box-shadow 160ms var(--ease-out),
+    border-color 160ms var(--ease-out);
 }
-#cursor.visible { opacity: 1; }
 
-#cursor .c {
-  --s: 46px;
-  position: absolute; left: 0; top: 0;
-  width: var(--s); height: var(--s);
-  translate: -50% -50%;
-  box-sizing: border-box;
-  border: 2px dashed var(--primary);
-  border-radius: 50%;
-  background: rgba(255, 255, 255, .04);
-  backdrop-filter: blur(1px);
-  animation: cursor-spin 12s linear infinite;
-  transition: width .15s, height .15s, scale .1s, background-color .15s;
+.card-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: color-mix(in srgb, var(--primary) 30%, var(--border));
 }
-#cursor.hover .c { --s: 69px; background: color-mix(in srgb, var(--primary) 15%, transparent); }
-#cursor.down .c { scale: .85; }
 
-@keyframes cursor-spin { to { rotate: 360deg; } }
-@media (prefers-reduced-motion: reduce) { #cursor .c { animation: none; } }
-@media (hover: none), (pointer: coarse) { #cursor { display: none; } }
+/* Icon tiles nudge when their card is hovered. */
+.icon-tile {
+  transition: transform 200ms var(--ease-out);
+}
+
+.card-lift:hover .icon-tile {
+  transform: scale(1.08) rotate(-4deg);
+}
+
+/* Primary buttons get a soft, brand-tinted shadow. */
+.shadow-primary {
+  box-shadow: 0 2px 4px var(--primary-shadow), 0 8px 20px -6px var(--primary-shadow);
+}
+
+/* Reduced motion: every animation and transition becomes instant. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+  }
+
+  .reveal {
+    opacity: 1;
+    transform: none;
+  }
+
+  .split-letter,
+  .stagger > * {
+    animation: none;
+  }
+
+  .ecg-trace,
+  .pulse-once::after,
+  .skeleton::after {
+    display: none;
+  }
+}

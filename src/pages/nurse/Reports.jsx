@@ -1,10 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { FileText, ExternalLink } from "lucide-react";
+import { ExternalLink, FileText } from "lucide-react";
 import { useCurrentUser } from "@/context/UserContext";
+import { useToast } from "@/context/ToastContext";
 import { getPatients, getDocuments, uploadDocument, fileToBase64, documentContentUrl } from "@/Services/api";
 import DashboardShell from "@/components/layout/DashboardShell";
 import PageHeading from "@/components/layout/PageHeading";
 import Panel from "@/components/layout/Panel";
+import EmptyState from "@/components/feedback/EmptyState";
+import { SkeletonRows } from "@/components/feedback/Skeleton";
+import { FolderCrossArt } from "@/components/art/Illustrations";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -18,14 +22,19 @@ function textToBase64(text) {
   return btoa(unescape(encodeURIComponent(text)));
 }
 
+const byNewest = (data) => [...data].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+
 function Reports() {
   const { user } = useCurrentUser();
+  const notify = useToast();
 
   const [patients, setPatients] = useState([]);
   const [patientId, setPatientId] = useState("");
   const [reportText, setReportText] = useState("");
   const [file, setFile] = useState(null);
+  const [fileInputKey, setFileInputKey] = useState(0);
   const [submitting, setSubmitting] = useState(false);
+  const [formError, setFormError] = useState("");
 
   const [patientDocs, setPatientDocs] = useState([]);
   const [loadingDocs, setLoadingDocs] = useState(false);
@@ -40,7 +49,7 @@ function Reports() {
     if (!patientId) { setPatientDocs([]); return; }
     setLoadingDocs(true);
     getDocuments(patientId)
-      .then((data) => setPatientDocs([...data].sort((a, b) => b.createdAt.localeCompare(a.createdAt))))
+      .then((data) => setPatientDocs(byNewest(data)))
       .catch(() => {})
       .finally(() => setLoadingDocs(false));
   }, [patientId]);
@@ -50,13 +59,14 @@ function Reports() {
   const submit = async (e) => {
     e.preventDefault();
     if (!patientId) {
-      alert("Please choose a patient.");
+      setFormError("Choose a patient.");
       return;
     }
     if (!reportText.trim() && !file) {
-      alert("Write a report, attach a file, or both.");
+      setFormError("Write a report, attach a file, or both.");
       return;
     }
+    setFormError("");
 
     setSubmitting(true);
     try {
@@ -85,14 +95,15 @@ function Reports() {
         });
       }
 
-      alert("Report added. The patient (and their doctor) can now see it.");
+      notify({ message: "Report added. The patient and their doctor can now see it." });
       setReportText("");
       setFile(null);
+      setFileInputKey((k) => k + 1);
       getDocuments(patientId)
-        .then((data) => setPatientDocs([...data].sort((a, b) => b.createdAt.localeCompare(a.createdAt))))
+        .then((data) => setPatientDocs(byNewest(data)))
         .catch(() => {});
     } catch (err) {
-      alert("Could not add report: " + err.message);
+      notify({ tone: "error", message: `Could not add report: ${err.message}` });
     } finally {
       setSubmitting(false);
     }
@@ -101,18 +112,18 @@ function Reports() {
   return (
     <DashboardShell role="Nurse" menu={nurseMenu} title="Patient Reports">
       <PageHeading
-        eyebrow="Nurse Portal"
-        title="Patient Reports"
-        description="Add a care report for a patient. It becomes visible to the patient and their doctor immediately."
+        eyebrow="Nurse portal"
+        title="Patient reports"
+        description="Add a care report for a patient. The patient and their doctor can see it straight away."
       />
 
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[2fr_1fr]">
-        <Panel>
-          <form onSubmit={submit} className="flex flex-col gap-4">
-            <div>
-              <Label>Patient *</Label>
-              <Select value={patientId} onValueChange={setPatientId}>
-                <SelectTrigger className="mt-1.5">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[2fr_1fr]">
+        <Panel className="mb-0">
+          <form onSubmit={submit} noValidate className="flex flex-col gap-6">
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="report-patient">Patient <span aria-hidden="true">*</span></Label>
+              <Select value={patientId} onValueChange={(v) => { setPatientId(v); setFormError(""); }}>
+                <SelectTrigger id="report-patient">
                   <SelectValue placeholder="Select a patient" />
                 </SelectTrigger>
                 <SelectContent>
@@ -123,57 +134,65 @@ function Reports() {
               </Select>
             </div>
 
-            <div>
-              <Label>Report</Label>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="report-text">Report</Label>
               <Textarea
-                className="mt-1.5"
-                placeholder="Vitals, observations, care notes..."
+                id="report-text"
+                placeholder="Vitals, observations, care notes…"
                 value={reportText}
                 onChange={(e) => setReportText(e.target.value)}
               />
             </div>
 
-            <div>
-              <Label>Attach a file (optional)</Label>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="report-file">Attach a file (optional)</Label>
               <Input
-                className="mt-1.5"
+                key={fileInputKey}
+                id="report-file"
                 type="file"
                 accept=".txt,.doc,.docx,.pdf"
+                className="py-2 file:mr-4 file:rounded-md file:border-0 file:bg-secondary file:px-3 file:py-1 file:text-sm file:font-semibold file:text-accent-foreground"
+                aria-describedby="report-file-hint"
                 onChange={(e) => setFile(e.target.files?.[0] || null)}
               />
+              <p id="report-file-hint" className="text-sm text-muted-foreground">Accepted: .txt, .doc, .docx, .pdf</p>
             </div>
 
+            {formError && <p role="alert" className="text-sm font-medium text-destructive">{formError}</p>}
+
             <Button type="submit" disabled={submitting} className="self-start">
-              {submitting ? "Adding..." : "Add Report"}
+              {submitting ? "Adding…" : "Add report"}
             </Button>
           </form>
         </Panel>
 
-        <Panel title={selectedPatient ? `${selectedPatient.name}'s Reports` : "Select a patient"}>
-          {!patientId && <p className="text-sm text-muted-foreground">Choose a patient to see their existing reports.</p>}
-          {patientId && loadingDocs && <p className="text-sm text-muted-foreground">Loading...</p>}
+        <Panel title={selectedPatient ? `${selectedPatient.name}'s reports` : "Existing reports"} className="mb-0">
+          {!patientId && <p className="text-sm text-muted-foreground">Choose a patient to see their reports.</p>}
+          {patientId && loadingDocs && <SkeletonRows rows={2} label="Loading reports…" />}
           {patientId && !loadingDocs && patientDocs.length === 0 && (
-            <p className="text-sm text-muted-foreground">No reports for this patient yet.</p>
+            <EmptyState art={FolderCrossArt} className="py-4">No reports for this patient yet.</EmptyState>
           )}
 
-          <div className="flex flex-col gap-2.5">
+          <ul className="flex flex-col">
             {patientDocs.map((doc) => (
-              <div key={doc.id} className="flex items-center gap-3 border-b border-border pb-2.5 last:border-0 last:pb-0">
-                <span className="grid h-8 w-8 flex-shrink-0 place-items-center rounded-lg bg-muted">
-                  <FileText className="h-4 w-4 text-primary" />
+              <li key={doc.id} className="flex items-center gap-3 border-b border-border py-3 first:pt-0 last:border-0 last:pb-0">
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-secondary">
+                  <FileText aria-hidden="true" className="h-4 w-4 text-primary" />
                 </span>
                 <div className="min-w-0 flex-1">
-                  <b className="block truncate text-xs">{doc.filename}</b>
-                  <small className="text-[10px] text-muted-foreground">
+                  <b className="block truncate text-sm font-semibold">{doc.filename}</b>
+                  <small className="text-xs text-muted-foreground">
                     {doc.uploaderRole === "Nurse" ? `From ${doc.uploaderName}` : "From patient"} · {new Date(doc.createdAt).toLocaleDateString()}
                   </small>
                 </div>
-                <a href={documentContentUrl(doc.id)} target="_blank" rel="noreferrer">
-                  <Button size="sm" variant="outline"><ExternalLink className="h-3.5 w-3.5" /></Button>
-                </a>
-              </div>
+                <Button size="icon" variant="outline" asChild>
+                  <a href={documentContentUrl(doc.id)} target="_blank" rel="noreferrer" aria-label={`Open ${doc.filename} in a new tab`}>
+                    <ExternalLink aria-hidden="true" />
+                  </a>
+                </Button>
+              </li>
             ))}
-          </div>
+          </ul>
         </Panel>
       </div>
     </DashboardShell>

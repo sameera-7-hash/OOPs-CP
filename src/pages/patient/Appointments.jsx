@@ -1,12 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { Plus, Stethoscope } from "lucide-react";
+import { CalendarDays, Check, Clock, Plus, Stethoscope } from "lucide-react";
 import { useCurrentUser } from "@/context/UserContext";
+import { useToast } from "@/context/ToastContext";
 import { getAppointments, getAvailability, bookAppointment } from "@/Services/api";
 import DashboardShell from "@/components/layout/DashboardShell";
 import PageHeading from "@/components/layout/PageHeading";
 import Panel from "@/components/layout/Panel";
+import StatusBadge from "@/components/feedback/StatusBadge";
+import EmptyState from "@/components/feedback/EmptyState";
+import { Skeleton, SkeletonRows } from "@/components/feedback/Skeleton";
+import { CalendarCheckArt } from "@/components/art/Illustrations";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -19,11 +23,33 @@ function todayIso() {
   return new Date().toISOString().slice(0, 10);
 }
 
+// A selectable time chip. It is a real radio input (so arrow keys move
+// between slots); the clock icon swaps to a check when selected.
+function SlotChip({ name, value, checked, onChange }) {
+  return (
+    <label
+      className={cn(
+        "relative flex h-10 cursor-pointer items-center gap-2 rounded-full border px-4 text-sm font-semibold transition-colors duration-200 has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-ring",
+        checked ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card text-foreground hover:border-primary"
+      )}
+    >
+      <input type="radio" name={name} value={value} checked={checked} onChange={onChange} className="sr-only" />
+      <span aria-hidden="true" className="relative h-4 w-4">
+        <Clock className={cn("absolute inset-0 h-4 w-4 transition-[opacity,transform] duration-200", checked ? "scale-50 opacity-0" : "opacity-100")} />
+        <Check className={cn("absolute inset-0 h-4 w-4 transition-[opacity,transform] duration-200", checked ? "opacity-100" : "scale-50 opacity-0")} />
+      </span>
+      {value}
+    </label>
+  );
+}
+
 function Appointments() {
   const { user } = useCurrentUser();
+  const notify = useToast();
 
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
 
   // Booking flow: null -> "asking" (yes/no) -> "picking" (date/doctor/slot/confirm).
   const [bookingStage, setBookingStage] = useState(null);
@@ -38,8 +64,11 @@ function Appointments() {
     if (!user) return;
     setLoading(true);
     getAppointments({ patientId: user.id })
-      .then((data) => setAppointments([...data].sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time))))
-      .catch(() => {})
+      .then((data) => {
+        setAppointments([...data].sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time)));
+        setLoadError("");
+      })
+      .catch((err) => setLoadError(err.message))
       .finally(() => setLoading(false));
   };
 
@@ -76,28 +105,32 @@ function Appointments() {
         time: chosen.time,
         reason,
       });
-      alert("Appointment booked! You, your doctor and the nursing staff have been notified.");
+      notify({ message: "Appointment booked. You, your doctor and the nursing staff have been notified." });
       cancelBooking();
       loadAppointments();
     } catch (err) {
-      alert("Could not book that slot: " + err.message);
+      notify({ tone: "error", message: `Could not book that slot: ${err.message}` });
       getAvailability({ date: bookingDate }).then(setDoctorOptions).catch(() => {});
     } finally {
       setBooking(false);
     }
   };
 
+  const doctorsWithSlots = doctorOptions
+    .map((doc) => ({ ...doc, openSlots: (doc.slots || []).filter((s) => !s.booked) }))
+    .filter((doc) => doc.openSlots.length > 0);
+
   return (
     <DashboardShell role="Patient" menu={patientMenu} title="Appointments">
       <PageHeading
-        eyebrow="Patient Portal"
+        eyebrow="Patient portal"
         title="Appointments"
-        description="View and manage your appointments."
+        description="Book a doctor's open slot and see your upcoming visits."
         action={
           !bookingStage && (
             <Button onClick={startBooking}>
-              <Plus className="h-4 w-4" />
-              Book Appointment
+              <Plus aria-hidden="true" />
+              Book appointment
             </Button>
           )
         }
@@ -106,129 +139,141 @@ function Appointments() {
       <Dialog open={bookingStage === "asking"} onOpenChange={(open) => !open && cancelBooking()}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Would you like to book an appointment?</DialogTitle>
+            <DialogTitle>Book an appointment?</DialogTitle>
             <DialogDescription>
-              You&apos;ll pick a date, then a doctor&apos;s open time slot, on the next step.
+              Next you&apos;ll pick a date, then one of a doctor&apos;s open time slots.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={cancelBooking}>No, not now</Button>
-            <Button onClick={() => setBookingStage("picking")}>Yes, book one</Button>
+            <Button variant="outline" onClick={cancelBooking}>Not now</Button>
+            <Button onClick={() => setBookingStage("picking")}>Yes, continue</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {bookingStage === "picking" && (
-        <Panel title="Book a Slot">
-          <div className="mb-4 max-w-xs">
+        <Panel title="Book a slot" description="Only times a doctor has opened can be booked.">
+          <div className="mb-6 flex max-w-xs flex-col gap-2">
             <Label htmlFor="booking-date">Date</Label>
             <Input
               id="booking-date"
               type="date"
-              className="mt-1.5"
               value={bookingDate}
               min={todayIso()}
               onChange={(e) => setBookingDate(e.target.value)}
             />
           </div>
 
-          {loadingSlots && <p className="text-sm text-muted-foreground">Loading available doctors...</p>}
-
-          {!loadingSlots && doctorOptions.length === 0 && (
-            <p className="text-sm text-muted-foreground">No doctors have posted availability for this date yet. Try another date.</p>
+          {loadingSlots && (
+            <div role="status" className="flex flex-col gap-3">
+              <span className="sr-only">Loading available doctors…</span>
+              <Skeleton className="w-40" />
+              <div className="flex flex-wrap gap-2">
+                {[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-10 w-24 rounded-full" />)}
+              </div>
+            </div>
           )}
 
-          <div className="flex flex-col gap-4">
-            {!loadingSlots && doctorOptions.map((doc) => {
-              const openSlots = (doc.slots || []).filter((s) => !s.booked);
-              if (openSlots.length === 0) return null;
-              return (
-                <div key={doc.doctorId}>
-                  <h4 className="mb-2 text-xs font-bold">{doc.doctorName}</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {openSlots.map((s) => {
-                      const active = chosen && chosen.doctorId === doc.doctorId && chosen.time === s.time;
-                      return (
-                        <button
-                          type="button"
-                          key={s.time}
-                          onClick={() => setChosen({ doctorId: doc.doctorId, doctorName: doc.doctorName, time: s.time })}
-                          className={cn(
-                            "rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-colors",
-                            active
-                              ? "border-primary bg-primary text-primary-foreground"
-                              : "border-border bg-card text-foreground hover:border-primary/50"
-                          )}
-                        >
-                          {s.time}
-                        </button>
-                      );
-                    })}
-                  </div>
+          {!loadingSlots && doctorsWithSlots.length === 0 && (
+            <EmptyState art={CalendarCheckArt} className="py-4">
+              No doctors have open slots on this date yet. Try another date.
+            </EmptyState>
+          )}
+
+          <div className="flex flex-col gap-6">
+            {!loadingSlots && doctorsWithSlots.map((doc) => (
+              <fieldset key={doc.doctorId}>
+                <legend className="mb-3 flex items-center gap-2 text-sm font-semibold">
+                  <Stethoscope aria-hidden="true" className="h-4 w-4 text-primary" />
+                  {doc.doctorName}
+                </legend>
+                <div className="flex flex-wrap gap-2">
+                  {doc.openSlots.map((s) => (
+                    <SlotChip
+                      key={s.time}
+                      name="booking-slot"
+                      value={s.time}
+                      checked={Boolean(chosen && chosen.doctorId === doc.doctorId && chosen.time === s.time)}
+                      onChange={() => setChosen({ doctorId: doc.doctorId, doctorName: doc.doctorName, time: s.time })}
+                    />
+                  ))}
                 </div>
-              );
-            })}
+              </fieldset>
+            ))}
           </div>
 
           {chosen && (
-            <div className="mt-5 flex flex-col gap-3">
-              <div>
+            <div className="mt-6 flex animate-rise flex-col gap-4 border-t border-border pt-6">
+              <div className="flex flex-col gap-2">
                 <Label htmlFor="reason">Reason for visit</Label>
                 <Textarea
                   id="reason"
-                  className="mt-1.5"
-                  placeholder="Briefly describe why you're booking this appointment"
+                  placeholder="Briefly describe why you're booking"
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
                 />
               </div>
 
-              <p className="text-xs text-muted-foreground">
-                Booking with <strong className="text-foreground">{chosen.doctorName}</strong> on{" "}
-                <strong className="text-foreground">{bookingDate}</strong> at{" "}
-                <strong className="text-foreground">{chosen.time}</strong>.
+              <p className="rounded-lg bg-secondary p-4 text-sm">
+                Booking with <strong>{chosen.doctorName}</strong> on <strong>{bookingDate}</strong> at{" "}
+                <strong>{chosen.time}</strong>.
               </p>
 
-              <Button onClick={confirmBooking} disabled={booking}>
-                {booking ? "Booking..." : "Confirm Booking"}
+              <Button onClick={confirmBooking} disabled={booking} className="self-start">
+                {booking ? "Booking…" : "Confirm booking"}
               </Button>
             </div>
           )}
 
-          <Button variant="ghost" size="sm" className="mt-3" onClick={cancelBooking}>
+          <Button variant="ghost" size="sm" className="mt-4" onClick={cancelBooking}>
             Cancel
           </Button>
         </Panel>
       )}
 
-      <div className="flex flex-col gap-3">
-        {!loading && appointments.length === 0 && (
-          <p className="text-sm text-muted-foreground">You have no appointments yet.</p>
-        )}
+      <h2 className="mb-4 text-lg">Your appointments</h2>
 
+      {loading && appointments.length === 0 && <SkeletonRows rows={3} label="Loading appointments…" />}
+      {!loading && loadError && (
+        <p role="alert" className="text-sm text-destructive">Couldn&apos;t load your appointments: {loadError}</p>
+      )}
+      {!loading && !loadError && appointments.length === 0 && (
+        <Card>
+          <EmptyState
+            art={CalendarCheckArt}
+            title="No appointments yet"
+            action={!bookingStage && <Button onClick={startBooking}>Book your first appointment</Button>}
+          >
+            Book a slot with a doctor and it will appear here.
+          </EmptyState>
+        </Card>
+      )}
+
+      <ul className="stagger flex flex-col gap-3">
         {appointments.map((a) => (
-          <Card key={a.id} className="flex items-center gap-4 p-4">
-            <div className="flex w-14 flex-shrink-0 flex-col items-center rounded-lg bg-muted py-2 text-center">
-              <strong className="text-lg leading-none">{a.date.split("-")[2]}</strong>
-              <span className="mt-1 text-[9px] text-muted-foreground">{a.date}</span>
-            </div>
+          <li key={a.id}>
+            <Card className="card-lift flex flex-wrap items-center gap-4 p-4 sm:flex-nowrap">
+              <div className="flex w-16 shrink-0 flex-col items-center rounded-lg bg-secondary py-2 text-center">
+                <strong className="text-xl leading-none text-accent-foreground">{a.date.split("-")[2]}</strong>
+                <span className="mt-1 text-xs text-muted-foreground">{a.date.slice(0, 7)}</span>
+              </div>
 
-            <span className="grid h-10 w-10 flex-shrink-0 place-items-center rounded-full bg-primary/10 text-primary">
-              <Stethoscope className="h-4.5 w-4.5" />
-            </span>
+              <div className="min-w-0 flex-1">
+                <h3 className="truncate text-base">{a.doctorName}</h3>
+                <p className="text-sm text-muted-foreground">{a.reason || "Consultation"}</p>
+              </div>
 
-            <div className="min-w-0 flex-1">
-              <h3 className="truncate text-sm font-bold">{a.doctorName}</h3>
-              <p className="text-xs text-muted-foreground">{a.reason || "Consultation"}</p>
-            </div>
-
-            <div className="flex flex-col items-end gap-1.5">
-              <small className="text-xs text-muted-foreground">{a.time}</small>
-              <Badge variant={a.status === "Pending" ? "warning" : "success"}>{a.status}</Badge>
-            </div>
-          </Card>
+              <div className="flex items-center gap-3 sm:flex-col sm:items-end sm:gap-1">
+                <span className="flex items-center gap-1 text-sm text-muted-foreground">
+                  <CalendarDays aria-hidden="true" className="h-4 w-4" />
+                  {a.time}
+                </span>
+                <StatusBadge status={a.status} />
+              </div>
+            </Card>
+          </li>
         ))}
-      </div>
+      </ul>
     </DashboardShell>
   );
 }

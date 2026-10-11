@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ShieldCheck } from "lucide-react";
+import { CircleAlert, ShieldCheck } from "lucide-react";
 import { addPatient } from "@/Services/api";
+import { useToast } from "@/context/ToastContext";
 import DashboardShell from "@/components/layout/DashboardShell";
 import PageHeading from "@/components/layout/PageHeading";
 import Panel from "@/components/layout/Panel";
@@ -13,8 +14,34 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 import { cn } from "@/lib/utils";
 import { doctorMenu } from "@/lib/nav";
 
+const ALGORITHMS = [
+  ["AES-256", "Recommended encryption algorithm"],
+  ["DES", "Legacy cipher, for comparison"],
+];
+
+function validate(form) {
+  const errors = {};
+  if (!form.name.trim()) errors.name = "Enter the patient's full name.";
+  const age = Number(form.age);
+  if (!String(form.age).trim()) errors.age = "Enter the patient's age.";
+  else if (!Number.isInteger(age) || age < 0 || age > 150) errors.age = "Age must be a whole number, e.g. 34.";
+  if (!form.gender) errors.gender = "Select a gender.";
+  return errors;
+}
+
+function FieldError({ id, message }) {
+  if (!message) return null;
+  return (
+    <p id={id} className="flex items-center gap-1 text-sm font-medium text-destructive">
+      <CircleAlert aria-hidden="true" className="h-4 w-4 shrink-0" />
+      {message}
+    </p>
+  );
+}
+
 function AddPatient() {
   const navigate = useNavigate();
+  const notify = useToast();
 
   const [form, setForm] = useState({
     name: "",
@@ -25,16 +52,21 @@ function AddPatient() {
     diagnosis: "",
     algorithm: "AES-256",
   });
-
+  const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
 
-  const update = (field, value) => setForm({ ...form, [field]: value });
+  const update = (field, value) => {
+    setForm({ ...form, [field]: value });
+    if (errors[field]) setErrors({ ...errors, [field]: undefined });
+  };
 
   const submit = async (e) => {
     e.preventDefault();
 
-    if (!form.name || !form.age || !form.gender) {
-      alert("Please fill the required fields.");
+    const found = validate(form);
+    setErrors(found);
+    if (Object.keys(found).length > 0) {
+      document.getElementById(`patient-${Object.keys(found)[0]}`)?.focus();
       return;
     }
 
@@ -54,37 +86,44 @@ function AddPatient() {
     setSubmitting(true);
     try {
       await addPatient(payload);
-      alert("Patient added successfully!");
+      notify({ message: "Patient added." });
       navigate("/doctor/patients");
     } catch (err) {
-      alert("Could not add patient: " + err.message);
+      notify({ tone: "error", message: `Could not add patient: ${err.message}` });
     } finally {
       setSubmitting(false);
     }
   };
 
+  const invalid = (field) => ({
+    "aria-invalid": Boolean(errors[field]),
+    "aria-describedby": errors[field] ? `patient-${field}-error` : undefined,
+  });
+
   return (
     <DashboardShell role="Doctor" menu={doctorMenu} title="Add New Patient">
-      <PageHeading eyebrow="Doctor Portal" title="Add New Patient" description="Enter patient information securely." />
+      <PageHeading eyebrow="Doctor portal" title="Add a patient" description="The record is encrypted before it is stored." />
 
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[2fr_1fr]">
-        <Panel>
-          <form onSubmit={submit} className="flex flex-col gap-4">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div>
-                <Label>Full Name *</Label>
-                <Input className="mt-1.5" placeholder="Enter full name" value={form.name} onChange={(e) => update("name", e.target.value)} />
+      <form onSubmit={submit} noValidate className="grid grid-cols-1 gap-6 lg:grid-cols-[2fr_1fr]">
+        <Panel className="mb-0">
+          <div className="flex flex-col gap-6">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="patient-name">Full name <span aria-hidden="true">*</span></Label>
+                <Input id="patient-name" autoComplete="off" required value={form.name} onChange={(e) => update("name", e.target.value)} {...invalid("name")} />
+                <FieldError id="patient-name-error" message={errors.name} />
               </div>
 
-              <div>
-                <Label>Age *</Label>
-                <Input className="mt-1.5" type="number" placeholder="Enter age" value={form.age} onChange={(e) => update("age", e.target.value)} />
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="patient-age">Age <span aria-hidden="true">*</span></Label>
+                <Input id="patient-age" type="number" inputMode="numeric" min="0" required value={form.age} onChange={(e) => update("age", e.target.value)} {...invalid("age")} />
+                <FieldError id="patient-age-error" message={errors.age} />
               </div>
 
-              <div>
-                <Label>Gender *</Label>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="patient-gender">Gender <span aria-hidden="true">*</span></Label>
                 <Select value={form.gender} onValueChange={(v) => update("gender", v)}>
-                  <SelectTrigger className="mt-1.5">
+                  <SelectTrigger id="patient-gender" {...invalid("gender")}>
                     <SelectValue placeholder="Select gender" />
                   </SelectTrigger>
                   <SelectContent>
@@ -93,70 +132,68 @@ function AddPatient() {
                     <SelectItem value="Other">Other</SelectItem>
                   </SelectContent>
                 </Select>
+                <FieldError id="patient-gender-error" message={errors.gender} />
               </div>
 
-              <div>
-                <Label>Contact Number</Label>
-                <Input className="mt-1.5" placeholder="Enter contact number" value={form.contact} onChange={(e) => update("contact", e.target.value)} />
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="patient-contact">Contact number</Label>
+                <Input id="patient-contact" type="tel" value={form.contact} onChange={(e) => update("contact", e.target.value)} />
               </div>
 
-              <div>
-                <Label>Admission Date</Label>
-                <Input className="mt-1.5" type="date" value={form.admissionDate} onChange={(e) => update("admissionDate", e.target.value)} />
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="patient-admission">Admission date</Label>
+                <Input id="patient-admission" type="date" value={form.admissionDate} onChange={(e) => update("admissionDate", e.target.value)} />
               </div>
             </div>
 
-            <div>
-              <Label>Diagnosis / Notes</Label>
-              <Textarea className="mt-1.5" placeholder="Enter diagnosis or notes" value={form.diagnosis} onChange={(e) => update("diagnosis", e.target.value)} />
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="patient-diagnosis">Diagnosis / notes</Label>
+              <Textarea id="patient-diagnosis" value={form.diagnosis} onChange={(e) => update("diagnosis", e.target.value)} />
             </div>
+
+            <p className="text-sm text-muted-foreground">Fields marked * are required.</p>
 
             <Button type="submit" disabled={submitting} className="self-start">
-              {submitting ? "Adding..." : "Add Patient"}
+              {submitting ? "Adding…" : "Add patient"}
             </Button>
-          </form>
+          </div>
         </Panel>
 
-        <Panel title="Security Information">
-          <div className="flex flex-col gap-3">
-            {[
-              ["AES-256", "Recommended encryption algorithm"],
-              ["DES", "For demonstration purposes"],
-            ].map(([value, note]) => (
+        <Panel title="Encryption" className="mb-0">
+          <fieldset className="flex flex-col gap-3">
+            <legend className="sr-only">Encryption algorithm</legend>
+            {ALGORITHMS.map(([value, note]) => (
               <label
                 key={value}
                 className={cn(
-                  "flex cursor-pointer flex-col rounded-lg border p-3 transition-colors",
-                  form.algorithm === value ? "border-primary bg-primary/5" : "border-border"
+                  "flex cursor-pointer flex-col rounded-lg border p-4 transition-colors duration-150 has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-ring",
+                  form.algorithm === value ? "border-primary bg-secondary" : "border-border hover:border-muted-foreground"
                 )}
               >
-                <span className="flex items-center gap-2 text-xs font-bold">
+                <span className="flex items-center gap-2 text-sm font-semibold">
                   <input
                     type="radio"
                     name="algorithm"
+                    value={value}
                     checked={form.algorithm === value}
                     onChange={() => update("algorithm", value)}
-                    className="accent-primary"
+                    className="h-4 w-4 accent-primary"
                   />
                   {value}
                 </span>
-                <small className="mt-1 text-[11px] text-muted-foreground">{note}</small>
+                <small className="mt-1 pl-6 text-sm text-muted-foreground">{note}</small>
               </label>
             ))}
-          </div>
+          </fieldset>
 
-          <div className="mt-4 flex items-start gap-2.5 rounded-lg bg-muted p-3.5 text-xs leading-relaxed text-foreground/80">
-            <ShieldCheck className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
+          <div className="mt-4 flex items-start gap-3 rounded-lg bg-muted p-4 text-sm text-foreground/90">
+            <ShieldCheck aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
             <span>
-              Patient information will be encrypted.
-              <br />
-              Integrity verification enabled.
-              <br />
-              Secure backup available.
+              The record is encrypted at rest and added to the hash chain, so later tampering can be detected.
             </span>
           </div>
         </Panel>
-      </div>
+      </form>
     </DashboardShell>
   );
 }

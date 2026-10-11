@@ -1,14 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { CalendarCheck, FileText, Pill, HeartPulse, ShieldCheck, Stethoscope, FileDown } from "lucide-react";
+import { CalendarCheck, FileDown, FileText, HeartPulse, Pill, ShieldCheck, Stethoscope } from "lucide-react";
 import { useCurrentUser } from "@/context/UserContext";
 import { getAppointments, getDocuments, documentContentUrl } from "@/Services/api";
 import DashboardShell from "@/components/layout/DashboardShell";
-import PageHeading from "@/components/layout/PageHeading";
+import WelcomeBanner from "@/components/layout/WelcomeBanner";
 import StatCard from "@/components/layout/StatCard";
 import Panel from "@/components/layout/Panel";
+import StatusBadge from "@/components/feedback/StatusBadge";
+import EmptyState from "@/components/feedback/EmptyState";
+import SampleTag from "@/components/feedback/SampleTag";
+import Notice from "@/components/feedback/Notice";
+import { Skeleton, SkeletonRows } from "@/components/feedback/Skeleton";
+import { CalendarCheckArt, FolderCrossArt } from "@/components/art/Illustrations";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { patientMenu } from "@/lib/nav";
@@ -20,6 +25,8 @@ function PatientDashboard() {
 
   const [appointments, setAppointments] = useState([]);
   const [documents, setDocuments] = useState([]);
+  const [loadingAppointments, setLoadingAppointments] = useState(true);
+  const [loadingDocuments, setLoadingDocuments] = useState(true);
 
   useEffect(() => {
     if (!user) return;
@@ -27,11 +34,13 @@ function PatientDashboard() {
 
     getAppointments({ patientId: user.id })
       .then((data) => { if (!cancelled) setAppointments(data); })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => { if (!cancelled) setLoadingAppointments(false); });
 
     getDocuments(user.id)
       .then((data) => { if (!cancelled) setDocuments(data); })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => { if (!cancelled) setLoadingDocuments(false); });
 
     return () => { cancelled = true; };
   }, [user]);
@@ -46,164 +55,147 @@ function PatientDashboard() {
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
     .slice(0, 3);
 
+  const initial = user?.name ? user.name.charAt(0).toUpperCase() : "P";
+
   return (
     <DashboardShell role="Patient" menu={patientMenu} title="Patient Portal">
-      <PageHeading
-        eyebrow="Patient Portal"
+      <WelcomeBanner
+        photo="consultation"
+        eyebrow="Patient portal"
         title={`Welcome, ${user?.name || "Patient"}`}
-        description="Take care of your health today."
+        description="Your appointments and reports at a glance."
         action={
           <Button variant="outline" size="sm" onClick={() => setProfileOpen(true)}>
-            <Avatar className="h-5 w-5">
-              <AvatarFallback className="text-[9px]">
-                {user?.name ? user.name.charAt(0).toUpperCase() : "P"}
-              </AvatarFallback>
+            <Avatar className="h-6 w-6">
+              <AvatarFallback className="text-xs">{initial}</AvatarFallback>
             </Avatar>
-            My Profile
+            My profile
           </Button>
         }
       />
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard
+      <div className="stagger mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard tone="teal"
           icon={CalendarCheck}
-          label="Upcoming Appointment"
-          value={upcoming ? 1 : 0}
+          label="Upcoming appointment"
+          value={loadingAppointments ? "…" : upcoming ? 1 : 0}
           note={upcoming ? `${upcoming.date}, ${upcoming.time}` : "None scheduled"}
         />
-        <StatCard icon={FileText} label="Reports" value={documents.length} note="Available" />
-        <StatCard icon={Pill} label="Prescriptions" value={0} note="Active prescriptions" />
-        <StatCard icon={HeartPulse} label="Health Status" value="Good" note="✓ Healthy" />
+        <StatCard tone="blue" icon={FileText} label="Reports" value={loadingDocuments ? "…" : documents.length} note="Available to you" />
+        <StatCard tone="amber" icon={Pill} label="Prescriptions" value={0} note="Not tracked yet" sample />
+        <StatCard tone="green" icon={HeartPulse} label="Health status" value="Good" sample />
       </div>
 
-      <div className="mt-2 grid grid-cols-1 gap-5 lg:grid-cols-[1.25fr_1fr]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.25fr_1fr]">
         <Panel
-          title="Upcoming Appointment"
+          title="Upcoming appointment"
           description="Your next scheduled consultation"
-          action={upcoming && <Badge variant="success">{upcoming.status}</Badge>}
+          action={upcoming && <StatusBadge status={upcoming.status} />}
         >
-          {upcoming ? (
-            <div className="flex items-center gap-3 rounded-lg border border-border bg-muted/50 p-3.5">
-              <span className="grid h-11 w-11 flex-shrink-0 place-items-center rounded-full bg-primary/10 text-primary">
-                <Stethoscope className="h-5 w-5" />
+          {loadingAppointments ? (
+            <div role="status" className="flex items-center gap-4 rounded-lg border border-border p-4">
+              <span className="sr-only">Loading appointments…</span>
+              <Skeleton className="h-12 w-12 rounded-full" />
+              <div className="flex flex-1 flex-col gap-2"><Skeleton className="w-1/2" /><Skeleton className="h-3 w-1/3" /></div>
+            </div>
+          ) : upcoming ? (
+            <div className="flex items-center gap-4 rounded-lg border border-border bg-muted p-4">
+              <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-secondary text-primary">
+                <Stethoscope aria-hidden="true" className="h-5 w-5" />
               </span>
               <div className="min-w-0 flex-1">
-                <h3 className="truncate text-sm font-bold">{upcoming.doctorName}</h3>
-                <p className="text-xs text-muted-foreground">{upcoming.reason || "Consultation"}</p>
+                <h3 className="truncate text-base">{upcoming.doctorName}</h3>
+                <p className="text-sm text-muted-foreground">{upcoming.reason || "Consultation"}</p>
               </div>
               <div className="text-right">
-                <b className="block text-xs">{upcoming.date}</b>
-                <span className="text-xs text-primary">{upcoming.time}</span>
+                <b className="block text-sm">{upcoming.date}</b>
+                <span className="text-sm font-medium text-primary">{upcoming.time}</span>
               </div>
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground">No upcoming appointments yet.</p>
+            <EmptyState art={CalendarCheckArt} className="py-4">
+              You have no upcoming appointments.
+            </EmptyState>
           )}
 
           <Button className="mt-4 w-full" onClick={() => navigate("/patient/appointments")}>
-            {upcoming ? "View Appointment Details" : "Book an Appointment"}
+            {upcoming ? "View appointments" : "Book an appointment"}
           </Button>
         </Panel>
 
         <Panel
-          title="Recent Reports"
-          description="Your latest medical reports"
+          title="Recent reports"
+          description="Your latest medical documents"
           action={
-            <Button variant="link" size="sm" onClick={() => navigate("/patient/reports")}>
-              View All
+            <Button variant="link" size="sm" className="px-0" onClick={() => navigate("/patient/reports")}>
+              View all
             </Button>
           }
         >
-          {recentDocuments.length === 0 && <p className="text-sm text-muted-foreground">No reports uploaded yet.</p>}
+          {loadingDocuments && <SkeletonRows rows={2} label="Loading reports…" />}
+          {!loadingDocuments && recentDocuments.length === 0 && (
+            <EmptyState
+              art={FolderCrossArt}
+              className="py-4"
+              action={<Button variant="outline" size="sm" onClick={() => navigate("/patient/reports")}>Upload a report</Button>}
+            >
+              No reports yet.
+            </EmptyState>
+          )}
 
-          <div className="flex flex-col gap-2.5">
+          <ul className="flex flex-col">
             {recentDocuments.map((doc) => (
-              <div key={doc.id} className="flex items-center gap-3 border-b border-border pb-2.5 last:border-0 last:pb-0">
-                <span className="grid h-8 w-8 flex-shrink-0 place-items-center rounded-lg bg-muted">
-                  <FileText className="h-4 w-4 text-primary" />
+              <li key={doc.id} className="flex items-center gap-3 border-b border-border py-3 first:pt-0 last:border-0 last:pb-0">
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-secondary">
+                  <FileText aria-hidden="true" className="h-4 w-4 text-primary" />
                 </span>
                 <div className="min-w-0 flex-1">
-                  <b className="block truncate text-xs">{doc.filename}</b>
-                  <small className="text-[10px] text-muted-foreground">
+                  <b className="block truncate text-sm font-semibold">{doc.filename}</b>
+                  <small className="text-xs text-muted-foreground">
                     {doc.uploaderRole === "Nurse" ? "From your nurse" : "You uploaded"} · {new Date(doc.createdAt).toLocaleDateString()}
                   </small>
                 </div>
-                <a href={documentContentUrl(doc.id)} target="_blank" rel="noreferrer">
-                  <Button size="sm" variant="outline">
-                    <FileDown className="h-3.5 w-3.5" />
-                  </Button>
-                </a>
-              </div>
+                <Button size="icon" variant="outline" asChild>
+                  <a href={documentContentUrl(doc.id)} target="_blank" rel="noreferrer" aria-label={`Open ${doc.filename} in a new tab`}>
+                    <FileDown aria-hidden="true" />
+                  </a>
+                </Button>
+              </li>
             ))}
-          </div>
+          </ul>
         </Panel>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <Panel>
-          <div className="flex items-center gap-3">
-            <span className="grid h-9 w-9 place-items-center rounded-full bg-primary/10 text-primary">
-              <HeartPulse className="h-4 w-4" />
-            </span>
-            <div className="flex-1">
-              <b className="block text-xs">Health Status</b>
-              <p className="text-[11px] text-muted-foreground">Your current health status is good.</p>
-            </div>
-            <strong className="text-xs text-success">✓ Healthy</strong>
-          </div>
-        </Panel>
-
-        <Panel>
-          <div className="flex items-center gap-3">
-            <span className="grid h-9 w-9 place-items-center rounded-full bg-primary/10 text-primary">
-              <ShieldCheck className="h-4 w-4" />
-            </span>
-            <div className="flex-1">
-              <b className="block text-xs">Data Security</b>
-              <p className="text-[11px] text-muted-foreground">Your health records are protected.</p>
-            </div>
-            <strong className="text-xs text-success">Protected</strong>
-          </div>
-        </Panel>
-      </div>
-
-      <p className="rounded-lg border border-success/30 bg-success/10 px-4 py-3 text-xs font-medium text-success">
-        🔐 Your health data is encrypted and securely stored.
-      </p>
+      <Notice icon={ShieldCheck}>Patient records are stored encrypted on the clinic server.</Notice>
 
       <Dialog open={profileOpen} onOpenChange={setProfileOpen}>
         <DialogContent className="text-center">
-          <DialogHeader className="items-center text-center">
+          <DialogHeader className="items-center pr-0 text-center">
             <Avatar className="mx-auto mb-2 h-16 w-16">
-              <AvatarFallback className="text-xl">
-                {user?.name ? user.name.charAt(0).toUpperCase() : "P"}
-              </AvatarFallback>
+              <AvatarFallback className="text-xl">{initial}</AvatarFallback>
             </Avatar>
             <DialogTitle>{user?.name || "Patient"}</DialogTitle>
-            <p className="text-xs text-muted-foreground">Patient</p>
+            <p className="text-sm text-muted-foreground">Patient</p>
           </DialogHeader>
 
-          <div className="grid grid-cols-2 gap-2.5 text-left">
-            <div className="rounded-lg bg-muted p-2.5">
-              <span className="block text-[10px] text-muted-foreground">Name</span>
-              <b className="text-xs">{user?.name || "—"}</b>
-            </div>
-            <div className="rounded-lg bg-muted p-2.5">
-              <span className="block text-[10px] text-muted-foreground">Email</span>
-              <b className="text-xs">{user?.email || "—"}</b>
-            </div>
-            <div className="rounded-lg bg-muted p-2.5">
-              <span className="block text-[10px] text-muted-foreground">Reports</span>
-              <b className="text-xs">{documents.length} Available</b>
-            </div>
-            <div className="rounded-lg bg-muted p-2.5">
-              <span className="block text-[10px] text-muted-foreground">Health Status</span>
-              <b className="text-xs text-success">● Good</b>
-            </div>
-          </div>
+          <dl className="grid grid-cols-1 gap-3 text-left sm:grid-cols-2">
+            <ProfileItem label="Name" value={user?.name || "—"} />
+            <ProfileItem label="Email" value={user?.email || "—"} />
+            <ProfileItem label="Reports" value={`${documents.length} available`} />
+            <ProfileItem label="Health status" value={<span className="flex items-center gap-2">Good <SampleTag /></span>} />
+          </dl>
         </DialogContent>
       </Dialog>
     </DashboardShell>
+  );
+}
+
+function ProfileItem({ label, value }) {
+  return (
+    <div className="rounded-lg bg-muted p-3">
+      <dt className="text-xs text-muted-foreground">{label}</dt>
+      <dd className="mt-0.5 break-words text-sm font-semibold">{value}</dd>
+    </div>
   );
 }
 

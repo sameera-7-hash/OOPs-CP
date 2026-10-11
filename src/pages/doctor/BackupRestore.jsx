@@ -1,23 +1,26 @@
 import React, { useState } from "react";
-import { Save, RotateCcw, DatabaseZap } from "lucide-react";
+import { Database, DatabaseZap, RotateCcw, Save } from "lucide-react";
 import { createBackup } from "@/Services/api";
+import { useToast } from "@/context/ToastContext";
 import DashboardShell from "@/components/layout/DashboardShell";
 import PageHeading from "@/components/layout/PageHeading";
 import Panel from "@/components/layout/Panel";
+import Notice from "@/components/feedback/Notice";
+import SampleTag from "@/components/feedback/SampleTag";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { doctorMenu } from "@/lib/nav";
 
 function BackupRestore() {
+  const notify = useToast();
   const [backingUp, setBackingUp] = useState(false);
 
   const backup = async () => {
     setBackingUp(true);
     try {
       const result = await createBackup();
-      alert("Snapshot saved: " + result.snapshot);
+      notify({ message: `Snapshot saved: ${result.snapshot}` });
     } catch (err) {
-      alert("Could not create snapshot: " + err.message);
+      notify({ tone: "error", message: `Could not create snapshot: ${err.message}` });
     } finally {
       setBackingUp(false);
     }
@@ -25,53 +28,53 @@ function BackupRestore() {
 
   return (
     <DashboardShell role="Doctor" menu={doctorMenu} title="Backup & Restore">
-      <PageHeading eyebrow="Doctor Portal" title="Backup & Restore" description="Manage database backups and verify integrity." />
+      <PageHeading eyebrow="Doctor portal" title="Backup & restore" description="Create database snapshots." />
 
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-        <Panel title="Primary Database">
-          <div className="flex items-center justify-between rounded-lg bg-muted p-3.5 text-xs">
-            <strong>patients.dat</strong>
-            <Badge variant="success">✓ Healthy</Badge>
-          </div>
+      {/* The file names and statuses below are static labels: the backend
+          has no endpoint that reports database or backup health. */}
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+        <Panel title="Primary database" action={<SampleTag />}>
+          <FileRow name="patients.dat" />
         </Panel>
-
-        <Panel title="Backup Database">
-          <div className="flex items-center justify-between rounded-lg bg-muted p-3.5 text-xs">
-            <strong>patients.dat.bak</strong>
-            <Badge variant="success">✓ Available</Badge>
-          </div>
+        <Panel title="Backup database" action={<SampleTag />}>
+          <FileRow name="patients.dat.bak" />
         </Panel>
       </div>
 
-      <Panel title="Integrity Status">
-        <div className="flex items-start gap-3 rounded-lg border border-success/30 bg-success/10 p-4">
-          <DatabaseZap className="mt-0.5 h-5 w-5 flex-shrink-0 text-success" />
-          <div>
-            <strong className="text-sm text-success">✓ Hash Chain Verified</strong>
-            <p className="mt-1 text-xs text-success/90">All stored records are consistent and tamper-evident.</p>
-          </div>
-        </div>
-      </Panel>
+      <Notice icon={DatabaseZap} title="Hash-chain integrity" className="mb-6">
+        The live integrity result for each record is shown on the patient list and dashboard, where the backend
+        reports it.
+      </Notice>
 
       <div className="flex flex-wrap gap-2">
         <Button onClick={backup} disabled={backingUp}>
-          <Save className="h-4 w-4" />
-          {backingUp ? "Creating..." : "Create Snapshot"}
+          <Save aria-hidden="true" />
+          {backingUp ? "Creating…" : "Create snapshot"}
         </Button>
-
         <Button
           variant="outline"
           onClick={() =>
-            alert(
-              "Restoring from a snapshot isn't exposed by the backend API yet — the server automatically recovers from patients.dat.bak if the primary file is corrupted."
-            )
+            notify({
+              tone: "error",
+              message:
+                "Restoring from a snapshot isn't exposed by the backend API yet. The server recovers from patients.dat.bak automatically if the primary file is corrupted.",
+            })
           }
         >
-          <RotateCcw className="h-4 w-4" />
-          Restore Backup
+          <RotateCcw aria-hidden="true" />
+          Restore backup
         </Button>
       </div>
     </DashboardShell>
+  );
+}
+
+function FileRow({ name }) {
+  return (
+    <div className="flex items-center gap-3 rounded-lg border border-border bg-muted px-4 py-3 text-sm">
+      <Database aria-hidden="true" className="h-4 w-4 text-primary" />
+      <strong className="font-semibold">{name}</strong>
+    </div>
   );
 }
 

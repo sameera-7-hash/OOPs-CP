@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { motion } from "motion/react";
+import { NavLink, useNavigate } from "react-router-dom";
 import { LogOut, Menu } from "lucide-react";
 import { useCurrentUser } from "@/context/UserContext";
 import BrandMark from "@/components/BrandMark";
@@ -13,47 +12,41 @@ import { cn } from "@/lib/utils";
 
 function Brand() {
   return (
-    <div className="mb-6 flex items-center gap-2.5 px-2">
-      <BrandMark />
+    <div className="mb-6 flex items-center gap-3 px-2">
+      <span className="grid h-10 w-10 place-items-center rounded-lg bg-sidebar-foreground">
+        <BrandMark className="h-7 w-7" />
+      </span>
       <div>
-        <h2 className="text-sm font-bold leading-none text-secondary-foreground">PatientCare</h2>
-        <p className="mt-1 text-[10px] text-secondary-foreground/60">Secure Healthcare Management</p>
+        <p className="text-base font-semibold leading-none">PatientCare</p>
+        <p className="mt-1 text-xs text-sidebar-muted">Clinic management</p>
       </div>
     </div>
   );
 }
 
 function NavList({ menu, onNavigate }) {
-  const location = useLocation();
-  const navigate = useNavigate();
-
   return (
-    <nav className="flex flex-1 flex-col gap-1">
+    <nav aria-label="Main" className="flex flex-1 flex-col gap-1">
       {menu.map((item) => {
-        const active = location.pathname === item.path;
         const Icon = item.icon;
         return (
-          <button
+          <NavLink
             key={item.path}
-            onClick={() => {
-              navigate(item.path);
-              onNavigate?.();
-            }}
-            className={cn(
-              "relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium transition-colors",
-              active ? "text-primary" : "text-secondary-foreground/75 hover:text-secondary-foreground"
-            )}
+            to={item.path}
+            end
+            onClick={onNavigate}
+            className={({ isActive }) =>
+              cn(
+                "relative flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm font-medium transition-colors duration-150",
+                isActive
+                  ? "bg-sidebar-active font-semibold text-sidebar-foreground before:absolute before:inset-y-2 before:left-0 before:w-1 before:rounded-full before:bg-sidebar-foreground"
+                  : "text-sidebar-muted hover:bg-sidebar-border hover:text-sidebar-foreground"
+              )
+            }
           >
-            {active && (
-              <motion.span
-                layoutId="dashboard-active-nav"
-                className="absolute inset-0 rounded-lg bg-card shadow-sm"
-                transition={{ type: "spring", stiffness: 420, damping: 32 }}
-              />
-            )}
-            <Icon className="relative z-10 h-4 w-4" />
-            <span className="relative z-10">{item.label}</span>
-          </button>
+            <Icon aria-hidden="true" className="h-5 w-5" />
+            <span>{item.label}</span>
+          </NavLink>
         );
       })}
     </nav>
@@ -62,14 +55,14 @@ function NavList({ menu, onNavigate }) {
 
 function SidebarBottom({ onLogout }) {
   return (
-    <div className="mt-auto flex flex-col gap-1 border-t border-white/10 pt-3">
+    <div className="mt-auto border-t border-sidebar-border pt-3">
       <Button
         variant="ghost"
-        className="justify-start gap-3 text-secondary-foreground/85 hover:bg-white/10 hover:text-secondary-foreground"
+        className="w-full justify-start gap-3 px-3 text-sidebar-muted hover:bg-sidebar-border hover:text-sidebar-foreground"
         onClick={onLogout}
       >
-        <LogOut className="h-4 w-4" />
-        Logout
+        <LogOut aria-hidden="true" />
+        Log out
       </Button>
     </div>
   );
@@ -91,9 +84,16 @@ function DashboardShell({ role, menu, title, children }) {
   const initial = user?.name ? user.name.charAt(0).toUpperCase() : role.charAt(0);
 
   return (
-    <div className="dashboard-background flex min-h-screen text-foreground">
+    <div className="flex min-h-screen bg-background text-foreground">
+      <a
+        href="#main"
+        className="sr-only z-50 rounded-lg bg-card px-4 py-2 shadow-md focus:not-sr-only focus:fixed focus:left-4 focus:top-4"
+      >
+        Skip to content
+      </a>
+
       {/* Desktop sidebar */}
-      <aside className="hidden w-64 flex-shrink-0 flex-col bg-secondary p-4 lg:flex">
+      <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col bg-sidebar p-4 text-sidebar-foreground lg:flex">
         <Brand />
         <NavList menu={menu} />
         <SidebarBottom onLogout={handleLogout} />
@@ -101,7 +101,11 @@ function DashboardShell({ role, menu, title, children }) {
 
       {/* Mobile sidebar */}
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-        <SheetContent side="left" className="flex lg:hidden">
+        <SheetContent
+          side="left"
+          title={`${role} menu`}
+          className="border-sidebar-border bg-sidebar text-sidebar-foreground lg:hidden [&>button:last-child]:text-sidebar-muted [&>button:last-child]:hover:bg-sidebar-border"
+        >
           <Brand />
           <NavList menu={menu} onNavigate={() => setMobileOpen(false)} />
           <SidebarBottom onLogout={handleLogout} />
@@ -109,12 +113,18 @@ function DashboardShell({ role, menu, title, children }) {
       </Sheet>
 
       <div className="min-w-0 flex-1">
-        <header className="app-header flex h-16 items-center justify-between border-border bg-card/60 px-4 backdrop-blur-sm sm:px-6">
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setMobileOpen(true)}>
-              <Menu className="h-4.5 w-4.5" />
+        <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-2 border-b border-border bg-card px-4 sm:px-6">
+          <div className="flex min-w-0 items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="lg:hidden"
+              onClick={() => setMobileOpen(true)}
+              aria-label="Open menu"
+            >
+              <Menu aria-hidden="true" className="size-5!" />
             </Button>
-            <h1 className="text-sm font-bold sm:text-base">{title || `${role} Dashboard`}</h1>
+            <p className="truncate text-base font-semibold">{title || `${role} Dashboard`}</p>
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
@@ -122,18 +132,20 @@ function DashboardShell({ role, menu, title, children }) {
             <NotificationBell role={role} userId={user?.id} />
 
             <div className="flex items-center gap-2 pl-1">
-              <Avatar className="h-8 w-8">
+              <Avatar className="h-9 w-9">
                 <AvatarFallback>{initial}</AvatarFallback>
               </Avatar>
               <div className="hidden leading-tight sm:block">
-                <p className="text-xs font-bold">{user?.name || role}</p>
-                <p className="text-[10px] text-muted-foreground">{role}</p>
+                <p className="text-sm font-semibold">{user?.name || role}</p>
+                <p className="text-xs text-muted-foreground">{role}</p>
               </div>
             </div>
           </div>
         </header>
 
-        <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 sm:py-8">{children}</main>
+        <main id="main" tabIndex={-1} className="mx-auto w-full max-w-6xl animate-in px-4 py-6 focus:outline-none sm:px-6 sm:py-8">
+          {children}
+        </main>
       </div>
     </div>
   );

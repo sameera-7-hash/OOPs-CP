@@ -47,10 +47,16 @@ function NotificationBell({ role, userId }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button type="button" variant="ghost" size="icon" className="relative">
-          <Bell className="h-4 w-4" />
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="relative"
+          aria-label={unread > 0 ? `Reminders, ${unread} unread` : "Reminders"}
+        >
+          <Bell aria-hidden="true" className="size-5!" />
           {unread > 0 && (
-            <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[9px] font-bold text-destructive-foreground">
+            <span aria-hidden="true" className="absolute right-0 top-0 flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1 text-xs font-semibold text-destructive-foreground">
               {unread}
             </span>
           )}
@@ -61,17 +67,17 @@ function NotificationBell({ role, userId }) {
         <DropdownMenuLabel>Reminders</DropdownMenuLabel>
 
         {items.length === 0 && (
-          <p className="px-3 py-3 text-xs text-muted-foreground">You&apos;re all caught up.</p>
+          <p className="px-4 py-4 text-sm text-muted-foreground">You&apos;re all caught up.</p>
         )}
 
         {items.map((n) => (
           <DropdownMenuItem
             key={n.id}
             onClick={() => dismiss(n.id)}
-            className={cn(!n.read && "bg-primary/5")}
+            className={cn(!n.read && "bg-secondary font-medium")}
           >
             <p className="text-foreground">{n.message}</p>
-            <small className="mt-0.5 block text-[10px] text-muted-foreground">
+            <small className="mt-0.5 block text-xs text-muted-foreground">
               {new Date(n.createdAt).toLocaleString()}
             </small>
           </DropdownMenuItem>
