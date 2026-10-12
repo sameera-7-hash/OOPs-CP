@@ -85,16 +85,16 @@ function SiteHeader() {
   return (
     <header className="sticky top-0 z-30 border-b border-border bg-card">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
-        <Link to="/" className="flex items-center gap-3 rounded-lg text-foreground no-underline">
+        <Link to="/" className="flex items-center gap-3 rounded-lg text-foreground no-underline hover:text-foreground">
           <BrandMark />
           <span className="text-base font-semibold">PatientCare</span>
         </Link>
 
         <nav aria-label="Main" className="flex items-center gap-2 sm:gap-6">
-          <a href="#how" className="hidden text-sm font-medium text-muted-foreground hover:text-foreground sm:inline">
+          <a href="#how" className="hidden text-sm font-medium text-muted-foreground hover:text-primary sm:inline">
             How it works
           </a>
-          <a href="#features" className="hidden text-sm font-medium text-muted-foreground hover:text-foreground sm:inline">
+          <a href="#features" className="hidden text-sm font-medium text-muted-foreground hover:text-primary sm:inline">
             Features
           </a>
           <Button size="sm" onClick={() => navigate("/role")}>
@@ -111,9 +111,9 @@ function SiteHeader() {
 function FeatureChip({ icon: Icon, children, className }) {
   return (
     <div
-      className={`absolute flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-3 text-sm font-semibold shadow-md ${className}`}
+      className={`absolute flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-3 text-sm font-semibold shadow-2xl ${className}`}
     >
-      <span className="grid h-8 w-8 place-items-center rounded-lg bg-secondary text-primary">
+      <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary bg-primary-gradient text-primary-foreground">
         <Icon aria-hidden="true" className="h-4 w-4" />
       </span>
       {children}
@@ -124,15 +124,15 @@ function FeatureChip({ icon: Icon, children, className }) {
 function Hero() {
   const navigate = useNavigate();
   return (
-    <section aria-labelledby="hero-title" className="hero-glow relative overflow-hidden border-b border-border">
+    <section aria-labelledby="hero-title" className="bg-brand pattern-dots relative overflow-hidden border-b border-border">
       {/* The heartbeat sits in its own band under the content so it never
           crosses text. */}
-      <EcgLine className="pointer-events-none absolute inset-x-0 bottom-4 h-20 w-full sm:bottom-6 sm:h-24" />
+      <EcgLine className="ecg-glow pointer-events-none absolute inset-x-0 bottom-4 h-20 w-full sm:bottom-6 sm:h-24" />
 
       <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-4 pb-32 pt-12 sm:px-6 sm:pb-40 sm:pt-16 lg:grid-cols-[1.05fr_1fr] lg:pt-20">
         <div className="animate-rise">
-          <span className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-card px-4 py-1 text-sm font-medium text-accent-foreground">
-            <span aria-hidden="true" className="h-2 w-2 rounded-full bg-primary" />
+          <span className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-card px-4 py-1 text-sm font-medium text-accent-foreground shadow-sm">
+            <span aria-hidden="true" className="h-2 w-2 rounded-full bg-coral" />
             Clinic appointments and patient records
           </span>
           <h1 id="hero-title" className="text-4xl leading-[1.1] sm:text-5xl lg:text-6xl">
@@ -155,13 +155,13 @@ function Hero() {
         </div>
 
         <div className="relative mx-auto w-full max-w-lg animate-rise [animation-delay:120ms] lg:max-w-none">
-          <div aria-hidden="true" className="absolute -right-3 -top-3 h-full w-full rounded-3xl bg-primary/15 sm:-right-5 sm:-top-5" />
+          <div aria-hidden="true" className="absolute -right-3 -top-3 h-full w-full rounded-3xl bg-primary bg-primary-gradient opacity-90 sm:-right-5 sm:-top-5" />
           <Photo
             name="consultation"
             aspect={5 / 4}
             priority
             sizes="(min-width: 1024px) 520px, 100vw"
-            className="relative rounded-3xl shadow-2xl"
+            className="glow-brand relative rounded-3xl"
           />
           <FeatureChip icon={CalendarCheck} className="-bottom-5 left-4 sm:-left-6">
             Only open slots can be booked
@@ -178,7 +178,7 @@ function Hero() {
 function RoleGateway() {
   const navigate = useNavigate();
   return (
-    <section aria-labelledby="roles-title" className="px-4 py-16 sm:px-6 sm:py-24">
+    <section aria-labelledby="roles-title" className="page-wash px-4 py-16 sm:px-6 sm:py-24">
       <div className="mx-auto max-w-6xl">
         <FadeIn className="mb-10 max-w-2xl">
           <span className="text-sm font-semibold uppercase tracking-wider text-primary">Choose your portal</span>
@@ -197,7 +197,7 @@ function RoleGateway() {
                     sizes="(min-width: 768px) 360px, 100vw"
                     imgClassName="transition-transform duration-500 ease-out group-hover:scale-105"
                   />
-                  <span className="icon-tile absolute -bottom-7 left-6 grid h-14 w-14 place-items-center rounded-xl border-4 border-card bg-secondary shadow-md">
+                  <span className="icon-tile absolute -bottom-7 left-6 grid h-14 w-14 place-items-center rounded-xl border-4 border-card bg-mint-soft shadow-md">
                     <Art className="h-9 w-9" />
                   </span>
                 </div>
@@ -244,7 +244,7 @@ function HowItWorks() {
               <FadeIn as="li" key={title} delay={i * 0.06} className="relative flex gap-5">
                 <span
                   aria-hidden="true"
-                  className="relative grid h-10 w-10 shrink-0 place-items-center rounded-full bg-primary text-base font-semibold text-primary-foreground shadow-primary"
+                  className="relative grid h-10 w-10 shrink-0 place-items-center rounded-full bg-primary bg-primary-gradient text-base font-semibold text-primary-foreground shadow-primary ring-4 ring-secondary"
                 >
                   {i + 1}
                 </span>
@@ -287,7 +287,7 @@ function Features() {
           ))}
         </div>
 
-        <FadeIn className="mt-12 grid overflow-hidden rounded-2xl border border-border bg-card shadow-sm md:grid-cols-2">
+        <FadeIn className="bg-brand pattern-dots mt-12 grid overflow-hidden rounded-2xl border border-primary/15 shadow-md md:grid-cols-2">
           <Photo name="records" aspect={3 / 2} sizes="(min-width: 768px) 560px, 100vw" className="md:h-full" />
           <div className="flex flex-col justify-center p-6 sm:p-10">
             <span className="text-sm font-semibold uppercase tracking-wider text-primary">About this project</span>
@@ -313,17 +313,15 @@ function Home() {
         <HowItWorks />
         <Features />
       </main>
-      <footer className="bg-sidebar px-4 py-8 sm:px-6">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 text-sm text-sidebar-muted">
-          <span className="flex items-center gap-2 font-semibold text-sidebar-foreground">
-            <span className="grid h-8 w-8 place-items-center rounded-md bg-sidebar-foreground">
-              <BrandMark className="h-6 w-6" />
-            </span>
+      <footer className="accent-top border-t border-border bg-card px-4 py-8 sm:px-6">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 text-sm text-muted-foreground">
+          <span className="flex items-center gap-2 font-semibold text-foreground">
+            <BrandMark className="h-7 w-7" />
             PatientCare
           </span>
           <span>
             Clinic appointment and records system · Photos from{" "}
-            <a href="https://unsplash.com" target="_blank" rel="noreferrer" className="text-sidebar-foreground underline">
+            <a href="https://unsplash.com" target="_blank" rel="noreferrer" className="text-primary underline">
               Unsplash
             </a>
           </span>

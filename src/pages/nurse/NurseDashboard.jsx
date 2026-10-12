@@ -42,7 +42,7 @@ function NurseDashboard() {
         sample="The queue, tasks and counts here are placeholders. Patient records and reports are live."
       />
 
-      <div className="stagger mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="stagger mb-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         <StatCard tone="teal" icon={Users} label="Waiting patients" value="7" sample />
         <StatCard tone="rose" icon={ShieldAlert} label="Critical patients" value="2" sample />
         <StatCard tone="amber" icon={ListChecks} label="Tasks today" value="14" sample />

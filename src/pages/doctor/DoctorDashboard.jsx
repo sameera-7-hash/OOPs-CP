@@ -63,7 +63,7 @@ function DoctorDashboard() {
       <WelcomeBanner
         photo="doctor" eyebrow="Overview" title={`Hello, ${user ? user.name : "Doctor"}`} description="Today's clinical overview." />
 
-      <div className="stagger mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="stagger mb-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         <StatCard tone="teal" icon={Users} label="Total patients" value={loading ? "…" : okPatients.length} note="From patient records" />
         <StatCard tone="blue" icon={CalendarDays} label="Today's appointments" value="12" sample />
         <StatCard tone="amber"

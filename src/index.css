@@ -52,16 +52,17 @@
   --scrim: color-mix(in srgb, var(--ink) 40%, transparent);
   --shadow-color: var(--ink);
 
-  /* Brand surfaces that add depth: a deep-teal sidebar and soft glows. */
-  --sidebar: #0c3b40;
-  --sidebar-foreground: #e6f4f2;
-  --sidebar-muted: #9cc3c0;
-  --sidebar-active: color-mix(in srgb, #4fbfb2 22%, transparent);
-  --sidebar-border: color-mix(in srgb, #ffffff 12%, transparent);
-  --glow-teal: color-mix(in srgb, var(--teal) 18%, transparent);
-  --glow-blue: color-mix(in srgb, var(--blue) 12%, transparent);
-  --glow-amber: color-mix(in srgb, var(--amber) 10%, transparent);
   --primary-shadow: color-mix(in srgb, var(--teal) 35%, transparent);
+
+  /* Signature theme: teal into mint on light surfaces, with one warm
+     coral accent. --brand-800 deepens the primary button gradient. */
+  --brand-800: #0a5257;
+  --mint: #5eead4;
+  --mint-soft: #e6fbf6;
+  --coral: #ff7a59;
+  --gradient-primary: linear-gradient(135deg, var(--teal) 0%, var(--brand-800) 100%);
+  --page-wash: radial-gradient(70% 50% at 100% 0%, color-mix(in srgb, var(--mint) 14%, transparent), transparent 70%),
+    radial-gradient(50% 40% at 0% 0%, color-mix(in srgb, var(--blue) 6%, transparent), transparent 70%);
 }
 
 /* Dark theme: the same roles re-pointed. ThemeToggle sets data-theme. */
@@ -87,9 +88,11 @@
   --success: var(--green);
   --scrim: color-mix(in srgb, #000000 60%, transparent);
   --shadow-color: #000000;
-  --sidebar: #081c21;
-  --sidebar-border: color-mix(in srgb, #ffffff 8%, transparent);
   --primary-shadow: color-mix(in srgb, #000000 40%, transparent);
+  --brand-800: #073a3f;
+  --mint-soft: #0f3a3c;
+  --gradient-primary: linear-gradient(135deg, #2fa89b 0%, #1d7f76 100%);
+  --page-wash: radial-gradient(70% 50% at 100% 0%, color-mix(in srgb, var(--mint) 8%, transparent), transparent 70%);
 }
 
 @theme inline {
@@ -123,11 +126,9 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
   --color-scrim: var(--scrim);
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-muted: var(--sidebar-muted);
-  --color-sidebar-active: var(--sidebar-active);
-  --color-sidebar-border: var(--sidebar-border);
+  --color-mint: var(--mint);
+  --color-mint-soft: var(--mint-soft);
+  --color-coral: var(--coral);
 
   /* Type: humanist sans for UI, one serif for page titles only. */
   --font-sans: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -352,14 +353,78 @@
 .stagger > :nth-child(7) { animation-delay: 360ms; }
 .stagger > :nth-child(n + 8) { animation-delay: 420ms; }
 
-/* Hero backdrop: soft teal/blue/amber glows, not a loud gradient. */
-.hero-glow {
+/* ---- Signature theme surfaces ------------------------------------ */
+
+/* Light brand surface for the hero, banners and role band: a mint wash
+   with a teal glow top-right and a warm coral glow bottom-left. Bold
+   colour, but never a dark background. */
+.bg-brand {
   background-color: var(--card);
   background-image:
-    radial-gradient(60% 80% at 85% 10%, var(--glow-teal), transparent 70%),
-    radial-gradient(50% 60% at 10% 100%, var(--glow-blue), transparent 70%),
-    radial-gradient(30% 40% at 55% 45%, var(--glow-amber), transparent 70%);
+    radial-gradient(55% 75% at 92% 0%, color-mix(in srgb, var(--mint) 38%, transparent), transparent 70%),
+    radial-gradient(40% 60% at 0% 100%, color-mix(in srgb, var(--coral) 14%, transparent), transparent 70%),
+    linear-gradient(180deg, var(--mint-soft) 0%, var(--card) 100%);
 }
+
+/* Sidebar: white fading to mint, so the teal active pill stands out. */
+.bg-brand-soft {
+  background-color: var(--card);
+  background-image: linear-gradient(180deg, var(--card) 0%, var(--mint-soft) 100%);
+}
+
+/* A faint teal dot grid that fades toward the edges -- texture, not noise. */
+.pattern-dots {
+  position: relative;
+  isolation: isolate;
+}
+
+.pattern-dots::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: radial-gradient(color-mix(in srgb, var(--primary) 18%, transparent) 1px, transparent 1.5px);
+  background-size: 22px 22px;
+  mask-image: radial-gradient(80% 70% at 75% 30%, #000 0%, transparent 75%);
+}
+
+/* Teal glow ring for the hero photo and key tiles. */
+.glow-brand {
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--primary) 18%, transparent),
+    0 24px 60px -20px color-mix(in srgb, var(--primary) 45%, transparent);
+}
+
+/* Primary buttons: teal gradient with a soft glow. */
+.bg-primary-gradient {
+  background-image: var(--gradient-primary);
+}
+
+/* Soft teal glow on the heartbeat line. */
+.ecg-glow {
+  filter: drop-shadow(0 0 5px color-mix(in srgb, var(--primary) 45%, transparent));
+}
+
+/* Thin mint-to-teal accent line along the top of the dashboard header. */
+.accent-top {
+  position: relative;
+}
+
+.accent-top::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 3px;
+  background-image: linear-gradient(90deg, var(--mint), var(--teal) 60%, var(--coral));
+}
+
+/* Soft mint wash behind dashboard content. */
+.page-wash {
+  background-color: var(--background);
+  background-image: var(--page-wash);
+  background-attachment: fixed;
+}
+
 
 /* Status badges animate colour when a status changes. */
 .status-badge {

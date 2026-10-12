@@ -213,16 +213,16 @@ function Login() {
         </FadeIn>
       </div>
 
-      <aside aria-hidden="true" className="relative hidden flex-1 overflow-hidden bg-sidebar lg:block">
-        <Photo name={meta.photo} decorative priority sizes="50vw" className="absolute inset-0 h-full w-full" />
+      <aside aria-hidden="true" className="bg-brand relative hidden flex-1 overflow-hidden lg:block">
+        <Photo name={meta.photo} decorative priority aspect={2 / 3} sizes="50vw" className="absolute inset-0 h-full w-full" />
         {/* Deep-teal wash keeps the headline readable over any photo. */}
-        <div className="absolute inset-0 bg-gradient-to-t from-sidebar via-sidebar/70 to-sidebar/10" />
-        <EcgLine className="absolute inset-x-0 bottom-40 h-24 w-full stroke-sidebar-foreground opacity-60" />
+        <div className="absolute inset-0 bg-gradient-to-t from-mint-soft via-mint-soft/80 to-transparent" />
+        <EcgLine className="ecg-glow absolute inset-x-0 bottom-40 h-24 w-full" />
         <div className="relative flex h-full flex-col justify-end p-12">
-          <span className="mb-6 grid h-16 w-16 place-items-center rounded-2xl bg-sidebar-foreground">
+          <span className="glow-brand mb-6 grid h-16 w-16 place-items-center rounded-2xl bg-card">
             <Art className="h-11 w-11" />
           </span>
-          <p className="max-w-md text-3xl font-semibold leading-snug text-sidebar-foreground">{meta.headline}</p>
+          <p className="max-w-md text-3xl font-semibold leading-snug text-foreground">{meta.headline}</p>
         </div>
       </aside>
     </div>

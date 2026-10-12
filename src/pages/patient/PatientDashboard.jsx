@@ -74,7 +74,7 @@ function PatientDashboard() {
         }
       />
 
-      <div className="stagger mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="stagger mb-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         <StatCard tone="teal"
           icon={CalendarCheck}
           label="Upcoming appointment"

@@ -64,12 +64,12 @@ function StatCard({ label, value, note, icon, tone = "teal", noteTone = "muted",
   const [ref, shown] = useCountUp(value);
 
   return (
-    <Card ref={ref} className="card-lift p-6">
+    <Card ref={ref} className="card-lift p-4 sm:p-6">
       <div className="flex items-start justify-between gap-2">
-        <span className="text-sm font-medium text-muted-foreground">{label}</span>
-        {icon && <IconTile icon={icon} tone={tone} />}
+        <span className="text-sm font-medium leading-snug text-muted-foreground">{label}</span>
+        {icon && <IconTile icon={icon} tone={tone} className="h-9 w-9 sm:h-11 sm:w-11" />}
       </div>
-      <strong className="mt-2 block text-3xl font-semibold tabular-nums text-foreground">{shown}</strong>
+      <strong className="mt-3 block text-3xl font-semibold tracking-tight tabular-nums text-foreground sm:text-4xl">{shown}</strong>
       <div className="mt-2 flex flex-wrap items-center gap-2">
         {note && (
           <small className={cn("text-sm", noteTone === "success" ? "text-success" : "text-muted-foreground")}>

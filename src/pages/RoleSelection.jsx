@@ -34,30 +34,32 @@ function RoleSelection() {
   const navigate = useNavigate();
 
   return (
-    <div className="hero-glow min-h-screen text-foreground">
+    <div className="page-wash min-h-screen text-foreground">
+      <div className="bg-brand pattern-dots pb-32">
       <header className="border-b border-border bg-card">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
           <Button variant="ghost" size="sm" onClick={() => navigate("/")}>
             <ArrowLeft aria-hidden="true" />
             Home
           </Button>
-          <Link to="/" className="flex items-center gap-3 text-foreground no-underline">
+          <Link to="/" className="flex items-center gap-3 text-foreground no-underline hover:text-foreground">
             <BrandMark />
             <span className="hidden text-base font-semibold sm:inline">PatientCare</span>
           </Link>
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl px-4 py-12 sm:px-6 sm:py-16">
-        <FadeIn className="mx-auto max-w-2xl text-center">
-          <SplitText as="h1" text="Who's signing in?" className="text-3xl sm:text-4xl" />
+        <FadeIn className="mx-auto max-w-2xl px-4 pt-12 text-center sm:pt-16">
+          <SplitText as="h1" text="Who's signing in?" className="text-4xl sm:text-5xl" />
           <p className="mt-3 text-base text-muted-foreground">Choose your role to go to the right portal.</p>
         </FadeIn>
+      </div>
 
-        <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-3">
+      <main className="mx-auto -mt-20 max-w-5xl px-4 pb-16 sm:px-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           {ROLES.map(({ role, photo, art: Art, text }, i) => (
             <FadeIn key={role} delay={i * 0.06} className="h-full">
-              <Card className="card-lift group flex h-full flex-col overflow-hidden text-center">
+              <Card className="card-lift group flex h-full flex-col overflow-hidden text-center shadow-2xl">
                 <div className="relative">
                   <Photo
                     name={photo}
@@ -66,7 +68,7 @@ function RoleSelection() {
                     sizes="(min-width: 768px) 320px, 100vw"
                     imgClassName="transition-transform duration-500 ease-out group-hover:scale-105"
                   />
-                  <span className="icon-tile absolute -bottom-8 left-1/2 grid h-16 w-16 -translate-x-1/2 place-items-center rounded-2xl border-4 border-card bg-secondary shadow-md">
+                  <span className="icon-tile absolute -bottom-8 left-1/2 grid h-16 w-16 -translate-x-1/2 place-items-center rounded-2xl border-4 border-card bg-mint-soft shadow-md">
                     <Art className="h-10 w-10" />
                   </span>
                 </div>

@@ -13,12 +13,12 @@ import { cn } from "@/lib/utils";
 function Brand() {
   return (
     <div className="mb-6 flex items-center gap-3 px-2">
-      <span className="grid h-10 w-10 place-items-center rounded-lg bg-sidebar-foreground">
+      <span className="grid h-10 w-10 place-items-center rounded-lg border border-border bg-card shadow-sm">
         <BrandMark className="h-7 w-7" />
       </span>
       <div>
         <p className="text-base font-semibold leading-none">PatientCare</p>
-        <p className="mt-1 text-xs text-sidebar-muted">Clinic management</p>
+        <p className="mt-1 text-xs text-muted-foreground">Clinic management</p>
       </div>
     </div>
   );
@@ -39,8 +39,8 @@ function NavList({ menu, onNavigate }) {
               cn(
                 "relative flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm font-medium transition-colors duration-150",
                 isActive
-                  ? "bg-sidebar-active font-semibold text-sidebar-foreground before:absolute before:inset-y-2 before:left-0 before:w-1 before:rounded-full before:bg-sidebar-foreground"
-                  : "text-sidebar-muted hover:bg-sidebar-border hover:text-sidebar-foreground"
+                  ? "bg-primary bg-primary-gradient font-semibold text-primary-foreground shadow-primary"
+                  : "text-muted-foreground hover:bg-secondary hover:text-accent-foreground"
               )
             }
           >
@@ -55,10 +55,10 @@ function NavList({ menu, onNavigate }) {
 
 function SidebarBottom({ onLogout }) {
   return (
-    <div className="mt-auto border-t border-sidebar-border pt-3">
+    <div className="mt-auto border-t border-border pt-3">
       <Button
         variant="ghost"
-        className="w-full justify-start gap-3 px-3 text-sidebar-muted hover:bg-sidebar-border hover:text-sidebar-foreground"
+        className="w-full justify-start gap-3 px-3 text-muted-foreground"
         onClick={onLogout}
       >
         <LogOut aria-hidden="true" />
@@ -84,7 +84,7 @@ function DashboardShell({ role, menu, title, children }) {
   const initial = user?.name ? user.name.charAt(0).toUpperCase() : role.charAt(0);
 
   return (
-    <div className="flex min-h-screen bg-background text-foreground">
+    <div className="page-wash flex min-h-screen text-foreground">
       <a
         href="#main"
         className="sr-only z-50 rounded-lg bg-card px-4 py-2 shadow-md focus:not-sr-only focus:fixed focus:left-4 focus:top-4"
@@ -93,7 +93,7 @@ function DashboardShell({ role, menu, title, children }) {
       </a>
 
       {/* Desktop sidebar */}
-      <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col bg-sidebar p-4 text-sidebar-foreground lg:flex">
+      <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-border bg-brand-soft p-4 lg:flex">
         <Brand />
         <NavList menu={menu} />
         <SidebarBottom onLogout={handleLogout} />
@@ -104,7 +104,7 @@ function DashboardShell({ role, menu, title, children }) {
         <SheetContent
           side="left"
           title={`${role} menu`}
-          className="border-sidebar-border bg-sidebar text-sidebar-foreground lg:hidden [&>button:last-child]:text-sidebar-muted [&>button:last-child]:hover:bg-sidebar-border"
+          className="bg-brand-soft lg:hidden"
         >
           <Brand />
           <NavList menu={menu} onNavigate={() => setMobileOpen(false)} />
@@ -113,7 +113,7 @@ function DashboardShell({ role, menu, title, children }) {
       </Sheet>
 
       <div className="min-w-0 flex-1">
-        <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-2 border-b border-border bg-card px-4 sm:px-6">
+        <header className="accent-top sticky top-0 z-30 flex h-16 items-center justify-between gap-2 border-b border-border bg-card px-4 sm:px-6">
           <div className="flex min-w-0 items-center gap-2">
             <Button
               variant="ghost"

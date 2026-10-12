@@ -33,7 +33,7 @@ function Analytics() {
         sample="These figures are placeholders. The backend doesn't provide analytics yet."
       />
 
-      <div className="stagger mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="stagger mb-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         <StatCard tone="teal" icon={Users} label="Total patients" value="124" note="Current records" sample />
         <StatCard tone="blue" icon={UserPlus} label="New this week" value="12" sample />
         <StatCard tone="rose" icon={ShieldAlert} label="Critical patients" value="8" note="Needs attention" sample />
