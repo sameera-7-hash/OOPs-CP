@@ -1,10 +1,11 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowDownUp, RefreshCw, Search, ShieldAlert } from "lucide-react";
+import { ArrowDownUp, ClipboardPlus, RefreshCw, Search, ShieldAlert, UserPlus, Users } from "lucide-react";
 import { getPatients } from "@/Services/api";
 import DashboardShell from "@/components/layout/DashboardShell";
 import PageHeading from "@/components/layout/PageHeading";
 import Panel from "@/components/layout/Panel";
+import StatCard from "@/components/layout/StatCard";
 import Notice from "@/components/feedback/Notice";
 import EmptyState from "@/components/feedback/EmptyState";
 import { SkeletonRows } from "@/components/feedback/Skeleton";
@@ -20,6 +21,7 @@ function PatientRecords({ role, menu }) {
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("name");
   const [patients, setPatients] = useState([]);
+  const [patientAccounts, setPatientAccounts] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -27,6 +29,7 @@ function PatientRecords({ role, menu }) {
     getPatients()
       .then((data) => {
         setPatients(data.patients);
+        setPatientAccounts(data.patientAccounts ?? 0);
         setError("");
       })
       .catch((err) => setError(err.message))
@@ -53,6 +56,7 @@ function PatientRecords({ role, menu }) {
     });
 
   const isDoctor = role === "Doctor";
+  const addedManually = patients.filter((patient) => patient.ok).length;
   const columns = isDoctor ? 7 : 6;
 
   return (
@@ -62,6 +66,30 @@ function PatientRecords({ role, menu }) {
         title="Patient records"
         description="Records shared with your care team."
       />
+
+      <div className="stagger mb-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
+        <StatCard
+          tone="teal"
+          icon={Users}
+          label="Total patients"
+          value={loading ? "…" : patientAccounts + addedManually}
+          note="Accounts plus added records"
+        />
+        <StatCard
+          tone="blue"
+          icon={UserPlus}
+          label="Signed up as patients"
+          value={loading ? "…" : patientAccounts}
+          note="Created on the patient side"
+        />
+        <StatCard
+          tone="green"
+          icon={ClipboardPlus}
+          label="Added manually"
+          value={loading ? "…" : addedManually}
+          note="Added by care staff"
+        />
+      </div>
 
       <Panel>
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end">

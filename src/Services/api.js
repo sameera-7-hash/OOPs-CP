@@ -59,7 +59,8 @@ async function request(path, options = {}) {
   return data;
 }
 
-// GET /api/patients -> { chainIntact, usedBackup, count, patients: [...] }
+// GET /api/patients -> { chainIntact, usedBackup, count, patientAccounts, patients: [...] }
+// `patientAccounts` is the number of self-registered Patient accounts.
 // Each patient record also carries `algo` (cipher used) and `ok` (integrity
 // check result); when ok is false, `problem` explains what failed.
 export function getPatients() {
@@ -78,6 +79,12 @@ export function addPatient(patient) {
 // POST /api/backup -> { snapshot: "<path to timestamped copy>" }
 export function createBackup() {
   return request("/backup", { method: "POST" });
+}
+
+// Doctor/Admin only. GET /api/logs?lines= -> { file, totalLines, lines: [...] },
+// the newest `lines` entries of the backend's logs/app.log.
+export function getLogs(lines = 200) {
+  return request(`/logs?lines=${lines}`);
 }
 
 // GET /api/health -> { status: "ok" }
