@@ -341,6 +341,12 @@
   animation-delay: var(--d, 0ms);
 }
 
+/* Room at the bottom of every layout for the fixed Emergency pill, so it
+   never covers a page's last button. Unlayered, so it beats py-* utilities. */
+.pill-clearance {
+  padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
+}
+
 /* Cards rise in one after another (60ms apart). */
 .stagger > * {
   animation: rise-in 360ms var(--ease-out) both;
@@ -398,6 +404,37 @@
 /* Primary buttons: teal gradient with a soft glow. */
 .bg-primary-gradient {
   background-image: var(--gradient-primary);
+}
+
+/* Floating pill navbar: translucent white with a background blur, so the
+   page shows through. It firms up (more opaque, soft shadow) once the page
+   is scrolled. Browsers without backdrop-filter get a near-solid pill. */
+.nav-pill {
+  background-color: color-mix(in srgb, var(--card) 94%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--shadow-color) 6%, transparent);
+  transition: background-color 200ms var(--ease-out), box-shadow 200ms var(--ease-out);
+  animation: nav-in 320ms var(--ease-out) both;
+}
+
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .nav-pill {
+    background-color: color-mix(in srgb, var(--card) 62%, transparent);
+    -webkit-backdrop-filter: blur(16px) saturate(170%);
+    backdrop-filter: blur(16px) saturate(170%);
+  }
+
+  .nav-pill.is-scrolled {
+    background-color: color-mix(in srgb, var(--card) 82%, transparent);
+  }
+}
+
+.nav-pill.is-scrolled {
+  box-shadow: var(--shadow-md);
+}
+
+@keyframes nav-in {
+  from { opacity: 0; transform: translateY(-12px); }
 }
 
 /* Soft teal glow on the heartbeat line. */

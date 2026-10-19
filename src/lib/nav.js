@@ -15,6 +15,7 @@ import {
   Home,
   Pill,
   ClipboardList,
+  BookOpenCheck,
 } from "lucide-react";
 
 // Sidebar menus for each role's DashboardShell. Centralized so every page
@@ -28,6 +29,7 @@ export const doctorMenu = [
   { label: "Analytics", icon: BarChart3, path: "/doctor/analytics" },
   { label: "Undo / Redo", icon: History, path: "/doctor/undo-redo" },
   { label: "Backup & Restore", icon: Save, path: "/doctor/backup-restore" },
+  { label: "Condition guidance", icon: BookOpenCheck, path: "/guidance" },
 ];
 
 export const nurseMenu = [
@@ -39,6 +41,7 @@ export const nurseMenu = [
   { label: "Tasks", icon: ListChecks, path: "/nurse/tasks" },
   { label: "Reports", icon: FileText, path: "/nurse/reports" },
   { label: "Alerts", icon: Bell, path: "/nurse/alerts" },
+  { label: "Condition guidance", icon: BookOpenCheck, path: "/guidance" },
 ];
 
 export const patientMenu = [
@@ -47,4 +50,5 @@ export const patientMenu = [
   { label: "My Reports", icon: FileText, path: "/patient/reports" },
   { label: "Prescriptions", icon: Pill, path: "/patient/prescriptions" },
   { label: "Medical History", icon: ClipboardList, path: "/patient/history" },
+  { label: "Condition guidance", icon: BookOpenCheck, path: "/guidance" },
 ];

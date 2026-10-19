@@ -6,6 +6,7 @@ import { logout as logoutApi } from "./Services/api";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ServerStatus from "./components/feedback/ServerStatus";
 import { ToastProvider } from "./context/ToastContext";
+import { EmergencyProvider } from "./components/emergency/Emergency";
 
 // Home is loaded eagerly for the fastest first paint; every other page
 // is its own chunk, fetched when its route is first visited.
@@ -36,6 +37,8 @@ const Vitals = lazy(() => import("./pages/nurse/Vitals"));
 const Tasks = lazy(() => import("./pages/nurse/Tasks"));
 const Alerts = lazy(() => import("./pages/nurse/Alerts"));
 const NurseReports = lazy(() => import("./pages/nurse/Reports"));
+
+const ConditionGuidance = lazy(() => import("./pages/ConditionGuidance"));
 
 function PageFallback() {
   return (
@@ -102,6 +105,7 @@ function App() {
     <AuthProvider>
       <ToastProvider>
         <BrowserRouter>
+          <EmergencyProvider>
           <ServerStatus />
           <Suspense fallback={<PageFallback />}>
             <Routes>
@@ -136,9 +140,13 @@ function App() {
               <Route path="/nurse/alerts" element={<ProtectedRoute role="Nurse"><Alerts /></ProtectedRoute>} />
               <Route path="/nurse/reports" element={<ProtectedRoute role="Nurse"><NurseReports /></ProtectedRoute>} />
 
+              {/* ================= ANY SIGNED-IN ROLE ================= */}
+              <Route path="/guidance" element={<ProtectedRoute roles={["Patient", "Doctor", "Nurse"]}><ConditionGuidance /></ProtectedRoute>} />
+
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </Suspense>
+          </EmergencyProvider>
         </BrowserRouter>
       </ToastProvider>
     </AuthProvider>

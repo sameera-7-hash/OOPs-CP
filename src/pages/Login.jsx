@@ -1,8 +1,9 @@
 import React, { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { ArrowLeft, CircleAlert, Eye, EyeOff, Lock, Mail, ShieldCheck, User as UserIcon } from "lucide-react";
 import { login as loginApi, signup as signupApi } from "@/Services/api";
 import { useCurrentUser } from "@/context/UserContext";
+import { safeNextPath } from "@/lib/navigation";
 import BrandMark from "@/components/BrandMark";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -45,6 +46,7 @@ const DASHBOARD_PATH = {
 
 function Login() {
   const { role } = useParams();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { login } = useCurrentUser();
 
@@ -82,7 +84,10 @@ function Login() {
       }
 
       login(result.user, result.token);
-      navigate(DASHBOARD_PATH[result.user.role] || "/");
+      // ?next= is set by ProtectedRoute for Patient-only links (e.g. a
+      // prefilled booking); anything off-site or unsafe is ignored.
+      const next = safeNextPath(searchParams.get("next"), window.location.origin);
+      navigate(next || DASHBOARD_PATH[result.user.role] || "/");
     } catch (err) {
       setError(err.message);
     } finally {
@@ -94,7 +99,7 @@ function Login() {
 
   return (
     <div className="flex min-h-screen bg-background text-foreground">
-      <div className="flex w-full flex-col bg-card px-4 py-6 sm:px-10 lg:w-1/2">
+      <div className="pill-clearance flex w-full flex-col bg-card px-4 py-6 sm:px-10 lg:w-1/2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <BrandMark />

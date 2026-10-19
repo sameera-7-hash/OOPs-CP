@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from "react";
-import { CalendarDays, Check, Clock, Plus, Stethoscope } from "lucide-react";
+import React, { useEffect, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import { BookOpenCheck, CalendarDays, Check, Clock, Plus, Stethoscope } from "lucide-react";
 import { useCurrentUser } from "@/context/UserContext";
 import { useToast } from "@/context/ToastContext";
 import { getAppointments, getAvailability, bookAppointment } from "@/Services/api";
@@ -18,6 +19,9 @@ import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { patientMenu } from "@/lib/nav";
+import { parseBookingPrefill } from "@/lib/navigation";
+import { sameTime } from "@/lib/time";
+import Notice from "@/components/feedback/Notice";
 
 function todayIso() {
   return new Date().toISOString().slice(0, 10);
@@ -51,9 +55,16 @@ function Appointments() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
 
+  // ?doctorId=&date=&time=&from=triage (e.g. from Condition guidance)
+  // opens the picker directly, seeded with whatever values are valid.
+  // It only pre-selects; the patient still confirms the booking.
+  const [searchParams] = useSearchParams();
+  const [prefill] = useState(() => parseBookingPrefill(searchParams, todayIso()));
+  const pendingSlot = useRef(prefill.doctorId && prefill.time ? prefill : null);
+
   // Booking flow: null -> "asking" (yes/no) -> "picking" (date/doctor/slot/confirm).
-  const [bookingStage, setBookingStage] = useState(null);
-  const [bookingDate, setBookingDate] = useState(todayIso());
+  const [bookingStage, setBookingStage] = useState(prefill.any ? "picking" : null);
+  const [bookingDate, setBookingDate] = useState(prefill.date || todayIso());
   const [doctorOptions, setDoctorOptions] = useState([]); // [{doctorId, doctorName, slots}]
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [chosen, setChosen] = useState(null); // {doctorId, doctorName, time}
@@ -79,10 +90,26 @@ function Appointments() {
     setLoadingSlots(true);
     setChosen(null);
     getAvailability({ date: bookingDate })
-      .then((records) => setDoctorOptions(records))
+      .then((records) => {
+        setDoctorOptions(records);
+        applyPendingSlot(records);
+      })
       .catch(() => setDoctorOptions([]))
       .finally(() => setLoadingSlots(false));
   }, [bookingStage, bookingDate]);
+
+  // One-shot: select the linked doctor's slot if it is still open. Slot
+  // strings are free text ("9 am", "09:00 AM"), so compare by time value
+  // and keep the slot's own string for booking. Missing/taken = no-op.
+  function applyPendingSlot(records) {
+    const want = pendingSlot.current;
+    if (!want) return;
+    pendingSlot.current = null;
+    if (want.date && want.date !== bookingDate) return;
+    const doc = (records || []).find((r) => r.doctorId === want.doctorId);
+    const slot = doc && (doc.slots || []).find((sl) => !sl.booked && sameTime(sl.time, want.time));
+    if (slot) setChosen({ doctorId: doc.doctorId, doctorName: doc.doctorName, time: slot.time });
+  }
 
   const startBooking = () => setBookingStage("asking");
 
@@ -153,6 +180,11 @@ function Appointments() {
 
       {bookingStage === "picking" && (
         <Panel title="Book a slot" description="Only times a doctor has opened can be booked.">
+          {prefill.fromTriage && (
+            <Notice tone="info" icon={BookOpenCheck} className="mb-4">
+              You came here from Condition guidance. Pick a time below to book.
+            </Notice>
+          )}
           <div className="mb-6 flex max-w-xs flex-col gap-2">
             <Label htmlFor="booking-date">Date</Label>
             <Input

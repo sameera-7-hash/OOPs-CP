@@ -54,7 +54,11 @@ async function request(path, options = {}) {
     if (res.status === 401 && token) {
       clearSessionAndReload();
     }
-    throw new Error(data.error || `Request failed (${res.status})`);
+    const err = new Error(
+      res.status === 401 ? "Please log in again." : data.error || `Request failed (${res.status})`
+    );
+    err.status = res.status;
+    throw err;
   }
   return data;
 }
@@ -235,4 +239,22 @@ export function markNotificationRead(id) {
     method: "POST",
     body: JSON.stringify({ id }),
   });
+}
+
+// ---------------------------------------------------------------
+// Triage (condition guidance). Both need a logged-in session.
+// ---------------------------------------------------------------
+
+// GET /api/triage/diseases -> ["Malaria", ...]; the exact names to pass
+// back to getTriage().
+export function getTriageDiseases() {
+  return request("/triage/diseases");
+}
+
+// GET /api/triage?disease= -> { disease, action, precautions,
+// discussWithDoctor, emergency?, message?, nextSteps } (see
+// backend include/TriageService.h). Names contain spaces, parentheses and
+// in places double spaces, so encode them exactly as received.
+export function getTriage(disease) {
+  return request(`/triage?disease=${encodeURIComponent(disease)}`);
 }

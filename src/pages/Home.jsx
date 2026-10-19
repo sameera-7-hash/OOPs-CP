@@ -8,6 +8,7 @@ import SplitText from "@/components/SplitText";
 import IconTile, { TONE_CYCLE } from "@/components/IconTile";
 import Photo from "@/components/Photo";
 import BrandMark from "@/components/BrandMark";
+import FloatingNav from "@/components/layout/FloatingNav";
 import { CalendarCheckArt, ClipboardChartArt, EcgLine, StethoscopeArt } from "@/components/art/Illustrations";
 
 // Everything described on this page is something the app and its C++
@@ -83,26 +84,16 @@ const FEATURES = [
 function SiteHeader() {
   const navigate = useNavigate();
   return (
-    <header className="sticky top-0 z-30 border-b border-border bg-card">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
-        <Link to="/" className="flex items-center gap-3 rounded-lg text-foreground no-underline hover:text-foreground">
-          <BrandMark />
-          <span className="text-base font-semibold">PatientCare</span>
-        </Link>
-
-        <nav aria-label="Main" className="flex items-center gap-2 sm:gap-6">
-          <a href="#how" className="hidden text-sm font-medium text-muted-foreground hover:text-primary sm:inline">
-            How it works
-          </a>
-          <a href="#features" className="hidden text-sm font-medium text-muted-foreground hover:text-primary sm:inline">
-            Features
-          </a>
-          <Button size="sm" onClick={() => navigate("/role")}>
-            Log in
-          </Button>
-        </nav>
-      </div>
-    </header>
+    <FloatingNav
+      links={[
+        { href: "#how", label: "How it works" },
+        { href: "#features", label: "Features" },
+      ]}
+    >
+      <Button size="sm" className="rounded-full" onClick={() => navigate("/role")}>
+        Log in
+      </Button>
+    </FloatingNav>
   );
 }
 
@@ -129,7 +120,7 @@ function Hero() {
           crosses text. */}
       <EcgLine className="ecg-glow pointer-events-none absolute inset-x-0 bottom-4 h-20 w-full sm:bottom-6 sm:h-24" />
 
-      <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-4 pb-32 pt-12 sm:px-6 sm:pb-40 sm:pt-16 lg:grid-cols-[1.05fr_1fr] lg:pt-20">
+      <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-4 pb-32 pt-28 sm:px-6 sm:pb-40 sm:pt-32 lg:grid-cols-[1.05fr_1fr] lg:pt-36">
         <div className="animate-rise">
           <span className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-card px-4 py-1 text-sm font-medium text-accent-foreground shadow-sm">
             <span aria-hidden="true" className="h-2 w-2 rounded-full bg-coral" />
@@ -227,7 +218,7 @@ function RoleGateway() {
 
 function HowItWorks() {
   return (
-    <section id="how" aria-labelledby="how-title" className="scroll-mt-16 border-y border-primary/15 bg-secondary px-4 py-16 sm:px-6 sm:py-24">
+    <section id="how" aria-labelledby="how-title" className="scroll-mt-24 border-y border-primary/15 bg-secondary px-4 py-16 sm:px-6 sm:py-24">
       <div className="mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-[1fr_1.4fr]">
         <FadeIn className="hidden lg:block">
           <Photo name="reception" aspect={4 / 5} sizes="420px" className="rounded-3xl shadow-xl" />
@@ -266,7 +257,7 @@ function HowItWorks() {
 
 function Features() {
   return (
-    <section id="features" aria-labelledby="features-title" className="scroll-mt-16 px-4 py-16 sm:px-6 sm:py-24">
+    <section id="features" aria-labelledby="features-title" className="scroll-mt-24 px-4 py-16 sm:px-6 sm:py-24">
       <div className="mx-auto max-w-6xl">
         <FadeIn className="mb-10 max-w-2xl">
           <span className="text-sm font-semibold uppercase tracking-wider text-primary">What it does</span>
@@ -313,7 +304,7 @@ function Home() {
         <HowItWorks />
         <Features />
       </main>
-      <footer className="accent-top border-t border-border bg-card px-4 py-8 sm:px-6">
+      <footer className="accent-top pill-clearance border-t border-border bg-card px-4 py-8 sm:px-6">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 text-sm text-muted-foreground">
           <span className="flex items-center gap-2 font-semibold text-foreground">
             <BrandMark className="h-7 w-7" />

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { LogOut, Menu } from "lucide-react";
+import { LogOut, Menu, Siren } from "lucide-react";
 import { useCurrentUser } from "@/context/UserContext";
 import BrandMark from "@/components/BrandMark";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import NotificationBell from "@/components/NotificationBell";
 import ThemeToggle from "@/components/ThemeToggle";
+import { useEmergency } from "@/components/emergency/Emergency";
 import { cn } from "@/lib/utils";
 
 function Brand() {
@@ -75,6 +76,7 @@ function DashboardShell({ role, menu, title, children }) {
   const { user, logout } = useCurrentUser();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { openEmergency } = useEmergency();
 
   const handleLogout = () => {
     logout();
@@ -108,6 +110,18 @@ function DashboardShell({ role, menu, title, children }) {
         >
           <Brand />
           <NavList menu={menu} onNavigate={() => setMobileOpen(false)} />
+          {/* Same dialog as the fixed pill, which the open sheet covers. */}
+          <Button
+            variant="destructive"
+            className="mt-3 w-full justify-start gap-3 px-3"
+            onClick={() => {
+              setMobileOpen(false);
+              openEmergency();
+            }}
+          >
+            <Siren aria-hidden="true" />
+            Emergency
+          </Button>
           <SidebarBottom onLogout={handleLogout} />
         </SheetContent>
       </Sheet>
@@ -143,7 +157,7 @@ function DashboardShell({ role, menu, title, children }) {
           </div>
         </header>
 
-        <main id="main" tabIndex={-1} className="mx-auto w-full max-w-6xl animate-in px-4 py-6 focus:outline-none sm:px-6 sm:py-8">
+        <main id="main" tabIndex={-1} className="mx-auto w-full max-w-6xl animate-in px-4 py-6 pill-clearance focus:outline-none sm:px-6 sm:py-8">
           {children}
         </main>
       </div>
