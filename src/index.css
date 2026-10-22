@@ -154,6 +154,8 @@
 
   /* Motion tokens */
   --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+  /* Slower, softer ease for marketing-page reveals and hovers. */
+  --ease-soft: cubic-bezier(0.22, 1, 0.36, 1);
   --animate-in: fade-in 200ms var(--ease-out) both;
   --animate-rise: rise-in 240ms var(--ease-out) both;
   --animate-toast: toast-in 240ms var(--ease-out) both;
@@ -267,17 +269,299 @@
    Small shared component classes that are awkward as utilities.
    ===================================================================== */
 
-/* Scroll reveal, driven by FadeIn.jsx (adds .is-visible). */
+/* =====================================================================
+   Motion kit (adapted from agio-style-animations.html). Transform,
+   opacity and clip-path only, with one noted exception (.focus-line).
+   Every "hidden before reveal" state is gated on html.motion-ok, which
+   main.jsx sets at startup, so if scripts are slow or fail, content
+   simply renders in place.
+   ===================================================================== */
+
+/* Scroll reveal, driven by FadeIn.jsx / useReveal (adds .is-visible).
+   data-reveal picks the effect; fade-up is the default. */
 .reveal {
-  opacity: 0;
-  transform: translateY(var(--reveal-y, 16px));
-  transition: opacity 240ms var(--ease-out), transform 240ms var(--ease-out);
+  /* Short by default (app screens); .marketing pages slow it down. */
+  transition: opacity var(--reveal-dur, 280ms) var(--ease-out), transform var(--reveal-dur, 280ms) var(--ease-out),
+    clip-path 900ms var(--ease-soft);
   transition-delay: var(--reveal-delay, 0ms);
 }
 
-.reveal.is-visible {
+.marketing {
+  --reveal-dur: 700ms;
+}
+.marketing .reveal {
+  transition-timing-function: var(--ease-soft);
+}
+
+.motion-ok .reveal:not(.is-visible) {
+  opacity: 0;
+  transform: translateY(var(--reveal-y, 16px));
+}
+.motion-ok .reveal[data-reveal="fade"]:not(.is-visible) { transform: none; }
+.motion-ok .reveal[data-reveal="fade-left"]:not(.is-visible) { transform: translateX(-24px); }
+.motion-ok .reveal[data-reveal="scale"]:not(.is-visible) { transform: scale(0.96); }
+
+/* Image curtain: the frame unclips bottom-to-top while the photo inside
+   settles from a slight zoom. The clip goes on the child: a fully clipped
+   target never counts as intersecting, so it would never reveal. */
+.motion-ok .reveal[data-reveal="clip"]:not(.is-visible) {
   opacity: 1;
   transform: none;
+}
+.reveal[data-reveal="clip"] > * {
+  clip-path: inset(0 0 0 0);
+  transition: clip-path 1000ms var(--ease-soft);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+.motion-ok .reveal[data-reveal="clip"]:not(.is-visible) > * {
+  clip-path: inset(100% 0 0 0);
+}
+.reveal[data-reveal="clip"] img {
+  transition: transform 1400ms var(--ease-soft), opacity 500ms var(--ease-out);
+}
+.motion-ok .reveal[data-reveal="clip"]:not(.is-visible) img {
+  transform: scale(1.15);
+}
+
+/* Headline revealed line by line from behind a mask (RevealLines.jsx). */
+.reveal-line {
+  display: block;
+  overflow: hidden;
+  /* Room for descenders inside the clip. */
+  padding-bottom: 0.1em;
+  margin-bottom: -0.1em;
+}
+.reveal-line > span {
+  display: inline-block;
+  transition: transform 900ms var(--ease-soft);
+  transition-delay: var(--line-delay, 0ms);
+}
+.motion-ok .reveal-lines:not(.is-in) .reveal-line > span {
+  transform: translateY(110%);
+}
+
+/* Hero photo: settles from a slight zoom once it has loaded. */
+.hero-zoom img {
+  transform: scale(1.15);
+  transition: transform 2400ms var(--ease-soft), opacity 500ms var(--ease-out);
+}
+
+/* Light wash over the full-bleed hero photo: solid behind the text,
+   clearing toward the photo, and fading into the page at the bottom.
+   (A light wash rather than the demo's dark overlay: no dark blocks.) */
+.hero-wash {
+  background-image:
+    linear-gradient(to top, var(--background) 0%, transparent 18%),
+    linear-gradient(180deg, color-mix(in srgb, var(--card) 88%, transparent) 0%, color-mix(in srgb, var(--card) 80%, transparent) 100%);
+}
+@media (min-width: 1024px) {
+  .hero-wash {
+    background-image:
+      linear-gradient(to top, var(--background) 0%, transparent 16%),
+      linear-gradient(90deg, color-mix(in srgb, var(--card) 96%, transparent) 0%,
+        color-mix(in srgb, var(--card) 86%, transparent) 38%, color-mix(in srgb, var(--card) 10%, transparent) 72%,
+        transparent 100%);
+  }
+}
+
+/* Scroll cue: a short line that loops downward at the foot of the hero. */
+.scroll-cue {
+  position: absolute;
+  bottom: 28px;
+  left: 50%;
+  width: 2px;
+  height: 56px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--primary) 22%, transparent);
+}
+.scroll-cue::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--primary);
+  animation: cue 2s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+@keyframes cue {
+  from { transform: translateY(-100%); }
+  to { transform: translateY(100%); }
+}
+.hero-zoom img[data-loaded] {
+  transform: scale(1);
+}
+
+/* Parallax layers (useParallax sets the transform). */
+.parallax-layer {
+  will-change: transform;
+}
+
+/* Floating nav: slides away while scrolling down, back on scroll up. */
+.nav-shell {
+  transition: transform 400ms var(--ease-soft);
+}
+.nav-shell.is-hidden {
+  transform: translateY(calc(-100% - 1rem));
+}
+
+/* Nav link underline: draws in from the left, leaves to the right. */
+.link-underline {
+  position: relative;
+}
+.link-underline::after {
+  content: "";
+  position: absolute;
+  left: 1rem;
+  right: 1rem;
+  bottom: 0.45rem;
+  height: 2px;
+  border-radius: 2px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 400ms var(--ease-soft);
+}
+.link-underline:hover::after,
+.link-underline:focus-visible::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+/* Scroll progress bar (ScrollProgress.jsx). */
+.scroll-progress {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 45;
+  height: 3px;
+  background-image: linear-gradient(90deg, var(--mint), var(--teal) 60%, var(--coral));
+  transform: scaleX(0);
+  transform-origin: left;
+  pointer-events: none;
+}
+
+/* Button hover: a teal fill sweeps up from the bottom (outline buttons on
+   the public pages). The label sits above the sweep. */
+.btn-sweep {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+.btn-sweep::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: var(--gradient-primary);
+  transform: translateY(101%);
+  transition: transform 450ms var(--ease-soft);
+}
+.btn-sweep:hover,
+.btn-sweep:focus-visible {
+  color: var(--primary-foreground);
+  border-color: var(--primary);
+}
+.btn-sweep:hover::before,
+.btn-sweep:focus-visible::before {
+  transform: none;
+}
+
+/* Arrow nudge: the trailing icon slides right on hover. */
+.arrow-nudge svg:last-child {
+  transition: transform 400ms var(--ease-soft);
+}
+.arrow-nudge:hover svg:last-child,
+.arrow-nudge:focus-visible svg:last-child {
+  transform: translateX(4px);
+}
+
+/* Magnetic wrapper: eases back when the pointer leaves. */
+.magnetic {
+  transition: transform 400ms var(--ease-soft);
+}
+
+/* Photo-led role cards: the photo slowly zooms, a light label slides up
+   over it and the title lifts. Touch screens have no hover, so the label
+   is always shown there. */
+.photo-card .photo-card__img img {
+  transition: transform 1200ms var(--ease-soft), opacity 500ms var(--ease-out);
+}
+.photo-card:hover .photo-card__img img {
+  transform: scale(1.08);
+}
+.photo-card__shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, color-mix(in srgb, var(--teal) 30%, transparent), transparent 55%);
+  opacity: 0;
+  transition: opacity 600ms var(--ease-soft);
+  pointer-events: none;
+}
+.photo-card:hover .photo-card__shade {
+  opacity: 1;
+}
+.photo-card__tag {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 450ms var(--ease-soft), transform 450ms var(--ease-soft);
+}
+.photo-card:hover .photo-card__tag,
+.photo-card:focus-within .photo-card__tag {
+  opacity: 1;
+  transform: none;
+}
+.photo-card__title {
+  transition: transform 500ms var(--ease-soft);
+}
+.photo-card:hover .photo-card__title {
+  transform: translateY(-3px);
+}
+@media (hover: none) {
+  .photo-card__tag {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Input focus line: a teal underline grows from the left on focus.
+   Inputs cannot hold pseudo-elements and wrapping every field would
+   change form layouts, so this is a background layer: the one
+   non-transform animation here, a 2px strip that repaints only the
+   field itself. */
+.focus-line {
+  background-image: linear-gradient(var(--primary), var(--primary));
+  background-repeat: no-repeat;
+  background-position: left bottom;
+  background-size: 0% 2px;
+  transition: background-size 400ms var(--ease-soft), border-color 150ms var(--ease-out);
+}
+.focus-line:focus,
+.focus-line:focus-visible {
+  background-size: 100% 2px;
+}
+
+/* App screens (inside DashboardShell): sections fade up quickly in a
+   short stagger, capped at 160ms so nothing waits on animation. */
+.app-enter > * {
+  animation: rise-in-sm 260ms var(--ease-out) both;
+}
+.app-enter > :nth-child(2) { animation-delay: 40ms; }
+.app-enter > :nth-child(3) { animation-delay: 80ms; }
+.app-enter > :nth-child(4) { animation-delay: 120ms; }
+.app-enter > :nth-child(n + 5) { animation-delay: 160ms; }
+
+@keyframes rise-in-sm {
+  from { opacity: 0; transform: translateY(8px); }
+}
+
+/* Never print anything mid-reveal. */
+@media print {
+  .reveal,
+  .reveal img,
+  .reveal[data-reveal="clip"] > *,
+  .reveal-line > span {
+    opacity: 1 !important;
+    transform: none !important;
+    clip-path: none !important;
+  }
 }
 
 /* Skeleton shimmer: a translucent band slides across a muted block. */
@@ -511,14 +795,39 @@
     transition-delay: 0ms !important;
   }
 
-  .reveal {
+  .reveal,
+  .reveal img,
+  .reveal[data-reveal="clip"] > *,
+  .reveal-line > span,
+  .hero-zoom img,
+  .parallax-layer,
+  .magnetic {
+    opacity: 1 !important;
+    transform: none !important;
+    clip-path: none !important;
+  }
+
+  /* Hover-only content stays visible without the motion. */
+  .photo-card__tag {
     opacity: 1;
     transform: none;
   }
 
+  .photo-card:hover .photo-card__img img,
+  .photo-card:hover .photo-card__title,
+  .arrow-nudge:hover svg:last-child {
+    transform: none;
+  }
+
   .split-letter,
-  .stagger > * {
+  .stagger > *,
+  .app-enter > * {
     animation: none;
+  }
+
+  .scroll-progress,
+  .scroll-cue::after {
+    display: none;
   }
 
   .ecg-trace,

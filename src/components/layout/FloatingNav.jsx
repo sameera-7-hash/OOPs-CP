@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import { useScrollHeader } from "@/hooks/useScrollHeader";
 import BrandMark from "@/components/BrandMark";
 import { cn } from "@/lib/utils";
 
@@ -8,17 +9,17 @@ import { cn } from "@/lib/utils";
 // padding to clear it). `links` are in-page or route links shown from the
 // sm breakpoint up; `children` go on the right (usually the main action).
 function FloatingNav({ links = [], children }) {
-  const [scrolled, setScrolled] = useState(false);
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  // Firms up once scrolled; slides away while scrolling down and returns
+  // on scroll up. Never hides while it holds keyboard focus.
+  const { scrolled, hidden } = useScrollHeader();
+  const [hasFocus, setHasFocus] = useState(false);
 
   return (
-    <header className="pointer-events-none fixed inset-x-0 top-3 z-40 px-3 sm:top-4 sm:px-6">
+    <header
+      onFocus={() => setHasFocus(true)}
+      onBlur={(e) => !e.currentTarget.contains(e.relatedTarget) && setHasFocus(false)}
+      className={cn("nav-shell pointer-events-none fixed inset-x-0 top-3 z-40 px-3 sm:top-4 sm:px-6", hidden && !hasFocus && "is-hidden")}
+    >
       <div
         className={cn(
           "nav-pill pointer-events-auto mx-auto flex h-14 max-w-5xl items-center justify-between gap-3 rounded-full pl-3 pr-2 sm:pl-4",
@@ -33,7 +34,7 @@ function FloatingNav({ links = [], children }) {
         <nav aria-label="Main" className="flex items-center gap-1">
           {links.map(({ href, to, label }) => {
             const className =
-              "hidden h-10 items-center rounded-full px-4 text-sm font-medium text-muted-foreground no-underline transition-colors duration-150 hover:bg-secondary hover:text-accent-foreground sm:inline-flex";
+              "link-underline hidden h-10 items-center rounded-full px-4 text-sm font-medium text-muted-foreground no-underline transition-colors duration-150 hover:bg-secondary hover:text-accent-foreground sm:inline-flex";
             return to ? (
               <Link key={label} to={to} className={className}>
                 {label}

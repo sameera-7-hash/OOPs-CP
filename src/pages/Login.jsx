@@ -16,7 +16,7 @@ import { CalendarCheckArt, ClipboardChartArt, EcgLine, StethoscopeArt } from "@/
 
 const ROLE_META = {
   Patient: {
-    photo: "bedside",
+    photo: "patient",
     art: CalendarCheckArt,
     description: "Book appointments and see your reports.",
     emailPlaceholder: "you@example.com",

@@ -157,7 +157,7 @@ function DashboardShell({ role, menu, title, children }) {
           </div>
         </header>
 
-        <main id="main" tabIndex={-1} className="mx-auto w-full max-w-6xl animate-in px-4 py-6 pill-clearance focus:outline-none sm:px-6 sm:py-8">
+        <main id="main" tabIndex={-1} className="mx-auto w-full max-w-6xl app-enter animate-in px-4 py-6 pill-clearance focus:outline-none sm:px-6 sm:py-8">
           {children}
         </main>
       </div>

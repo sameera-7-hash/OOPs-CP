@@ -12,7 +12,7 @@ import { CalendarCheckArt, ClipboardChartArt, StethoscopeArt } from "@/component
 const ROLES = [
   {
     role: "Patient",
-    photo: "bedside",
+    photo: "patient",
     art: CalendarCheckArt,
     text: "Book appointments, upload reports and see what your care team shares with you.",
   },
@@ -34,7 +34,7 @@ function RoleSelection() {
   const navigate = useNavigate();
 
   return (
-    <div className="page-wash pill-clearance min-h-screen text-foreground">
+    <div className="marketing page-wash pill-clearance min-h-screen text-foreground">
       <div className="bg-brand pattern-dots pb-32">
       <FloatingNav links={[{ to: "/", label: "Home" }]}>
         <Button size="sm" variant="ghost" className="rounded-full sm:hidden" onClick={() => navigate("/")}>
@@ -52,24 +52,19 @@ function RoleSelection() {
       <main className="mx-auto -mt-20 max-w-5xl px-4 pb-16 sm:px-6">
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           {ROLES.map(({ role, photo, art: Art, text }, i) => (
-            <FadeIn key={role} delay={i * 0.06} className="h-full">
-              <Card className="card-lift group flex h-full flex-col overflow-hidden text-center shadow-2xl">
-                <div className="relative">
-                  <Photo
-                    name={photo}
-                    aspect={4 / 3}
-                    decorative
-                    sizes="(min-width: 768px) 320px, 100vw"
-                    imgClassName="transition-transform duration-500 ease-out group-hover:scale-105"
-                  />
+            <FadeIn key={role} delay={i * 0.12} className="h-full">
+              <Card className="card-lift photo-card flex h-full flex-col overflow-hidden text-center shadow-2xl">
+                <div className="photo-card__img relative">
+                  <Photo name={photo} aspect={4 / 3} decorative sizes="(min-width: 768px) 320px, 100vw" />
+                  <span aria-hidden="true" className="photo-card__shade" />
                   <span className="icon-tile absolute -bottom-8 left-1/2 grid h-16 w-16 -translate-x-1/2 place-items-center rounded-2xl border-4 border-card bg-mint-soft shadow-md">
                     <Art className="h-10 w-10" />
                   </span>
                 </div>
                 <div className="flex flex-1 flex-col items-center px-6 pb-8 pt-12">
-                  <h2 className="text-xl">{role}</h2>
+                  <h2 className="photo-card__title text-xl">{role}</h2>
                   <p className="mt-2 flex-1 text-sm text-muted-foreground">{text}</p>
-                  <Button className="mt-6 w-full" onClick={() => navigate(`/login/${role}`)}>
+                  <Button className="arrow-nudge mt-6 w-full" onClick={() => navigate(`/login/${role}`)}>
                     Continue as {role.toLowerCase()}
                     <ArrowRight aria-hidden="true" />
                   </Button>

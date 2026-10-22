@@ -22,6 +22,7 @@ function Photo({ name, aspect = 4 / 3, sizes, className, imgClassName, priority 
           fetchPriority={priority ? "high" : "auto"}
           decoding="async"
           onLoad={() => setLoaded(true)}
+          data-loaded={loaded || undefined}
           onError={() => setFailed(true)}
           className={cn(
             "h-full w-full object-cover transition-opacity duration-500",
