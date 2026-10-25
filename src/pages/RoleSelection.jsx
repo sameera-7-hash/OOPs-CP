@@ -41,8 +41,8 @@ function RoleSelection() {
   return (
     <div className="marketing page-wash pill-clearance min-h-screen text-foreground">
       <div className="bg-brand pattern-dots pb-32">
-      <FloatingNav links={[{ to: "/", label: t("Home") }]}>
-        <Button size="sm" variant="ghost" className="rounded-full sm:hidden" onClick={() => navigate("/")}>
+      <FloatingNav links={[{ to: "/home", label: t("Home") }]}>
+        <Button size="sm" variant="ghost" className="rounded-full sm:hidden" onClick={() => navigate("/home")}>
           <ArrowLeft aria-hidden="true" />
           {t("Home")}
         </Button>

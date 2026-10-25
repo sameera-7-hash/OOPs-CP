@@ -1,6 +1,7 @@
 import React, { createContext, useCallback, useContext, useState } from "react";
 import { Copy, Phone, Siren } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { useLocation } from "react-router-dom";
 import { useToast } from "@/context/ToastContext";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { buttonVariants, Button } from "@/components/ui/button";
@@ -106,26 +107,30 @@ function EmergencyDialog({ open, onOpenChange }) {
 }
 
 // Mounted once at the app root: a fixed Emergency pill on every page
-// (public and dashboard alike) plus the dialog it opens. It needs no login
-// and calls no API, so it works even when the backend is down.
+// (public and dashboard alike, except the landing splash) plus the dialog
+// it opens. It needs no login and calls no API, so it works even when the
+// backend is down.
 export function EmergencyProvider({ children }) {
   const [open, setOpen] = useState(false);
   const openEmergency = useCallback(() => setOpen(true), []);
   const { t } = useTranslation();
+  const { pathname } = useLocation();
 
   return (
     <EmergencyContext.Provider value={{ openEmergency }}>
       {children}
       {/* Pages reserve room for this with the .pill-clearance padding. */}
-      <button
-        type="button"
-        onClick={openEmergency}
-        aria-haspopup="dialog"
-        className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] right-4 z-40 inline-flex h-12 items-center gap-2 rounded-full bg-destructive px-5 text-sm font-semibold text-destructive-foreground shadow-2xl transition-transform duration-150 hover:scale-[1.03] active:scale-[0.98] sm:right-6"
-      >
-        <Siren aria-hidden="true" className="h-5 w-5" />
-        {t("Emergency")}
-      </button>
+      {pathname !== "/" && (
+        <button
+          type="button"
+          onClick={openEmergency}
+          aria-haspopup="dialog"
+          className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] right-4 z-40 inline-flex h-12 items-center gap-2 rounded-full bg-destructive px-5 text-sm font-semibold text-destructive-foreground shadow-2xl transition-transform duration-150 hover:scale-[1.03] active:scale-[0.98] sm:right-6"
+        >
+          <Siren aria-hidden="true" className="h-5 w-5" />
+          {t("Emergency")}
+        </button>
+      )}
       <EmergencyDialog open={open} onOpenChange={setOpen} />
     </EmergencyContext.Provider>
   );

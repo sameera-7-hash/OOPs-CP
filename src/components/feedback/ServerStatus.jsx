@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { LoaderCircle, RefreshCw, WifiOff } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { useLocation } from "react-router-dom";
 import { checkHealth } from "@/Services/api";
 import { Button } from "@/components/ui/button";
 
@@ -14,6 +15,7 @@ function ServerStatus() {
   const [status, setStatus] = useState("checking"); // checking | waking | online | offline
   const run = useRef(0);
   const { t } = useTranslation();
+  const { pathname } = useLocation();
 
   const check = useCallback(async () => {
     const id = ++run.current;
@@ -46,7 +48,9 @@ function ServerStatus() {
     };
   }, [check]);
 
-  if (status !== "waking" && status !== "offline") return null;
+  // The check still runs on the landing splash (warming the server while
+  // people read it); the banner just waits until they're inside.
+  if (pathname === "/" || (status !== "waking" && status !== "offline")) return null;
 
   return (
     // Floats above the page so it never shifts the layout (the dashboard

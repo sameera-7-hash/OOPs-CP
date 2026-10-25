@@ -613,5 +613,27 @@
   "Could not reach the backend. Check VITE_API_URL and confirm the backend is running.": "बैकएंड से संपर्क नहीं हो सका। VITE_API_URL जाँचें और पक्का करें कि बैकएंड चल रहा है।",
   "Please log in again.": "कृपया फिर से लॉग इन करें।",
   "Request failed ({{status}})": "अनुरोध विफल रहा ({{status}})",
-  "Could not read file": "फ़ाइल पढ़ी नहीं जा सकी"
+  "Could not read file": "फ़ाइल पढ़ी नहीं जा सकी",
+
+  "Reviews": "समीक्षाएँ",
+  "People who found their way with Beacon": "वे लोग जिन्हें Beacon से राह मिली",
+  "Example reviews written for this demo. Drag the strip to browse.": "ये उदाहरण समीक्षाएँ इस डेमो के लिए लिखी गई हैं। देखने के लिए पट्टी को खींचें।",
+  "5 out of 5": "5 में से 5",
+  "I booked a cardiologist in two minutes, and only real open slots showed up. No calling the front desk.": "दो मिनट में कार्डियोलॉजिस्ट बुक हो गया, और सिर्फ़ असली खाली स्लॉट ही दिखे। रिसेप्शन पर फ़ोन करने की ज़रूरत नहीं पड़ी।",
+  "I publish my free hours each morning and see exactly who has booked. My day starts organised.": "मैं हर सुबह अपने खाली घंटे प्रकाशित करता हूँ और साफ़ देख पाता हूँ कि किसने बुकिंग की है। मेरा दिन व्यवस्थित शुरू होता है।",
+  "Care reports go straight onto the patient's record, so the doctor sees them before rounds.": "देखभाल रिपोर्ट सीधे मरीज़ के रिकॉर्ड में जाती हैं, इसलिए डॉक्टर राउंड से पहले ही उन्हें देख लेते हैं।",
+  "The condition guidance told me which precautions to take and which specialist to see. It felt like someone was looking out for me.": "बीमारी संबंधी मार्गदर्शन ने बताया कि क्या सावधानियाँ रखनी हैं और किस विशेषज्ञ को दिखाना है। लगा जैसे कोई मेरा ध्यान रख रहा है।",
+  "I upload my mother's reports from home, and her doctor already has them at the appointment.": "मैं घर से ही अपनी माँ की रिपोर्ट अपलोड कर देती हूँ, और अपॉइंटमेंट के समय डॉक्टर के पास वे पहले से होती हैं।",
+  "Knowing every record is encrypted and tamper-evident gives our patients real peace of mind.": "यह जानकर कि हर रिकॉर्ड एन्क्रिप्टेड है और छेड़छाड़ पकड़ी जा सकती है, हमारे मरीज़ों को सच्ची तसल्ली मिलती है।",
+  "Ananya R.": "अनन्या आर.",
+  "Dr. Vikram S.": "डॉ. विक्रम एस.",
+  "Meera K.": "मीरा के.",
+  "Rohit P.": "रोहित पी.",
+  "Farah N.": "फ़राह एन.",
+  "Dr. Kavya I.": "डॉ. काव्या आई.",
+
+  "YOUR CARE, YOUR WAY": "आपकी देखभाल, आपके तरीक़े से",
+  "A clearer path to better care.": "बेहतर देखभाल की ओर एक साफ़ राह।",
+  "Every health journey deserves guidance, clarity, and care you can trust. Let Beacon help you find your way.": "हर स्वास्थ्य यात्रा को मार्गदर्शन, स्पष्टता और भरोसेमंद देखभाल मिलनी चाहिए। Beacon को आपका रास्ता खोजने में मदद करने दें।",
+  "Enter Beacon": "Beacon में प्रवेश करें"
 }

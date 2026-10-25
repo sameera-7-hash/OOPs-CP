@@ -15,7 +15,7 @@ export function CardHeader({ className, ...props }) {
 }
 
 export function CardTitle({ className, ...props }) {
-  return <h2 className={cn("text-base font-semibold text-card-foreground", className)} {...props} />;
+  return <h2 className={cn("font-sans text-base font-semibold text-card-foreground", className)} {...props} />;
 }
 
 export function CardDescription({ className, ...props }) {

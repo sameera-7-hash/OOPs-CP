@@ -9,8 +9,9 @@ import ServerStatus from "./components/feedback/ServerStatus";
 import { ToastProvider } from "./context/ToastContext";
 import { EmergencyProvider } from "./components/emergency/Emergency";
 
-// Home is loaded eagerly for the fastest first paint; every other page
+// Landing and Home load eagerly for the fastest first paint; every other page
 // is its own chunk, fetched when its route is first visited.
+import Landing from "./pages/Landing";
 import Home from "./pages/Home";
 const Login = lazy(() => import("./pages/Login"));
 const RoleSelection = lazy(() => import("./pages/RoleSelection"));
@@ -112,7 +113,8 @@ function App() {
           <ServerStatus />
           <Suspense fallback={<PageFallback />}>
             <Routes>
-              <Route path="/" element={<Home />} />
+              <Route path="/" element={<Landing />} />
+              <Route path="/home" element={<Home />} />
               <Route path="/role" element={<RoleSelection />} />
               <Route path="/login/:role" element={<Login />} />
 

@@ -29,7 +29,7 @@ function FloatingNav({ links = [], children }) {
           scrolled && "is-scrolled"
         )}
       >
-        <Link to="/" className="flex items-center gap-2 rounded-full text-foreground no-underline hover:text-foreground">
+        <Link to="/home" className="flex items-center gap-2 rounded-full text-foreground no-underline hover:text-foreground">
           <BrandMark className="h-8 w-8" />
           <span className="text-base font-semibold">Beacon</span>
         </Link>

@@ -2,7 +2,7 @@ import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Trans, useTranslation } from "react-i18next";
 import { msg } from "@/i18n";
-import { ArrowRight, BellRing, CalendarCheck, Compass, FileStack, Link2, Lock, ShieldCheck } from "lucide-react";
+import { ArrowRight, BellRing, CalendarCheck, Compass, FileStack, Link2, Lock, Quote, ShieldCheck, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import FadeIn from "@/components/FadeIn";
@@ -14,6 +14,7 @@ import IconTile, { TONE_CYCLE } from "@/components/IconTile";
 import Photo from "@/components/Photo";
 import BrandMark from "@/components/BrandMark";
 import FloatingNav from "@/components/layout/FloatingNav";
+import DragMarquee from "@/components/motion/DragMarquee";
 import { CalendarCheckArt, ClipboardChartArt, StethoscopeArt } from "@/components/art/Illustrations";
 
 // Everything described on this page is something the app and its C++
@@ -97,6 +98,15 @@ const FEATURES = [
   },
 ];
 
+const REVIEWS = [
+  { initials: "AR", name: msg("Ananya R."), role: msg("Patient"), quote: msg("I booked a cardiologist in two minutes, and only real open slots showed up. No calling the front desk.") },
+  { initials: "VS", name: msg("Dr. Vikram S."), role: msg("Doctor"), quote: msg("I publish my free hours each morning and see exactly who has booked. My day starts organised.") },
+  { initials: "MK", name: msg("Meera K."), role: msg("Nurse"), quote: msg("Care reports go straight onto the patient's record, so the doctor sees them before rounds.") },
+  { initials: "RP", name: msg("Rohit P."), role: msg("Patient"), quote: msg("The condition guidance told me which precautions to take and which specialist to see. It felt like someone was looking out for me.") },
+  { initials: "FN", name: msg("Farah N."), role: msg("Patient"), quote: msg("I upload my mother's reports from home, and her doctor already has them at the appointment.") },
+  { initials: "KI", name: msg("Dr. Kavya I."), role: msg("Doctor"), quote: msg("Knowing every record is encrypted and tamper-evident gives our patients real peace of mind.") },
+];
+
 function SiteHeader() {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -118,7 +128,7 @@ function SiteHeader() {
 // none of them shows invented numbers.
 function FeatureChip({ icon: Icon, children }) {
   return (
-    <span className="inline-flex items-center gap-2 rounded-xl border border-border bg-card/90 px-3 py-2 text-sm font-semibold shadow-md backdrop-blur">
+    <span className="float-soft inline-flex items-center gap-2 rounded-xl border border-border bg-card/90 px-3 py-2 text-sm font-semibold shadow-md backdrop-blur">
       <span className="grid h-7 w-7 place-items-center rounded-lg bg-primary bg-primary-gradient text-primary-foreground">
         <Icon aria-hidden="true" className="h-4 w-4" />
       </span>
@@ -151,6 +161,9 @@ function Hero() {
         />
       </div>
       <div aria-hidden="true" className="hero-wash absolute inset-0" />
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
+        <span className="beacon-beam" />
+      </div>
 
       <div className="relative mx-auto w-full max-w-6xl px-4 pb-28 pt-28 sm:px-6 sm:pt-32">
         <div className="max-w-xl">
@@ -332,6 +345,55 @@ function Features() {
   );
 }
 
+// Example reviews written for this demo, not from real users; the
+// caption under the heading says so.
+function Reviews() {
+  const { t } = useTranslation();
+  return (
+    <section id="reviews" aria-labelledby="reviews-title" className="scroll-mt-24 overflow-hidden border-t border-primary/15 py-16 sm:py-24">
+      <div className="mx-auto mb-10 max-w-6xl px-4 sm:px-6">
+        <FadeIn className="max-w-2xl">
+          <span className="text-sm font-semibold uppercase tracking-wider text-primary">{t("Reviews")}</span>
+          <h2 id="reviews-title" className="mt-2 text-3xl">{t("People who found their way with Beacon")}</h2>
+          <p className="mt-2 text-base text-muted-foreground">
+            {t("Example reviews written for this demo. Drag the strip to browse.")}
+          </p>
+        </FadeIn>
+      </div>
+
+      <DragMarquee
+        label={t("Reviews")}
+        items={REVIEWS}
+        renderItem={({ initials, name, role, quote }) => (
+          <figure className="review-card flex h-full w-[300px] flex-col rounded-2xl border border-border bg-card p-6 shadow-sm sm:w-[360px]">
+            <div className="flex items-center justify-between">
+              <Quote aria-hidden="true" className="h-7 w-7 text-mint" />
+              <span className="flex gap-0.5 text-coral" aria-label={t("5 out of 5")}>
+                {[0, 1, 2, 3, 4].map((s) => (
+                  <Star key={s} aria-hidden="true" className="h-4 w-4 fill-current" />
+                ))}
+              </span>
+            </div>
+            <blockquote className="mt-4 flex-1 text-base text-foreground/85">{t(quote)}</blockquote>
+            <figcaption className="mt-6 flex items-center gap-3">
+              <span
+                aria-hidden="true"
+                className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-primary bg-primary-gradient text-sm font-semibold text-primary-foreground"
+              >
+                {initials}
+              </span>
+              <span>
+                <span className="block text-sm font-semibold">{t(name)}</span>
+                <span className="block text-xs text-muted-foreground">{t(role)}</span>
+              </span>
+            </figcaption>
+          </figure>
+        )}
+      />
+    </section>
+  );
+}
+
 function Home() {
   const { t } = useTranslation();
   return (
@@ -343,6 +405,7 @@ function Home() {
         <RoleGateway />
         <HowItWorks />
         <Features />
+        <Reviews />
       </main>
       <footer className="accent-top pill-clearance border-t border-border bg-card px-4 py-8 sm:px-6">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 text-sm text-muted-foreground">

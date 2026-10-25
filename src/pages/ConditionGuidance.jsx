@@ -213,7 +213,7 @@ function EmergencyResult({ result }) {
       aria-labelledby="emergency-heading"
       className="rounded-xl border-2 border-destructive bg-destructive/10 p-4 sm:p-6"
     >
-      <h2 id="emergency-heading" className="flex items-center gap-2 text-lg font-bold text-destructive">
+      <h2 id="emergency-heading" className="flex items-center gap-2 font-sans text-lg font-bold text-destructive">
         <Siren aria-hidden="true" className="h-6 w-6" />
         {t("Emergency")}
       </h2>
