@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { CalendarCheck, FileDown, FileText, HeartPulse, Pill, ShieldCheck, Stethoscope } from "lucide-react";
 import { useCurrentUser } from "@/context/UserContext";
 import { getAppointments, getDocuments, documentContentUrl } from "@/Services/api";
@@ -17,11 +18,14 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { patientMenu } from "@/lib/nav";
+import { formatIstDate, todayIst } from "@/lib/time";
+import { currentLocale } from "@/i18n";
 
 function PatientDashboard() {
   const [profileOpen, setProfileOpen] = useState(false);
   const { user } = useCurrentUser();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const [appointments, setAppointments] = useState([]);
   const [documents, setDocuments] = useState([]);
@@ -46,7 +50,7 @@ function PatientDashboard() {
   }, [user]);
 
   // Soonest appointment by date+time, today or later.
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayIst();
   const upcoming = appointments
     .filter((a) => a.date >= today)
     .sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time))[0];
@@ -58,18 +62,18 @@ function PatientDashboard() {
   const initial = user?.name ? user.name.charAt(0).toUpperCase() : "P";
 
   return (
-    <DashboardShell role="Patient" menu={patientMenu} title="Patient Portal">
+    <DashboardShell role="Patient" menu={patientMenu} title={t("Patient Portal")}>
       <WelcomeBanner
         photo="consultation"
-        eyebrow="Patient portal"
-        title={`Welcome, ${user?.name || "Patient"}`}
-        description="Your appointments and reports at a glance."
+        eyebrow={t("Patient portal")}
+        title={t("Welcome, {{name}}", { name: user?.name || t("Patient") })}
+        description={t("Your appointments and reports at a glance.")}
         action={
           <Button variant="outline" size="sm" onClick={() => setProfileOpen(true)}>
             <Avatar className="h-6 w-6">
               <AvatarFallback className="text-xs">{initial}</AvatarFallback>
             </Avatar>
-            My profile
+            {t("My profile")}
           </Button>
         }
       />
@@ -77,24 +81,24 @@ function PatientDashboard() {
       <div className="stagger mb-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         <StatCard tone="teal"
           icon={CalendarCheck}
-          label="Upcoming appointment"
+          label={t("Upcoming appointment")}
           value={loadingAppointments ? "…" : upcoming ? 1 : 0}
-          note={upcoming ? `${upcoming.date}, ${upcoming.time}` : "None scheduled"}
+          note={upcoming ? `${upcoming.date}, ${upcoming.time}` : t("None scheduled")}
         />
-        <StatCard tone="blue" icon={FileText} label="Reports" value={loadingDocuments ? "…" : documents.length} note="Available to you" />
-        <StatCard tone="amber" icon={Pill} label="Prescriptions" value={0} note="Not tracked yet" sample />
-        <StatCard tone="green" icon={HeartPulse} label="Health status" value="Good" sample />
+        <StatCard tone="blue" icon={FileText} label={t("Reports")} value={loadingDocuments ? "…" : documents.length} note={t("Available to you")} />
+        <StatCard tone="amber" icon={Pill} label={t("Prescriptions")} value={0} note={t("Not tracked yet")} sample />
+        <StatCard tone="green" icon={HeartPulse} label={t("Health status")} value={t("Good")} sample />
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.25fr_1fr]">
         <Panel
-          title="Upcoming appointment"
-          description="Your next scheduled consultation"
+          title={t("Upcoming appointment")}
+          description={t("Your next scheduled consultation")}
           action={upcoming && <StatusBadge status={upcoming.status} />}
         >
           {loadingAppointments ? (
             <div role="status" className="flex items-center gap-4 rounded-lg border border-border p-4">
-              <span className="sr-only">Loading appointments…</span>
+              <span className="sr-only">{t("Loading appointments…")}</span>
               <Skeleton className="h-12 w-12 rounded-full" />
               <div className="flex flex-1 flex-col gap-2"><Skeleton className="w-1/2" /><Skeleton className="h-3 w-1/3" /></div>
             </div>
@@ -105,7 +109,7 @@ function PatientDashboard() {
               </span>
               <div className="min-w-0 flex-1">
                 <h3 className="truncate text-base">{upcoming.doctorName}</h3>
-                <p className="text-sm text-muted-foreground">{upcoming.reason || "Consultation"}</p>
+                <p className="text-sm text-muted-foreground">{upcoming.reason || t("Consultation")}</p>
               </div>
               <div className="text-right">
                 <b className="block text-sm">{upcoming.date}</b>
@@ -114,32 +118,32 @@ function PatientDashboard() {
             </div>
           ) : (
             <EmptyState art={CalendarCheckArt} className="py-4">
-              You have no upcoming appointments.
+              {t("You have no upcoming appointments.")}
             </EmptyState>
           )}
 
           <Button className="mt-4 w-full" onClick={() => navigate("/patient/appointments")}>
-            {upcoming ? "View appointments" : "Book an appointment"}
+            {upcoming ? t("View appointments") : t("Book an appointment")}
           </Button>
         </Panel>
 
         <Panel
-          title="Recent reports"
-          description="Your latest medical documents"
+          title={t("Recent reports")}
+          description={t("Your latest medical documents")}
           action={
             <Button variant="link" size="sm" className="px-0" onClick={() => navigate("/patient/reports")}>
-              View all
+              {t("View all")}
             </Button>
           }
         >
-          {loadingDocuments && <SkeletonRows rows={2} label="Loading reports…" />}
+          {loadingDocuments && <SkeletonRows rows={2} label={t("Loading reports…")} />}
           {!loadingDocuments && recentDocuments.length === 0 && (
             <EmptyState
               art={FolderCrossArt}
               className="py-4"
-              action={<Button variant="outline" size="sm" onClick={() => navigate("/patient/reports")}>Upload a report</Button>}
+              action={<Button variant="outline" size="sm" onClick={() => navigate("/patient/reports")}>{t("Upload a report")}</Button>}
             >
-              No reports yet.
+              {t("No reports yet.")}
             </EmptyState>
           )}
 
@@ -152,11 +156,11 @@ function PatientDashboard() {
                 <div className="min-w-0 flex-1">
                   <b className="block truncate text-sm font-semibold">{doc.filename}</b>
                   <small className="text-xs text-muted-foreground">
-                    {doc.uploaderRole === "Nurse" ? "From your nurse" : "You uploaded"} · {new Date(doc.createdAt).toLocaleDateString()}
+                    {doc.uploaderRole === "Nurse" ? t("From your nurse") : t("You uploaded")} · {formatIstDate(doc.createdAt, currentLocale())}
                   </small>
                 </div>
                 <Button size="icon" variant="outline" asChild>
-                  <a href={documentContentUrl(doc.id)} target="_blank" rel="noreferrer" aria-label={`Open ${doc.filename} in a new tab`}>
+                  <a href={documentContentUrl(doc.id)} target="_blank" rel="noreferrer" aria-label={t("Open {{name}} in a new tab", { name: doc.filename })}>
                     <FileDown aria-hidden="true" />
                   </a>
                 </Button>
@@ -166,7 +170,7 @@ function PatientDashboard() {
         </Panel>
       </div>
 
-      <Notice icon={ShieldCheck}>Patient records are stored encrypted on the clinic server.</Notice>
+      <Notice icon={ShieldCheck}>{t("Patient records are stored encrypted on the clinic server.")}</Notice>
 
       <Dialog open={profileOpen} onOpenChange={setProfileOpen}>
         <DialogContent className="text-center">
@@ -174,15 +178,15 @@ function PatientDashboard() {
             <Avatar className="mx-auto mb-2 h-16 w-16">
               <AvatarFallback className="text-xl">{initial}</AvatarFallback>
             </Avatar>
-            <DialogTitle>{user?.name || "Patient"}</DialogTitle>
-            <p className="text-sm text-muted-foreground">Patient</p>
+            <DialogTitle>{user?.name || t("Patient")}</DialogTitle>
+            <p className="text-sm text-muted-foreground">{t("Patient")}</p>
           </DialogHeader>
 
           <dl className="grid grid-cols-1 gap-3 text-left sm:grid-cols-2">
-            <ProfileItem label="Name" value={user?.name || "—"} />
-            <ProfileItem label="Email" value={user?.email || "—"} />
-            <ProfileItem label="Reports" value={`${documents.length} available`} />
-            <ProfileItem label="Health status" value={<span className="flex items-center gap-2">Good <SampleTag /></span>} />
+            <ProfileItem label={t("Name")} value={user?.name || "—"} />
+            <ProfileItem label={t("Email")} value={user?.email || "—"} />
+            <ProfileItem label={t("Reports")} value={t("{{count}} available", { count: documents.length })} />
+            <ProfileItem label={t("Health status")} value={<span className="flex items-center gap-2">{t("Good")} <SampleTag /></span>} />
           </dl>
         </DialogContent>
       </Dialog>

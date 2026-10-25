@@ -18,8 +18,12 @@ export function safeNextPath(next, origin) {
   return `${url.pathname}${url.search}${url.hash}`;
 }
 
-// Account ids look like "U-000011"; accept that or a bare number.
-const DOCTOR_ID_RE = /^(U-)?\d{1,12}$/;
+// Account ids look like "U-000011" (or a bare number); doctor-directory
+// (mock) ids look like "Z-0001".
+const DOCTOR_ID_RE = /^((U-)?\d{1,12}|Z-\d{1,6})$/;
+// Free-text names (a guidance condition or a specialty) are only passed on
+// to the API, which validates them; just bound their length and shape.
+const NAME_RE = /^[\w ()&',./-]{1,120}$/;
 const DATE_RE = /^(\d{4})-(\d{2})-(\d{2})$/;
 
 function isRealDate(iso) {
@@ -29,7 +33,8 @@ function isRealDate(iso) {
   return d.toISOString().slice(0, 10) === iso;
 }
 
-// Reads booking prefill from /patient/appointments?doctorId=&date=&time=&from=.
+// Reads booking prefill from
+// /patient/appointments?doctorId=&date=&time=&from=&condition=&specialty=.
 // Every field is validated independently; a bad or stale value is dropped
 // (null) rather than throwing. `today` is "YYYY-MM-DD".
 export function parseBookingPrefill(params, today) {
@@ -39,5 +44,10 @@ export function parseBookingPrefill(params, today) {
   const date = rawDate && isRealDate(rawDate) && rawDate >= today ? rawDate : null;
   const time = normalizeTime(get("time"));
   const fromTriage = get("from") === "triage";
-  return { doctorId, date, time, fromTriage, any: Boolean(doctorId || date || time || fromTriage) };
+  const condition = NAME_RE.test(get("condition")) ? get("condition") : null;
+  const specialty = NAME_RE.test(get("specialty")) ? get("specialty") : null;
+  return {
+    doctorId, date, time, fromTriage, condition, specialty,
+    any: Boolean(doctorId || date || time || fromTriage || condition || specialty),
+  };
 }

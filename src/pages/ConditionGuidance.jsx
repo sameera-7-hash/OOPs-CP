@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { CalendarPlus, LoaderCircle, MessageCircleQuestion, RefreshCw, Search, ShieldCheck, Siren } from "lucide-react";
 import { useCurrentUser } from "@/context/UserContext";
 import { getTriage, getTriageDiseases } from "@/Services/api";
@@ -22,7 +23,9 @@ const MENUS = { Patient: patientMenu, Doctor: doctorMenu, Nurse: nurseMenu };
 const SLOW_AFTER_MS = 2000;
 // nextSteps ids that mean "open booking". Anything else is shown as text.
 const BOOKING_STEPS = new Set(["BOOK_DOCTOR", "BOOK_GENERAL_PHYSICIAN"]);
-const BOOKING_PATH = "/patient/appointments?from=triage";
+// Booking opens with directory specialists recommended for the condition.
+const bookingPath = (disease) =>
+  `/patient/appointments?${new URLSearchParams({ from: "triage", ...(disease ? { condition: disease } : {}) })}`;
 
 // True once `active` has stayed true for SLOW_AFTER_MS: the backend may be
 // on a free tier that cold-starts, so a slow first call gets a friendlier
@@ -39,28 +42,32 @@ function useSlow(active) {
 }
 
 // Names may contain double spaces; match on a collapsed, lower-case form
-// but always send back the exact string the API gave us.
+// but always send back the exact string the API gave us. Condition names,
+// precautions and step labels are dataset text from the API and are shown
+// as the API sends them (English); only this page's own copy is translated.
 const searchKey = (s) => s.toLowerCase().replace(/\s+/g, " ").trim();
 
 function WakingNotice() {
+  const { t } = useTranslation();
   return (
-    <Notice tone="info" icon={LoaderCircle} className="mb-4" role="status" title="The server is waking up">
-      This can take up to a minute on first load. We&apos;ll keep waiting.
+    <Notice tone="info" icon={LoaderCircle} className="mb-4" role="status" title={t("The server is waking up")}>
+      {t("This can take up to a minute on first load. We'll keep waiting.")}
     </Notice>
   );
 }
 
 function ErrorNotice({ message, onRetry }) {
+  const { t } = useTranslation();
   return (
     <Notice
       tone="danger"
       role="alert"
       className="mb-4"
-      title="Something went wrong"
+      title={t("Something went wrong")}
       action={
         <Button size="sm" variant="outline" onClick={onRetry}>
           <RefreshCw aria-hidden="true" />
-          Try again
+          {t("Try again")}
         </Button>
       }
     >
@@ -74,6 +81,7 @@ function ConditionPicker({ diseases, selected, onSelect }) {
   const [query, setQuery] = useState("");
   const [active, setActive] = useState(0);
   const [focused, setFocused] = useState(false);
+  const { t } = useTranslation();
   const listRef = useRef(null);
   const baseId = useId();
   const listId = `${baseId}-list`;
@@ -112,7 +120,7 @@ function ConditionPicker({ diseases, selected, onSelect }) {
 
   return (
     <div className="flex flex-col gap-2">
-      <Label htmlFor={`${baseId}-input`}>Search conditions</Label>
+      <Label htmlFor={`${baseId}-input`}>{t("Search conditions")}</Label>
       <div className="relative">
         <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
@@ -124,7 +132,7 @@ function ConditionPicker({ diseases, selected, onSelect }) {
           aria-autocomplete="list"
           aria-activedescendant={focused && matches.length ? optionId(active) : undefined}
           autoComplete="off"
-          placeholder="Type to filter, e.g. migraine"
+          placeholder={t("Type to filter, e.g. migraine")}
           className="pl-9"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
@@ -134,19 +142,22 @@ function ConditionPicker({ diseases, selected, onSelect }) {
         />
       </div>
       <p className="text-xs text-muted-foreground" aria-live="polite">
-        {matches.length} of {diseases.length} conditions. Use the arrow keys and Enter to choose.
+        {t("{{shown}} of {{total}} conditions. Use the arrow keys and Enter to choose.", {
+          shown: matches.length,
+          total: diseases.length,
+        })}
       </p>
 
       {matches.length === 0 ? (
-        <EmptyState className="py-4" title="No matching conditions">
-          Try a shorter or different word.
+        <EmptyState className="py-4" title={t("No matching conditions")}>
+          {t("Try a shorter or different word.")}
         </EmptyState>
       ) : (
         <ul
           id={listId}
           ref={listRef}
           role="listbox"
-          aria-label="Conditions"
+          aria-label={t("Conditions")}
           className="max-h-72 overflow-y-auto rounded-xl border border-border bg-card p-1"
         >
           {matches.map((name, i) => {
@@ -196,6 +207,7 @@ function BulletList({ items }) {
 function EmergencyResult({ result }) {
   const block = result.emergency || {};
   const suggestions = Array.isArray(block.datasetSuggestions) ? block.datasetSuggestions : [];
+  const { t } = useTranslation();
   return (
     <section
       aria-labelledby="emergency-heading"
@@ -203,14 +215,14 @@ function EmergencyResult({ result }) {
     >
       <h2 id="emergency-heading" className="flex items-center gap-2 text-lg font-bold text-destructive">
         <Siren aria-hidden="true" className="h-6 w-6" />
-        Emergency
+        {t("Emergency")}
       </h2>
       {block.message && <p className="mt-2 text-base font-semibold">{block.message}</p>}
       <EmergencyNumbers className="mt-4" />
       {suggestions.length > 0 && (
         <div className="mt-6 border-t border-destructive/25 pt-4">
           <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Listed in the dataset for this condition
+            {t("Listed in the dataset for this condition")}
           </h3>
           <ul className="mt-2 flex flex-col gap-2 text-sm text-muted-foreground">
             {suggestions.map((s, i) => (
@@ -226,7 +238,7 @@ function EmergencyResult({ result }) {
   );
 }
 
-function NextSteps({ steps, action, canBook }) {
+function NextSteps({ steps, action, canBook, disease }) {
   const valid = Array.isArray(steps) ? steps.filter((s) => s && typeof s.label === "string" && s.label) : [];
   const items = valid
     .map((step) => {
@@ -236,7 +248,7 @@ function NextSteps({ steps, action, canBook }) {
         return (
           <Link
             key={step.id}
-            to={BOOKING_PATH}
+            to={bookingPath(disease)}
             className={cn(buttonVariants({ variant: quiet ? "outline" : "default" }), "no-underline")}
           >
             <CalendarPlus aria-hidden="true" />
@@ -259,11 +271,12 @@ function NextSteps({ steps, action, canBook }) {
 }
 
 function GuidanceResult({ result, canBook }) {
+  const { t } = useTranslation();
   if (result.action === "EMERGENCY") {
     return (
       <div className="flex flex-col gap-4">
         <EmergencyResult result={result} />
-        <p className="text-xs text-muted-foreground">{GUIDANCE_DISCLAIMER}</p>
+        <p className="text-xs text-muted-foreground">{t(GUIDANCE_DISCLAIMER)}</p>
       </div>
     );
   }
@@ -275,7 +288,7 @@ function GuidanceResult({ result, canBook }) {
   return (
     <div className="stagger flex flex-col gap-4">
       {isFallback && result.message && (
-        <Notice tone="info" title="We couldn't narrow this down">
+        <Notice tone="info" title={t("We couldn't narrow this down")}>
           {result.message}
         </Notice>
       )}
@@ -285,7 +298,7 @@ function GuidanceResult({ result, canBook }) {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
               <ShieldCheck aria-hidden="true" className="h-5 w-5 text-primary" />
-              Self-help steps
+              {t("Self-help steps")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -299,7 +312,7 @@ function GuidanceResult({ result, canBook }) {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
               <MessageCircleQuestion aria-hidden="true" className="h-5 w-5 text-primary" />
-              Talk to a doctor about
+              {t("Talk to a doctor about")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -309,15 +322,15 @@ function GuidanceResult({ result, canBook }) {
       )}
 
       {!isFallback && precautions.length === 0 && discuss.length === 0 && (
-        <EmptyState className="py-4" title="No precautions listed">
-          The dataset has no precautions recorded for this condition.
+        <EmptyState className="py-4" title={t("No precautions listed")}>
+          {t("The dataset has no precautions recorded for this condition.")}
         </EmptyState>
       )}
 
       <div>
-        <NextSteps steps={result.nextSteps} action={result.action} canBook={canBook} />
+        <NextSteps steps={result.nextSteps} action={result.action} canBook={canBook} disease={result.disease} />
       </div>
-      <p className="text-xs text-muted-foreground">{GUIDANCE_DISCLAIMER}</p>
+      <p className="text-xs text-muted-foreground">{t(GUIDANCE_DISCLAIMER)}</p>
     </div>
   );
 }
@@ -327,6 +340,7 @@ function ConditionGuidance() {
   const role = user?.role || "Patient";
   const canBook = role === "Patient";
   const [searchParams, setSearchParams] = useSearchParams();
+  const { t } = useTranslation();
 
   const [diseases, setDiseases] = useState(null);
   const [listLoading, setListLoading] = useState(true);
@@ -376,21 +390,21 @@ function ConditionGuidance() {
   const resultSlow = useSlow(resultLoading);
 
   return (
-    <DashboardShell role={role} menu={MENUS[role] || patientMenu} title="Condition guidance">
+    <DashboardShell role={role} menu={MENUS[role] || patientMenu} title={t("Condition guidance")}>
       <PageHeading
-        eyebrow="Guidance"
-        title="Condition guidance"
-        description="Choose a condition to see the general precautions our dataset lists for it, and what to do next."
+        eyebrow={t("Guidance")}
+        title={t("Condition guidance")}
+        description={t("Choose a condition to see the general precautions our dataset lists for it, and what to do next.")}
       />
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
-        <Panel title="Pick a condition" className="mb-0 self-start">
+        <Panel title={t("Pick a condition")} className="mb-0 self-start">
           {listLoading && listSlow && <WakingNotice />}
           {listError && <ErrorNotice message={listError} onRetry={loadDiseases} />}
-          {listLoading && <SkeletonRows rows={4} label="Loading conditions…" />}
+          {listLoading && <SkeletonRows rows={4} label={t("Loading conditions…")} />}
           {!listLoading && !listError && diseases && diseases.length === 0 && (
-            <EmptyState className="py-4" title="No conditions available">
-              The server returned an empty list.
+            <EmptyState className="py-4" title={t("No conditions available")}>
+              {t("The server returned an empty list.")}
             </EmptyState>
           )}
           {!listLoading && diseases && diseases.length > 0 && (
@@ -400,14 +414,14 @@ function ConditionGuidance() {
 
         <section aria-labelledby="result-heading" className="min-w-0">
           <h2 id="result-heading" className="mb-3 text-xl font-semibold">
-            {result?.disease ? `Guidance for ${result.disease}` : "Guidance"}
+            {result?.disease ? t("Guidance for {{condition}}", { condition: result.disease }) : t("Guidance")}
           </h2>
           <div aria-live="polite" aria-busy={resultLoading}>
             {resultLoading && resultSlow && <WakingNotice />}
             {resultError && <ErrorNotice message={resultError} onRetry={() => loadResult(validSelection)} />}
             {resultLoading && (
               <div role="status" className="flex flex-col gap-3 rounded-xl border border-border bg-card p-6">
-                <span className="sr-only">Loading guidance…</span>
+                <span className="sr-only">{t("Loading guidance…")}</span>
                 <Skeleton className="h-5 w-1/3" />
                 <Skeleton className="w-full" />
                 <Skeleton className="w-5/6" />
@@ -415,14 +429,14 @@ function ConditionGuidance() {
               </div>
             )}
             {!resultLoading && !resultError && !result && (
-              <EmptyState className="rounded-xl border border-dashed border-border" title="Nothing selected yet">
-                Pick a condition from the list to see its guidance here.
+              <EmptyState className="rounded-xl border border-dashed border-border" title={t("Nothing selected yet")}>
+                {t("Pick a condition from the list to see its guidance here.")}
               </EmptyState>
             )}
             {result && <GuidanceResult result={result} canBook={canBook} />}
           </div>
           {!canBook && result && result.action !== "EMERGENCY" && (
-            <p className="mt-3 text-xs text-muted-foreground">Read-only view. Booking is available to patients.</p>
+            <p className="mt-3 text-xs text-muted-foreground">{t("Read-only view. Booking is available to patients.")}</p>
           )}
         </section>
       </div>

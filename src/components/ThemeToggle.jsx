@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Moon, Sun } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 
 function readStoredTheme() {
@@ -24,6 +25,7 @@ function applyTheme(theme) {
 function ThemeToggle() {
   const [theme, setTheme] = useState(readStoredTheme);
   const isDark = theme === "dark";
+  const { t } = useTranslation();
 
   useEffect(() => {
     applyTheme(theme);
@@ -41,7 +43,7 @@ function ThemeToggle() {
       onClick={toggle}
       role="switch"
       aria-checked={isDark}
-      aria-label="Dark mode"
+      aria-label={t("Dark mode")}
       className="relative inline-flex h-8 w-16 shrink-0 items-center justify-between rounded-full border border-border bg-muted p-1"
     >
       <span

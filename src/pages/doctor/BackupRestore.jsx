@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Database, DatabaseZap, RefreshCw, RotateCcw, Save, ScrollText } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { createBackup, getLogs } from "@/Services/api";
 import { useToast } from "@/context/ToastContext";
 import DashboardShell from "@/components/layout/DashboardShell";
@@ -10,9 +11,11 @@ import SampleTag from "@/components/feedback/SampleTag";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { doctorMenu } from "@/lib/nav";
+import { logLineToIst } from "@/lib/time";
 
 function BackupRestore() {
   const notify = useToast();
+  const { t } = useTranslation();
   const [backingUp, setBackingUp] = useState(false);
   const [logsOpen, setLogsOpen] = useState(false);
 
@@ -20,56 +23,58 @@ function BackupRestore() {
     setBackingUp(true);
     try {
       const result = await createBackup();
-      notify({ message: `Snapshot saved: ${result.snapshot}` });
+      notify({ message: t("Snapshot saved: {{name}}", { name: result.snapshot }) });
     } catch (err) {
-      notify({ tone: "error", message: `Could not create snapshot: ${err.message}` });
+      notify({ tone: "error", message: t("Could not create snapshot: {{error}}", { error: err.message }) });
     } finally {
       setBackingUp(false);
     }
   };
 
   return (
-    <DashboardShell role="Doctor" menu={doctorMenu} title="Backup & Restore">
-      <PageHeading eyebrow="Doctor portal" title="Backup & restore" description="Create database snapshots." />
+    <DashboardShell role="Doctor" menu={doctorMenu} title={t("Backup & Restore")}>
+      <PageHeading eyebrow={t("Doctor portal")} title={t("Backup & restore")} description={t("Create database snapshots.")} />
 
       {/* The file names and statuses below are static labels: the backend
           has no endpoint that reports database or backup health. */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-        <Panel title="Primary database" action={<SampleTag />}>
+        <Panel title={t("Primary database")} action={<SampleTag />}>
           <FileRow name="patients.dat" />
         </Panel>
-        <Panel title="Backup database" action={<SampleTag />}>
+        <Panel title={t("Backup database")} action={<SampleTag />}>
           <FileRow name="patients.dat.bak">
             <Button size="sm" variant="outline" onClick={() => setLogsOpen(true)}>
               <ScrollText aria-hidden="true" />
-              View logs
+              {t("View logs")}
             </Button>
           </FileRow>
         </Panel>
       </div>
 
-      <Notice icon={DatabaseZap} title="Hash-chain integrity" className="mb-6">
-        The live integrity result for each record is shown on the patient list and dashboard, where the backend
-        reports it.
+      <Notice icon={DatabaseZap} title={t("Hash-chain integrity")} className="mb-6">
+        {t(
+          "The live integrity result for each record is shown on the patient list and dashboard, where the backend reports it."
+        )}
       </Notice>
 
       <div className="flex flex-wrap gap-2">
         <Button onClick={backup} disabled={backingUp}>
           <Save aria-hidden="true" />
-          {backingUp ? "Creating…" : "Create snapshot"}
+          {backingUp ? t("Creating…") : t("Create snapshot")}
         </Button>
         <Button
           variant="outline"
           onClick={() =>
             notify({
               tone: "error",
-              message:
-                "Restoring from a snapshot isn't exposed by the backend API yet. The server recovers from patients.dat.bak automatically if the primary file is corrupted.",
+              message: t(
+                "Restoring from a snapshot isn't exposed by the backend API yet. The server recovers from patients.dat.bak automatically if the primary file is corrupted."
+              ),
             })
           }
         >
           <RotateCcw aria-hidden="true" />
-          Restore backup
+          {t("Restore backup")}
         </Button>
       </div>
 
@@ -96,6 +101,7 @@ function LogsDialog({ open, onOpenChange }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const bottomRef = useRef(null);
+  const { t } = useTranslation();
 
   const load = useCallback(() => {
     setLoading(true);
@@ -120,21 +126,21 @@ function LogsDialog({ open, onOpenChange }) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Activity log</DialogTitle>
+          <DialogTitle>{t("Activity log")}</DialogTitle>
           <DialogDescription>
             {log
-              ? `Last ${log.lines.length} of ${log.totalLines} entries from ${log.file}.`
-              : "Server events across the whole site."}
+              ? t("Last {{shown}} of {{total}} entries from {{file}}.", { shown: log.lines.length, total: log.totalLines, file: log.file })
+              : t("Server events across the whole site.")}
           </DialogDescription>
         </DialogHeader>
 
-        {error && <Notice tone="danger" role="alert" title="Couldn't load the log" className="mb-3">{error}</Notice>}
+        {error && <Notice tone="danger" role="alert" title={t("Couldn't load the log")} className="mb-3">{error}</Notice>}
 
         <div className="max-h-80 overflow-auto rounded-lg border border-border bg-muted p-3 font-mono text-xs leading-relaxed">
-          {loading && !log && <p className="text-muted-foreground">Loading…</p>}
-          {log && log.lines.length === 0 && <p className="text-muted-foreground">The log is empty.</p>}
+          {loading && !log && <p className="text-muted-foreground">{t("Loading…")}</p>}
+          {log && log.lines.length === 0 && <p className="text-muted-foreground">{t("The log is empty.")}</p>}
           {log?.lines.map((line, index) => (
-            <div key={index} className={logLineClass(line)}>{line}</div>
+            <div key={index} className={logLineClass(line)}>{logLineToIst(line)}</div>
           ))}
           <div ref={bottomRef} />
         </div>
@@ -142,7 +148,7 @@ function LogsDialog({ open, onOpenChange }) {
         <div className="mt-4 flex justify-end">
           <Button size="sm" variant="outline" onClick={load} disabled={loading}>
             <RefreshCw aria-hidden="true" />
-            Refresh
+            {t("Refresh")}
           </Button>
         </div>
       </DialogContent>

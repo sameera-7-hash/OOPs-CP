@@ -1,5 +1,7 @@
 import React from "react";
 import { Pill } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { msg } from "@/i18n";
 import DashboardShell from "@/components/layout/DashboardShell";
 import PageHeading from "@/components/layout/PageHeading";
 import { Card } from "@/components/ui/card";
@@ -10,20 +12,21 @@ import { patientMenu } from "@/lib/nav";
 
 // SAMPLE DATA: prescriptions aren't tracked by the backend yet.
 const PRESCRIPTIONS = [
-  { medicine: "Paracetamol", dosage: "500 mg", frequency: "2 times daily", duration: "5 days", status: "Active" },
-  { medicine: "Vitamin D3", dosage: "1000 IU", frequency: "Once daily", duration: "30 days", status: "Active" },
-  { medicine: "Cetirizine", dosage: "10 mg", frequency: "Once at night", duration: "7 days", status: "Active" },
+  { medicine: "Paracetamol", dosage: "500 mg", frequency: msg("2 times daily"), duration: msg("5 days"), status: msg("Active") },
+  { medicine: "Vitamin D3", dosage: "1000 IU", frequency: msg("Once daily"), duration: msg("30 days"), status: msg("Active") },
+  { medicine: "Cetirizine", dosage: "10 mg", frequency: msg("Once at night"), duration: msg("7 days"), status: msg("Active") },
 ];
 
 function Prescriptions() {
+  const { t } = useTranslation();
   return (
-    <DashboardShell role="Patient" menu={patientMenu} title="Prescriptions">
+    <DashboardShell role="Patient" menu={patientMenu} title={t("Prescriptions")}>
       <PageHeading
-        eyebrow="Medication"
-        title="Prescriptions"
-        description="Your active prescriptions."
+        eyebrow={t("Medication")}
+        title={t("Prescriptions")}
+        description={t("Your active prescriptions.")}
         action={<PillArt className="hidden h-16 w-16 sm:block" />}
-        sample="These prescriptions are placeholders. The backend doesn't track prescriptions yet."
+        sample={t("These prescriptions are placeholders. The backend doesn't track prescriptions yet.")}
       />
 
       <ul className="flex flex-col gap-3">
@@ -37,11 +40,11 @@ function Prescriptions() {
               <div className="min-w-0 flex-1">
                 <h2 className="text-base">{item.medicine}</h2>
                 <p className="mt-0.5 text-sm text-muted-foreground">
-                  {item.dosage} · {item.frequency} · for {item.duration}
+                  {item.dosage} · {t(item.frequency)} · {t("for {{duration}}", { duration: t(item.duration) })}
                 </p>
               </div>
 
-              <Badge variant="success">{item.status}</Badge>
+              <Badge variant="success">{t(item.status)}</Badge>
             </Card>
           </FadeIn>
         ))}

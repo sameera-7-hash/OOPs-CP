@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { LoaderCircle, RefreshCw, WifiOff } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { checkHealth } from "@/Services/api";
 import { Button } from "@/components/ui/button";
 
@@ -12,6 +13,7 @@ const RETRY_DELAYS_MS = [2000, 4000, 8000, 15000, 30000];
 function ServerStatus() {
   const [status, setStatus] = useState("checking"); // checking | waking | online | offline
   const run = useRef(0);
+  const { t } = useTranslation();
 
   const check = useCallback(async () => {
     const id = ++run.current;
@@ -57,15 +59,15 @@ function ServerStatus() {
         {status === "waking" ? (
           <>
             <LoaderCircle aria-hidden="true" className="h-4 w-4 animate-spin text-primary motion-reduce:animate-none" />
-            <span>Waking the clinic server. This can take up to a minute on first load.</span>
+            <span>{t("Waking the clinic server. This can take up to a minute on first load.")}</span>
           </>
         ) : (
           <>
             <WifiOff aria-hidden="true" className="h-4 w-4 text-destructive" />
-            <span>We can&apos;t reach the clinic server right now.</span>
+            <span>{t("We can't reach the clinic server right now.")}</span>
             <Button size="sm" variant="outline" onClick={check} className="h-8">
               <RefreshCw aria-hidden="true" />
-              Try again
+              {t("Try again")}
             </Button>
           </>
         )}

@@ -1,5 +1,6 @@
 import React, { createContext, useCallback, useContext, useState } from "react";
 import { CircleAlert, CircleCheck, X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 
 const DISMISS_AFTER_MS = 5000;
@@ -9,6 +10,7 @@ const ToastContext = createContext(() => {});
 // so feedback doesn't block the page and is announced to screen readers.
 export function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([]);
+  const { t: tr } = useTranslation();
 
   const dismiss = useCallback((id) => setToasts((all) => all.filter((t) => t.id !== id)), []);
 
@@ -46,7 +48,7 @@ export function ToastProvider({ children }) {
               <button
                 type="button"
                 onClick={() => dismiss(t.id)}
-                aria-label="Dismiss notification"
+                aria-label={tr("Dismiss notification")}
                 className="-m-1 grid h-8 w-8 place-items-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
               >
                 <X aria-hidden="true" className="h-4 w-4" />

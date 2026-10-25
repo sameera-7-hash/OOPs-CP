@@ -1,5 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { msg } from "@/i18n";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -14,38 +16,41 @@ const ROLES = [
     role: "Patient",
     photo: "patient",
     art: CalendarCheckArt,
-    text: "Book appointments, upload reports and see what your care team shares with you.",
+    text: msg("Book appointments, upload reports and see what your care team shares with you."),
   },
   {
     role: "Doctor",
     photo: "doctor",
     art: StethoscopeArt,
-    text: "Publish availability, see your booked appointments and manage patient records.",
+    text: msg("Publish availability, see your booked appointments and manage patient records."),
   },
   {
     role: "Nurse",
     photo: "nurse",
     art: ClipboardChartArt,
-    text: "Look up patient records and add care reports to a patient's file.",
+    text: msg("Look up patient records and add care reports to a patient's file."),
   },
 ];
 
 function RoleSelection() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
+  const roleName = { Patient: t("Patient"), Doctor: t("Doctor"), Nurse: t("Nurse") };
+  const continueAs = { Patient: t("Continue as patient"), Doctor: t("Continue as doctor"), Nurse: t("Continue as nurse") };
 
   return (
     <div className="marketing page-wash pill-clearance min-h-screen text-foreground">
       <div className="bg-brand pattern-dots pb-32">
-      <FloatingNav links={[{ to: "/", label: "Home" }]}>
+      <FloatingNav links={[{ to: "/", label: t("Home") }]}>
         <Button size="sm" variant="ghost" className="rounded-full sm:hidden" onClick={() => navigate("/")}>
           <ArrowLeft aria-hidden="true" />
-          Home
+          {t("Home")}
         </Button>
       </FloatingNav>
 
         <FadeIn className="mx-auto max-w-2xl px-4 pt-28 text-center sm:pt-32">
-          <SplitText as="h1" text="Who's signing in?" className="text-4xl sm:text-5xl" />
-          <p className="mt-3 text-base text-muted-foreground">Choose your role to go to the right portal.</p>
+          <SplitText key={t("Who's signing in?")} as="h1" text={t("Who's signing in?")} className="text-4xl sm:text-5xl" />
+          <p className="mt-3 text-base text-muted-foreground">{t("Choose your role to go to the right portal.")}</p>
         </FadeIn>
       </div>
 
@@ -62,10 +67,10 @@ function RoleSelection() {
                   </span>
                 </div>
                 <div className="flex flex-1 flex-col items-center px-6 pb-8 pt-12">
-                  <h2 className="photo-card__title text-xl">{role}</h2>
-                  <p className="mt-2 flex-1 text-sm text-muted-foreground">{text}</p>
+                  <h2 className="photo-card__title text-xl">{roleName[role]}</h2>
+                  <p className="mt-2 flex-1 text-sm text-muted-foreground">{t(text)}</p>
                   <Button className="arrow-nudge mt-6 w-full" onClick={() => navigate(`/login/${role}`)}>
-                    Continue as {role.toLowerCase()}
+                    {continueAs[role]}
                     <ArrowRight aria-hidden="true" />
                   </Button>
                 </div>

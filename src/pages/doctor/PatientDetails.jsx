@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { ArrowLeft, ExternalLink, FileText, ShieldAlert, ShieldCheck } from "lucide-react";
 import { getPatients, getDocuments, documentContentUrl } from "@/Services/api";
 import DashboardShell from "@/components/layout/DashboardShell";
@@ -12,10 +13,13 @@ import { FolderCrossArt } from "@/components/art/Illustrations";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { doctorMenu } from "@/lib/nav";
+import { formatIstDate } from "@/lib/time";
+import { currentLocale } from "@/i18n";
 
 function PatientDetails() {
   const { id: patientId } = useParams();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const [patient, setPatient] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -32,7 +36,7 @@ function PatientDetails() {
         if (cancelled) return;
         const found = data.patients.find((p) => p.id === patientId);
         if (!found) {
-          setError("Patient not found.");
+          setError(t("Patient not found."));
         } else {
           setPatient(found);
         }
@@ -56,17 +60,17 @@ function PatientDetails() {
   }, [patientId]);
 
   return (
-    <DashboardShell role="Doctor" menu={doctorMenu} title="Patient Details">
+    <DashboardShell role="Doctor" menu={doctorMenu} title={t("Patient Details")}>
       <Button variant="ghost" size="sm" className="-ml-3 mb-4" onClick={() => navigate("/doctor/patients")}>
         <ArrowLeft aria-hidden="true" />
-        Back to patients
+        {t("Back to patients")}
       </Button>
 
-      <PageHeading eyebrow="Doctor portal" title="Patient details" description="Patient information and shared documents." />
+      <PageHeading eyebrow={t("Doctor portal")} title={t("Patient details")} description={t("Patient information and shared documents.")} />
 
       {loading && (
         <div role="status" className="grid grid-cols-1 gap-6 lg:grid-cols-[1.4fr_1fr]">
-          <span className="sr-only">Loading patient…</span>
+          <span className="sr-only">{t("Loading patient…")}</span>
           <div className="flex flex-col gap-4 rounded-xl border border-border bg-card p-6">
             <div className="flex items-center gap-4">
               <Skeleton className="h-14 w-14 rounded-full" />
@@ -78,7 +82,7 @@ function PatientDetails() {
         </div>
       )}
 
-      {!loading && error && <Notice tone="danger" role="alert" title="Couldn't show this patient">{error}</Notice>}
+      {!loading && error && <Notice tone="danger" role="alert" title={t("Couldn't show this patient")}>{error}</Notice>}
 
       {!loading && !error && patient && (
         <>
@@ -90,22 +94,22 @@ function PatientDetails() {
                 </Avatar>
                 <div>
                   <h2 className="text-xl">{patient.name}</h2>
-                  <p className="text-sm text-muted-foreground">{patient.id} · {patient.age} years · {patient.gender}</p>
+                  <p className="text-sm text-muted-foreground">{patient.id} · {t("{{age}} years", { age: patient.age })} · {t(patient.gender)}</p>
                 </div>
               </div>
 
               <dl className="mt-6 grid grid-cols-1 gap-4 border-t border-border pt-6 sm:grid-cols-2">
-                <Detail label="Contact number" value={patient.contact || "—"} />
-                <Detail label="Admission date" value={patient.admissionDate || "—"} />
-                <Detail label="Diagnosis" value={patient.diagnosis || "—"} />
-                <Detail label="Encryption" value={patient.algo || "—"} />
+                <Detail label={t("Contact number")} value={patient.contact || "—"} />
+                <Detail label={t("Admission date")} value={patient.admissionDate || "—"} />
+                <Detail label={t("Diagnosis")} value={patient.diagnosis || "—"} />
+                <Detail label={t("Encryption")} value={patient.algo || "—"} />
               </dl>
             </Panel>
 
-            <Panel title="Reports & documents" className="mb-0">
+            <Panel title={t("Reports & documents")} className="mb-0">
               {documents.length === 0 ? (
                 <EmptyState art={FolderCrossArt} className="py-4">
-                  No reports or uploaded files for this patient yet.
+                  {t("No reports or uploaded files for this patient yet.")}
                 </EmptyState>
               ) : (
                 <ul className="flex flex-col gap-1">
@@ -121,30 +125,30 @@ function PatientDetails() {
                         <span className="min-w-0 flex-1">
                           <span className="block truncate font-medium">{doc.filename}</span>
                           <span className="block text-xs text-muted-foreground">
-                            {doc.uploaderRole === "Nurse" ? `${doc.uploaderName} (nurse)` : "Patient upload"} ·{" "}
-                            {new Date(doc.createdAt).toLocaleDateString()}
+                            {doc.uploaderRole === "Nurse" ? t("{{name}} (nurse)", { name: doc.uploaderName }) : t("Patient upload")} ·{" "}
+                            {formatIstDate(doc.createdAt, currentLocale())}
                           </span>
                         </span>
                         <ExternalLink aria-hidden="true" className="h-4 w-4 text-muted-foreground" />
-                        <span className="sr-only">(opens in a new tab)</span>
+                        <span className="sr-only">{t("(opens in a new tab)")}</span>
                       </a>
                     </li>
                   ))}
                 </ul>
               )}
 
-              <h3 className="mb-2 mt-6 text-sm font-semibold">Prescriptions</h3>
-              <p className="text-sm text-muted-foreground">Not tracked by the backend yet.</p>
+              <h3 className="mb-2 mt-6 text-sm font-semibold">{t("Prescriptions")}</h3>
+              <p className="text-sm text-muted-foreground">{t("Not tracked by the backend yet.")}</p>
             </Panel>
           </div>
 
           {/* TODO(api): the backend has no update/prescription endpoints for
               these records yet, so these actions are shown disabled. */}
           <div className="mt-6 flex flex-wrap items-center gap-2">
-            <Button disabled>Edit record</Button>
-            <Button disabled variant="outline">Add prescription</Button>
-            <Button disabled variant="outline">Add diagnosis</Button>
-            <span className="text-sm text-muted-foreground">Editing isn&apos;t supported by the backend yet.</span>
+            <Button disabled>{t("Edit record")}</Button>
+            <Button disabled variant="outline">{t("Add prescription")}</Button>
+            <Button disabled variant="outline">{t("Add diagnosis")}</Button>
+            <span className="text-sm text-muted-foreground">{t("Editing isn't supported by the backend yet.")}</span>
           </div>
 
           <Notice
@@ -152,8 +156,8 @@ function PatientDetails() {
             tone={patient.ok ? "success" : "danger"}
             icon={patient.ok ? ShieldCheck : ShieldAlert}
           >
-            Encrypted with {patient.algo || "an unknown cipher"}.{" "}
-            {patient.ok ? "Integrity verified." : "Integrity check failed."}
+            {patient.algo ? t("Encrypted with {{algo}}.", { algo: patient.algo }) : t("Encrypted with an unknown cipher.")}{" "}
+            {patient.ok ? t("Integrity verified.") : t("Integrity check failed.")}
           </Notice>
         </>
       )}

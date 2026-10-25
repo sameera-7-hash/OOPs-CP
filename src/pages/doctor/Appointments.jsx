@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Clock, Plus, UserRound, X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useCurrentUser } from "@/context/UserContext";
 import { useToast } from "@/context/ToastContext";
 import { getAvailability, setAvailability, getAppointments } from "@/Services/api";
@@ -14,14 +15,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { doctorMenu } from "@/lib/nav";
+import { todayIst } from "@/lib/time";
 
 function todayIso() {
-  return new Date().toISOString().slice(0, 10);
+  return todayIst();
 }
 
 function Appointments() {
   const { user } = useCurrentUser();
   const notify = useToast();
+  const { t } = useTranslation();
 
   const [date, setDate] = useState(todayIso());
   const [slots, setSlots] = useState([]); // [{time, booked, patientName}]
@@ -94,38 +97,38 @@ function Appointments() {
         slots: slots.map((s) => s.time),
       });
       setSlots(record.slots || []);
-      notify({ message: `Availability saved for ${date}.` });
+      notify({ message: t("Availability saved for {{date}}.", { date }) });
     } catch (err) {
-      notify({ tone: "error", message: `Could not save availability: ${err.message}` });
+      notify({ tone: "error", message: t("Could not save availability: {{error}}", { error: err.message }) });
     } finally {
       setSavingAvailability(false);
     }
   };
 
   return (
-    <DashboardShell role="Doctor" menu={doctorMenu} title="Appointments">
-      <PageHeading eyebrow="Doctor portal" title="Appointments" description="Set your availability and see booked consultations." />
+    <DashboardShell role="Doctor" menu={doctorMenu} title={t("Appointments")}>
+      <PageHeading eyebrow={t("Doctor portal")} title={t("Appointments")} description={t("Set your availability and see booked consultations.")} />
 
-      <Panel title="My availability" description="Add the times you're free on a date, then save.">
+      <Panel title={t("My availability")} description={t("Add the times you're free on a date, then save.")}>
         <div className="mb-6 flex flex-col gap-4 sm:flex-row">
           <div className="flex flex-col gap-2 sm:w-52">
-            <Label htmlFor="availability-date">Date</Label>
+            <Label htmlFor="availability-date">{t("Date")}</Label>
             <Input id="availability-date" type="date" value={date} min={todayIso()} onChange={(e) => setDate(e.target.value)} />
           </div>
 
           <div className="flex flex-1 flex-col gap-2">
-            <Label htmlFor="slot-input">Add a time slot</Label>
+            <Label htmlFor="slot-input">{t("Add a time slot")}</Label>
             <div className="flex gap-2">
               <Input
                 id="slot-input"
-                placeholder="e.g. 09:00 AM"
+                placeholder={t("e.g. 09:00 AM")}
                 value={slotInput}
                 onChange={(e) => setSlotInput(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addSlot(); } }}
               />
               <Button type="button" variant="outline" onClick={addSlot}>
                 <Plus aria-hidden="true" />
-                Add
+                {t("Add")}
               </Button>
             </div>
           </div>
@@ -133,12 +136,12 @@ function Appointments() {
 
         {loadingSlots ? (
           <div role="status" className="mb-6 flex flex-wrap gap-2">
-            <span className="sr-only">Loading slots…</span>
+            <span className="sr-only">{t("Loading slots…")}</span>
             {[0, 1, 2].map((i) => <Skeleton key={i} className="h-10 w-28 rounded-full" />)}
           </div>
         ) : (
-          <ul aria-label={`Time slots for ${date}`} className="mb-6 flex flex-wrap gap-2">
-            {slots.length === 0 && <li className="text-sm text-muted-foreground">No slots set for this date yet.</li>}
+          <ul aria-label={t("Time slots for {{date}}", { date })} className="mb-6 flex flex-wrap gap-2">
+            {slots.length === 0 && <li className="text-sm text-muted-foreground">{t("No slots set for this date yet.")}</li>}
             {slots.map((s) => (
               <li
                 key={s.time}
@@ -151,12 +154,12 @@ function Appointments() {
                 {s.booked ? <UserRound aria-hidden="true" className="h-4 w-4" /> : <Clock aria-hidden="true" className="h-4 w-4 text-primary" />}
                 {s.time}
                 {s.booked ? (
-                  <span className="font-medium">· booked by {s.patientName || "a patient"}</span>
+                  <span className="font-medium">· {s.patientName ? t("booked by {{name}}", { name: s.patientName }) : t("booked by a patient")}</span>
                 ) : (
                   <button
                     type="button"
                     onClick={() => removeSlot(s.time)}
-                    aria-label={`Remove ${s.time}`}
+                    aria-label={t("Remove {{time}}", { time: s.time })}
                     className="grid h-8 w-8 place-items-center rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
                   >
                     <X aria-hidden="true" className="h-4 w-4" />
@@ -168,18 +171,18 @@ function Appointments() {
         )}
 
         <Button onClick={saveAvailability} disabled={savingAvailability}>
-          {savingAvailability ? "Saving…" : "Save availability"}
+          {savingAvailability ? t("Saving…") : t("Save availability")}
         </Button>
       </Panel>
 
-      <Panel title="Booked appointments">
-        {loadingAppointments && <SkeletonRows rows={3} label="Loading appointments…" />}
+      <Panel title={t("Booked appointments")}>
+        {loadingAppointments && <SkeletonRows rows={3} label={t("Loading appointments…")} />}
         {!loadingAppointments && appointmentsError && (
-          <p role="alert" className="text-sm text-destructive">Couldn&apos;t load appointments: {appointmentsError}</p>
+          <p role="alert" className="text-sm text-destructive">{t("Couldn't load appointments: {{error}}", { error: appointmentsError })}</p>
         )}
         {!loadingAppointments && !appointmentsError && appointments.length === 0 && (
-          <EmptyState art={CalendarCheckArt} title="No appointments yet">
-            When a patient books one of your open slots, it will show up here.
+          <EmptyState art={CalendarCheckArt} title={t("No appointments yet")}>
+            {t("When a patient books one of your open slots, it will show up here.")}
           </EmptyState>
         )}
         {!loadingAppointments && appointments.length > 0 && (
@@ -187,11 +190,11 @@ function Appointments() {
             <table className="w-full min-w-[560px] text-left text-sm">
               <thead>
                 <tr className="border-b border-border text-xs uppercase tracking-wide text-muted-foreground">
-                  <th scope="col" className="py-2 pr-4 font-semibold">Date</th>
-                  <th scope="col" className="py-2 pr-4 font-semibold">Time</th>
-                  <th scope="col" className="py-2 pr-4 font-semibold">Patient</th>
-                  <th scope="col" className="py-2 pr-4 font-semibold">Reason</th>
-                  <th scope="col" className="py-2 pr-4 font-semibold">Status</th>
+                  <th scope="col" className="py-2 pr-4 font-semibold">{t("Date")}</th>
+                  <th scope="col" className="py-2 pr-4 font-semibold">{t("Time")}</th>
+                  <th scope="col" className="py-2 pr-4 font-semibold">{t("Patient")}</th>
+                  <th scope="col" className="py-2 pr-4 font-semibold">{t("Reason")}</th>
+                  <th scope="col" className="py-2 pr-4 font-semibold">{t("Status")}</th>
                 </tr>
               </thead>
               <tbody>

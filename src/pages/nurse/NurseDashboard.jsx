@@ -1,5 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { msg } from "@/i18n";
 import { BedDouble, ListChecks, ListOrdered, ShieldAlert, TriangleAlert, Users } from "lucide-react";
 import { useCurrentUser } from "@/context/UserContext";
 import DashboardShell from "@/components/layout/DashboardShell";
@@ -21,38 +23,39 @@ const QUEUE_PREVIEW = [
 ];
 
 const TASKS_PREVIEW = [
-  { text: "Check vitals - Room 204", done: true },
-  { text: "Medicine rounds", done: true },
-  { text: "Update care notes", done: false },
-  { text: "Assist in consultation", done: false },
-  { text: "Discharge summary", done: false },
+  { text: msg("Check vitals - Room 204"), done: true },
+  { text: msg("Medicine rounds"), done: true },
+  { text: msg("Update care notes"), done: false },
+  { text: msg("Assist in consultation"), done: false },
+  { text: msg("Discharge summary"), done: false },
 ];
 
 function NurseDashboard() {
   const { user } = useCurrentUser();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   return (
-    <DashboardShell role="Nurse" menu={nurseMenu} title="Nurse Dashboard">
+    <DashboardShell role="Nurse" menu={nurseMenu} title={t("Nurse Dashboard")}>
       <WelcomeBanner
         photo="nurse"
-        eyebrow="Overview"
-        title={`Hello, ${user ? user.name : "Nurse"}`}
-        description="Patient flow, care tasks and the queue."
-        sample="The queue, tasks and counts here are placeholders. Patient records and reports are live."
+        eyebrow={t("Overview")}
+        title={t("Hello, {{name}}", { name: user ? user.name : t("Nurse") })}
+        description={t("Patient flow, care tasks and the queue.")}
+        sample={t("The queue, tasks and counts here are placeholders. Patient records and reports are live.")}
       />
 
       <div className="stagger mb-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-        <StatCard tone="teal" icon={Users} label="Waiting patients" value="7" sample />
-        <StatCard tone="rose" icon={ShieldAlert} label="Critical patients" value="2" sample />
-        <StatCard tone="amber" icon={ListChecks} label="Tasks today" value="14" sample />
-        <StatCard tone="green" icon={BedDouble} label="Available beds" value="6" sample />
+        <StatCard tone="teal" icon={Users} label={t("Waiting patients")} value="7" sample />
+        <StatCard tone="rose" icon={ShieldAlert} label={t("Critical patients")} value="2" sample />
+        <StatCard tone="amber" icon={ListChecks} label={t("Tasks today")} value="14" sample />
+        <StatCard tone="green" icon={BedDouble} label={t("Available beds")} value="6" sample />
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Panel
-          title="Patient queue"
-          action={<Button size="sm" variant="outline" onClick={() => navigate("/nurse/queue")}>Open queue</Button>}
+          title={t("Patient queue")}
+          action={<Button size="sm" variant="outline" onClick={() => navigate("/nurse/queue")}>{t("Open queue")}</Button>}
         >
           <ol className="flex flex-col">
             {QUEUE_PREVIEW.map((p) => (
@@ -65,12 +68,12 @@ function NurseDashboard() {
           </ol>
         </Panel>
 
-        <Panel title="Today's tasks">
+        <Panel title={t("Today's tasks")}>
           <ul className="flex flex-col gap-3">
-            {TASKS_PREVIEW.map((t) => (
-              <li key={t.text} className="flex items-center gap-3 text-sm">
-                <input type="checkbox" checked={t.done} readOnly aria-label={t.text} className="h-4 w-4 accent-primary" />
-                <span className={t.done ? "text-muted-foreground line-through" : ""}>{t.text}</span>
+            {TASKS_PREVIEW.map((task) => (
+              <li key={task.text} className="flex items-center gap-3 text-sm">
+                <input type="checkbox" checked={task.done} readOnly aria-label={t(task.text)} className="h-4 w-4 accent-primary" />
+                <span className={task.done ? "text-muted-foreground line-through" : ""}>{t(task.text)}</span>
               </li>
             ))}
           </ul>
@@ -81,12 +84,12 @@ function NurseDashboard() {
         tone="danger"
         icon={TriangleAlert}
         className="mb-6"
-        action={<Button size="sm" variant="outline" onClick={() => navigate("/nurse/alerts")}>View details</Button>}
+        action={<Button size="sm" variant="outline" onClick={() => navigate("/nurse/alerts")}>{t("View details")}</Button>}
       >
-        P101 (Amit Sharma) needs immediate attention.
+        {t("{{id}} ({{name}}) needs immediate attention.", { id: "P101", name: "Amit Sharma" })}
       </Notice>
 
-      <Notice icon={ListOrdered}>The queue is FIFO (first in, first out), with critical patients seen first.</Notice>
+      <Notice icon={ListOrdered}>{t("The queue is FIFO (first in, first out), with critical patients seen first.")}</Notice>
     </DashboardShell>
   );
 }

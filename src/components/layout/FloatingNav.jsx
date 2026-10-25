@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useScrollHeader } from "@/hooks/useScrollHeader";
 import BrandMark from "@/components/BrandMark";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { cn } from "@/lib/utils";
 
 // Floating, translucent pill navbar for the public pages. It is fixed near
@@ -13,6 +15,7 @@ function FloatingNav({ links = [], children }) {
   // on scroll up. Never hides while it holds keyboard focus.
   const { scrolled, hidden } = useScrollHeader();
   const [hasFocus, setHasFocus] = useState(false);
+  const { t } = useTranslation();
 
   return (
     <header
@@ -28,10 +31,10 @@ function FloatingNav({ links = [], children }) {
       >
         <Link to="/" className="flex items-center gap-2 rounded-full text-foreground no-underline hover:text-foreground">
           <BrandMark className="h-8 w-8" />
-          <span className="text-base font-semibold">PatientCare</span>
+          <span className="text-base font-semibold">Beacon</span>
         </Link>
 
-        <nav aria-label="Main" className="flex items-center gap-1">
+        <nav aria-label={t("Main")} className="flex items-center gap-1">
           {links.map(({ href, to, label }) => {
             const className =
               "link-underline hidden h-10 items-center rounded-full px-4 text-sm font-medium text-muted-foreground no-underline transition-colors duration-150 hover:bg-secondary hover:text-accent-foreground sm:inline-flex";
@@ -45,6 +48,7 @@ function FloatingNav({ links = [], children }) {
               </a>
             );
           })}
+          <LanguageSwitcher className="rounded-full" />
           {children && <div className="ml-1 flex items-center gap-2">{children}</div>}
         </nav>
       </div>

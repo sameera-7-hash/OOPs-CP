@@ -23,7 +23,10 @@ const TODAY = "2026-10-13";
 
 test("parseBookingPrefill keeps valid values", () => {
   const p = parseBookingPrefill(params("doctorId=U-000011&date=2026-10-20&time=10:00&from=triage"), TODAY);
-  assert.deepEqual(p, { doctorId: "U-000011", date: "2026-10-20", time: "10:00 AM", fromTriage: true, any: true });
+  assert.deepEqual(p, {
+    doctorId: "U-000011", date: "2026-10-20", time: "10:00 AM", fromTriage: true,
+    condition: null, specialty: null, any: true,
+  });
   assert.equal(parseBookingPrefill(params("doctorId=3"), TODAY).doctorId, "3");
   assert.equal(parseBookingPrefill(params(`date=${TODAY}`), TODAY).date, TODAY);
 });
@@ -33,8 +36,24 @@ test("parseBookingPrefill drops bad or stale values silently", () => {
     params("doctorId=<script>&date=2026-10-12&time=25:99&from=elsewhere"),
     TODAY
   );
-  assert.deepEqual(p, { doctorId: null, date: null, time: null, fromTriage: false, any: false });
+  assert.deepEqual(p, {
+    doctorId: null, date: null, time: null, fromTriage: false, condition: null, specialty: null, any: false,
+  });
   assert.equal(parseBookingPrefill(params("date=2026-02-30"), TODAY).date, null);
   assert.equal(parseBookingPrefill(params("date=20261020"), TODAY).date, null);
   assert.equal(parseBookingPrefill(params(""), TODAY).any, false);
+});
+
+test("parseBookingPrefill reads directory doctors, conditions and specialties", () => {
+  const p = parseBookingPrefill(
+    params("from=triage&condition=(vertigo) Paroxysmal Positional Vertigo&specialty=Ear, Nose %26 Throat Doctor&doctorId=Z-0042"),
+    TODAY
+  );
+  assert.equal(p.condition, "(vertigo) Paroxysmal Positional Vertigo");
+  assert.equal(p.specialty, "Ear, Nose & Throat Doctor");
+  assert.equal(p.doctorId, "Z-0042");
+  assert.equal(p.any, true);
+  assert.equal(parseBookingPrefill(params("condition=<img src=x>"), TODAY).condition, null);
+  assert.equal(parseBookingPrefill(params(`specialty=${"x".repeat(121)}`), TODAY).specialty, null);
+  assert.equal(parseBookingPrefill(params("doctorId=Z-abc"), TODAY).doctorId, null);
 });

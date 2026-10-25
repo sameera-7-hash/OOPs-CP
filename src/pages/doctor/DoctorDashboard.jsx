@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   CalendarDays,
   CircleCheck,
@@ -30,6 +31,7 @@ import { doctorMenu } from "@/lib/nav";
 function DoctorDashboard() {
   const { user } = useCurrentUser();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const [patients, setPatients] = useState([]);
   const [chainIntact, setChainIntact] = useState(true);
@@ -59,43 +61,43 @@ function DoctorDashboard() {
   const recent = okPatients.slice(-5).reverse();
 
   return (
-    <DashboardShell role="Doctor" menu={doctorMenu} title="Doctor Dashboard">
+    <DashboardShell role="Doctor" menu={doctorMenu} title={t("Doctor Dashboard")}>
       <WelcomeBanner
-        photo="doctor" eyebrow="Overview" title={`Hello, ${user ? user.name : "Doctor"}`} description="Today's clinical overview." />
+        photo="doctor" eyebrow={t("Overview")} title={t("Hello, {{name}}", { name: user ? user.name : t("Doctor") })} description={t("Today's clinical overview.")} />
 
       <div className="stagger mb-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-        <StatCard tone="teal" icon={Users} label="Total patients" value={loading ? "…" : okPatients.length} note="From patient records" />
-        <StatCard tone="blue" icon={CalendarDays} label="Today's appointments" value="12" sample />
+        <StatCard tone="teal" icon={Users} label={t("Total patients")} value={loading ? "…" : okPatients.length} note={t("From patient records")} />
+        <StatCard tone="blue" icon={CalendarDays} label={t("Today's appointments")} value="12" sample />
         <StatCard tone="amber"
           icon={ShieldAlert}
-          label="Legacy (DES) records"
+          label={t("Legacy (DES) records")}
           value={loading ? "…" : okPatients.filter((p) => p.algo === "DES").length}
-          note="Consider re-encrypting with AES"
+          note={t("Consider re-encrypting with AES")}
         />
         <StatCard tone="green"
           icon={ShieldCheck}
-          label="Integrity status"
-          value={loading ? "…" : chainIntact ? "OK" : "Broken"}
-          note={chainIntact ? "Hash chain verified" : "Tampering detected"}
+          label={t("Integrity status")}
+          value={loading ? "…" : chainIntact ? t("OK") : t("Broken")}
+          note={chainIntact ? t("Hash chain verified") : t("Tampering detected")}
           noteTone={chainIntact ? "success" : "muted"}
         />
       </div>
 
       <Panel
-        title="Recent patients"
-        action={<Button variant="outline" size="sm" onClick={() => navigate("/doctor/patients")}>View all</Button>}
+        title={t("Recent patients")}
+        action={<Button variant="outline" size="sm" onClick={() => navigate("/doctor/patients")}>{t("View all")}</Button>}
       >
-        {loading && <SkeletonRows rows={3} label="Loading patients…" />}
+        {loading && <SkeletonRows rows={3} label={t("Loading patients…")} />}
         {!loading && error && (
-          <Notice tone="danger" role="alert" title="Couldn't load patients">{error}</Notice>
+          <Notice tone="danger" role="alert" title={t("Couldn't load patients")}>{error}</Notice>
         )}
         {!loading && !error && recent.length === 0 && (
           <EmptyState
             art={ClipboardChartArt}
-            title="No patients yet"
-            action={<Button onClick={() => navigate("/doctor/add-patient")}>Add a patient</Button>}
+            title={t("No patients yet")}
+            action={<Button onClick={() => navigate("/doctor/add-patient")}>{t("Add a patient")}</Button>}
           >
-            Patient records you add will appear here.
+            {t("Patient records you add will appear here.")}
           </EmptyState>
         )}
         {!loading && !error && recent.length > 0 && (
@@ -103,12 +105,12 @@ function DoctorDashboard() {
             <table className="w-full min-w-[560px] text-left text-sm">
               <thead>
                 <tr className="border-b border-border text-xs uppercase tracking-wide text-muted-foreground">
-                  <th scope="col" className="py-2 pr-4 font-semibold">ID</th>
-                  <th scope="col" className="py-2 pr-4 font-semibold">Name</th>
-                  <th scope="col" className="py-2 pr-4 font-semibold">Age / gender</th>
-                  <th scope="col" className="py-2 pr-4 font-semibold">Diagnosis</th>
-                  <th scope="col" className="py-2 pr-4 font-semibold">Encryption</th>
-                  <th scope="col" className="py-2 pr-4 font-semibold">Integrity</th>
+                  <th scope="col" className="py-2 pr-4 font-semibold">{t("ID")}</th>
+                  <th scope="col" className="py-2 pr-4 font-semibold">{t("Name")}</th>
+                  <th scope="col" className="py-2 pr-4 font-semibold">{t("Age / gender")}</th>
+                  <th scope="col" className="py-2 pr-4 font-semibold">{t("Diagnosis")}</th>
+                  <th scope="col" className="py-2 pr-4 font-semibold">{t("Encryption")}</th>
+                  <th scope="col" className="py-2 pr-4 font-semibold">{t("Integrity")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -116,13 +118,13 @@ function DoctorDashboard() {
                   <tr key={p.id} className="border-b border-border last:border-0">
                     <td className="py-3 pr-4 font-semibold">{p.id}</td>
                     <td className="py-3 pr-4">{p.name}</td>
-                    <td className="py-3 pr-4">{p.age} y / {p.gender}</td>
+                    <td className="py-3 pr-4">{t("{{age}} y", { age: p.age })} / {t(p.gender)}</td>
                     <td className="py-3 pr-4">{p.diagnosis}</td>
                     <td className="py-3 pr-4">{p.algo}</td>
                     <td className="py-3 pr-4">
                       <Badge variant={p.ok ? "success" : "danger"}>
                         {p.ok ? <CircleCheck aria-hidden="true" /> : <CircleX aria-hidden="true" />}
-                        {p.ok ? "Verified" : "Failed"}
+                        {p.ok ? t("Verified") : t("Failed")}
                       </Badge>
                     </td>
                   </tr>
@@ -133,19 +135,19 @@ function DoctorDashboard() {
         )}
       </Panel>
 
-      <Panel title="Quick actions">
+      <Panel title={t("Quick actions")}>
         <div className="stagger grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <QuickAction tone="teal" icon={UserPlus} label="Add patient" note="Create a new patient record" onClick={() => navigate("/doctor/add-patient")} />
-          <QuickAction tone="blue" icon={Search} label="Find a patient" note="Search patient records" onClick={() => navigate("/doctor/patients")} />
-          <QuickAction tone="amber" icon={Undo2} label="Undo" note="Undo / redo demo" onClick={() => navigate("/doctor/undo-redo")} />
-          <QuickAction tone="green" icon={Redo2} label="Redo" note="Undo / redo demo" onClick={() => navigate("/doctor/undo-redo")} />
+          <QuickAction tone="teal" icon={UserPlus} label={t("Add patient")} note={t("Create a new patient record")} onClick={() => navigate("/doctor/add-patient")} />
+          <QuickAction tone="blue" icon={Search} label={t("Find a patient")} note={t("Search patient records")} onClick={() => navigate("/doctor/patients")} />
+          <QuickAction tone="amber" icon={Undo2} label={t("Undo")} note={t("Undo / redo demo")} onClick={() => navigate("/doctor/undo-redo")} />
+          <QuickAction tone="green" icon={Redo2} label={t("Redo")} note={t("Undo / redo demo")} onClick={() => navigate("/doctor/undo-redo")} />
         </div>
       </Panel>
 
       {!loading && !error && (
         <Notice tone={chainIntact ? "success" : "danger"} icon={chainIntact ? ShieldCheck : ShieldAlert}>
-          Records are encrypted with AES-256 or DES.{" "}
-          {chainIntact ? "Hash-chain integrity verified." : "Hash-chain integrity check failed."}
+          {t("Records are encrypted with AES-256 or DES.")}{" "}
+          {chainIntact ? t("Hash-chain integrity verified.") : t("Hash-chain integrity check failed.")}
         </Notice>
       )}
     </DashboardShell>

@@ -1,6 +1,7 @@
 import React, { Suspense, lazy, useEffect, useState } from "react";
 import { LoaderCircle } from "lucide-react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { UserContext } from "./context/UserContext";
 import { logout as logoutApi } from "./Services/api";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -39,11 +40,13 @@ const Alerts = lazy(() => import("./pages/nurse/Alerts"));
 const NurseReports = lazy(() => import("./pages/nurse/Reports"));
 
 const ConditionGuidance = lazy(() => import("./pages/ConditionGuidance"));
+const DoctorDirectory = lazy(() => import("./pages/DoctorDirectory"));
 
 function PageFallback() {
+  const { t } = useTranslation();
   return (
     <div role="status" className="grid min-h-screen place-items-center bg-background">
-      <span className="sr-only">Loading page…</span>
+      <span className="sr-only">{t("Loading page…")}</span>
       <LoaderCircle aria-hidden="true" className="h-8 w-8 animate-spin text-primary motion-reduce:animate-none" />
     </div>
   );
@@ -142,6 +145,7 @@ function App() {
 
               {/* ================= ANY SIGNED-IN ROLE ================= */}
               <Route path="/guidance" element={<ProtectedRoute roles={["Patient", "Doctor", "Nurse"]}><ConditionGuidance /></ProtectedRoute>} />
+              <Route path="/doctors" element={<ProtectedRoute roles={["Patient", "Doctor", "Nurse"]}><DoctorDirectory /></ProtectedRoute>} />
 
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>

@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { ArrowDownUp, ClipboardPlus, RefreshCw, Search, ShieldAlert, UserPlus, Users } from "lucide-react";
 import { getPatients } from "@/Services/api";
 import DashboardShell from "@/components/layout/DashboardShell";
@@ -18,6 +19,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 
 function PatientRecords({ role, menu }) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("name");
   const [patients, setPatients] = useState([]);
@@ -60,48 +62,48 @@ function PatientRecords({ role, menu }) {
   const columns = isDoctor ? 7 : 6;
 
   return (
-    <DashboardShell role={role} menu={menu} title="Patient Records">
+    <DashboardShell role={role} menu={menu} title={t("Patient Records")}>
       <PageHeading
-        eyebrow={`${role} portal`}
-        title="Patient records"
-        description="Records shared with your care team."
+        eyebrow={isDoctor ? t("Doctor portal") : t("Nurse portal")}
+        title={t("Patient records")}
+        description={t("Records shared with your care team.")}
       />
 
       <div className="stagger mb-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
         <StatCard
           tone="teal"
           icon={Users}
-          label="Total patients"
+          label={t("Total patients")}
           value={loading ? "…" : patientAccounts + addedManually}
-          note="Accounts plus added records"
+          note={t("Accounts plus added records")}
         />
         <StatCard
           tone="blue"
           icon={UserPlus}
-          label="Signed up as patients"
+          label={t("Signed up as patients")}
           value={loading ? "…" : patientAccounts}
-          note="Created on the patient side"
+          note={t("Created on the patient side")}
         />
         <StatCard
           tone="green"
           icon={ClipboardPlus}
-          label="Added manually"
+          label={t("Added manually")}
           value={loading ? "…" : addedManually}
-          note="Added by care staff"
+          note={t("Added by care staff")}
         />
       </div>
 
       <Panel>
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end">
           <div className="flex flex-1 flex-col gap-2">
-            <Label htmlFor="patient-search">Search</Label>
+            <Label htmlFor="patient-search">{t("Search")}</Label>
             <div className="relative">
               <Search aria-hidden="true" className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 id="patient-search"
                 type="search"
                 className="pl-10"
-                placeholder="ID, name or diagnosis"
+                placeholder={t("ID, name or diagnosis")}
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
               />
@@ -109,41 +111,43 @@ function PatientRecords({ role, menu }) {
           </div>
 
           <div className="flex flex-col gap-2 sm:w-52">
-            <Label htmlFor="patient-sort">Sort by</Label>
+            <Label htmlFor="patient-sort">{t("Sort by")}</Label>
             <Select value={sort} onValueChange={setSort}>
               <SelectTrigger id="patient-sort">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="name">Name</SelectItem>
-                <SelectItem value="age">Age</SelectItem>
-                <SelectItem value="id">Patient ID</SelectItem>
+                <SelectItem value="name">{t("Name")}</SelectItem>
+                <SelectItem value="age">{t("Age")}</SelectItem>
+                <SelectItem value="id">{t("Patient ID")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <Button variant="outline" onClick={refreshPatients} disabled={loading}>
             <RefreshCw aria-hidden="true" />
-            Refresh
+            {t("Refresh")}
           </Button>
         </div>
 
         <p className="mb-4 text-sm text-muted-foreground" aria-live="polite">
-          {patients.length} patient record{patients.length === 1 ? "" : "s"}. The list refreshes every 15 seconds.
+          {patients.length === 1
+            ? t("1 patient record. The list refreshes every 15 seconds.")
+            : t("{{count}} patient records. The list refreshes every 15 seconds.", { count: patients.length })}
         </p>
 
-        {loading && <SkeletonRows rows={4} label="Loading patients…" />}
+        {loading && <SkeletonRows rows={4} label={t("Loading patients…")} />}
         {error && (
-          <Notice tone="danger" role="alert" title="Couldn't load patients" className="mb-4">{error}</Notice>
+          <Notice tone="danger" role="alert" title={t("Couldn't load patients")} className="mb-4">{error}</Notice>
         )}
 
         {!loading && !error && patients.length === 0 && (
           <EmptyState
             art={ClipboardChartArt}
-            title="No patient records yet"
-            action={isDoctor && <Button onClick={() => navigate("/doctor/add-patient")}>Add a patient</Button>}
+            title={t("No patient records yet")}
+            action={isDoctor && <Button onClick={() => navigate("/doctor/add-patient")}>{t("Add a patient")}</Button>}
           >
-            {isDoctor ? "Add the first patient to get started." : "Records appear here once a doctor adds them."}
+            {isDoctor ? t("Add the first patient to get started.") : t("Records appear here once a doctor adds them.")}
           </EmptyState>
         )}
 
@@ -152,20 +156,20 @@ function PatientRecords({ role, menu }) {
             <table className="w-full min-w-[640px] text-left text-sm">
               <thead>
                 <tr className="border-b border-border text-xs uppercase tracking-wide text-muted-foreground">
-                  <th scope="col" className="py-2 pr-4 font-semibold">ID</th>
-                  <th scope="col" className="py-2 pr-4 font-semibold">Name</th>
-                  <th scope="col" className="py-2 pr-4 font-semibold">Age</th>
-                  <th scope="col" className="py-2 pr-4 font-semibold">Gender</th>
-                  <th scope="col" className="py-2 pr-4 font-semibold">Diagnosis</th>
-                  <th scope="col" className="py-2 pr-4 font-semibold">Encryption</th>
-                  {isDoctor && <th scope="col" className="py-2 pr-4 font-semibold"><span className="sr-only">Action</span></th>}
+                  <th scope="col" className="py-2 pr-4 font-semibold">{t("ID")}</th>
+                  <th scope="col" className="py-2 pr-4 font-semibold">{t("Name")}</th>
+                  <th scope="col" className="py-2 pr-4 font-semibold">{t("Age")}</th>
+                  <th scope="col" className="py-2 pr-4 font-semibold">{t("Gender")}</th>
+                  <th scope="col" className="py-2 pr-4 font-semibold">{t("Diagnosis")}</th>
+                  <th scope="col" className="py-2 pr-4 font-semibold">{t("Encryption")}</th>
+                  {isDoctor && <th scope="col" className="py-2 pr-4 font-semibold"><span className="sr-only">{t("Action")}</span></th>}
                 </tr>
               </thead>
               <tbody>
                 {filtered.length === 0 && (
                   <tr>
                     <td colSpan={columns} className="py-6 text-center text-muted-foreground">
-                      No patients match &ldquo;{search}&rdquo;.
+                      {t("No patients match “{{search}}”.", { search })}
                     </td>
                   </tr>
                 )}
@@ -175,7 +179,7 @@ function PatientRecords({ role, menu }) {
                       <td className="py-3 pr-4 font-semibold">{patient.id}</td>
                       <td className="py-3 pr-4">{patient.name}</td>
                       <td className="py-3 pr-4 tabular-nums">{patient.age}</td>
-                      <td className="py-3 pr-4">{patient.gender}</td>
+                      <td className="py-3 pr-4">{t(patient.gender)}</td>
                       <td className="py-3 pr-4 text-muted-foreground">{patient.diagnosis}</td>
                       <td className="py-3 pr-4">
                         <Badge variant={patient.algo && patient.algo.startsWith("DES") ? "warning" : "default"}>
@@ -188,9 +192,9 @@ function PatientRecords({ role, menu }) {
                             size="sm"
                             variant="outline"
                             onClick={() => navigate(`/doctor/patients/${patient.id}`)}
-                            aria-label={`View ${patient.name}`}
+                            aria-label={t("View {{name}}", { name: patient.name })}
                           >
-                            View
+                            {t("View")}
                           </Button>
                         </td>
                       )}
@@ -200,7 +204,7 @@ function PatientRecords({ role, menu }) {
                       <td colSpan={columns} className="py-3 pr-4 text-destructive">
                         <span className="flex items-center gap-2">
                           <ShieldAlert aria-hidden="true" className="h-4 w-4" />
-                          Record could not be verified: {patient.problem || "integrity check failed"}
+                          {t("Record could not be verified: {{problem}}", { problem: patient.problem || t("integrity check failed") })}
                         </span>
                       </td>
                     </tr>
@@ -214,7 +218,7 @@ function PatientRecords({ role, menu }) {
 
       {isDoctor && (
         <Notice icon={ArrowDownUp}>
-          Patient ID search uses a hash map, and the list is ordered with a sorting algorithm.
+          {t("Patient ID search uses a hash map, and the list is ordered with a sorting algorithm.")}
         </Notice>
       )}
     </DashboardShell>

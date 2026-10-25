@@ -41,3 +41,44 @@ export function sameTime(a, b) {
   const x = timeToMinutes(a);
   return x !== null && x === timeToMinutes(b);
 }
+
+// The clinic runs on Indian Standard Time. The backend stores UTC
+// ("2026-10-24T09:21:38Z"); everything shown to people is converted to
+// IST here, whatever timezone the viewer's device is set to.
+export const IST = "Asia/Kolkata";
+
+// Today's date in IST as "YYYY-MM-DD" (toISOString would give the UTC
+// date, which is still yesterday before 5:30 AM IST).
+export function todayIst(now = new Date()) {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: IST }).format(now);
+}
+
+// "24 Oct 2026, 2:51 pm IST". Returns the input unchanged if unparseable.
+export function formatIstDateTime(value, locale = "en-IN", { seconds = false } = {}) {
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return String(value);
+  const text = d.toLocaleString(locale, {
+    timeZone: IST,
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    ...(seconds ? { second: "2-digit" } : {}),
+  });
+  return `${text} IST`;
+}
+
+// "24 Oct 2026" in IST.
+export function formatIstDate(value, locale = "en-IN") {
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return String(value);
+  return d.toLocaleDateString(locale, { timeZone: IST, day: "numeric", month: "short", year: "numeric" });
+}
+
+// Rewrites a backend log line's leading UTC stamp in IST:
+// "[2026-10-24T09:21:38Z] [INFO] ..." -> "[24 Oct 2026, 2:51:38 pm IST] [INFO] ...".
+const LOG_STAMP_RE = /^\[(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z)\]/;
+export function logLineToIst(line) {
+  return line.replace(LOG_STAMP_RE, (_, stamp) => `[${formatIstDateTime(stamp, "en-IN", { seconds: true })}]`);
+}

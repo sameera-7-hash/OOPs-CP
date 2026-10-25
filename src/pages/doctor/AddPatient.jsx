@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { msg } from "@/i18n";
 import { CircleAlert, ShieldCheck } from "lucide-react";
 import { addPatient } from "@/Services/api";
 import { useToast } from "@/context/ToastContext";
@@ -14,27 +16,29 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 import { cn } from "@/lib/utils";
 import { doctorMenu } from "@/lib/nav";
 
+// Notes and error messages are English i18n keys, translated on render.
 const ALGORITHMS = [
-  ["AES-256", "Recommended encryption algorithm"],
-  ["DES", "Legacy cipher, for comparison"],
+  ["AES-256", msg("Recommended encryption algorithm")],
+  ["DES", msg("Legacy cipher, for comparison")],
 ];
 
 function validate(form) {
   const errors = {};
-  if (!form.name.trim()) errors.name = "Enter the patient's full name.";
+  if (!form.name.trim()) errors.name = msg("Enter the patient's full name.");
   const age = Number(form.age);
-  if (!String(form.age).trim()) errors.age = "Enter the patient's age.";
-  else if (!Number.isInteger(age) || age < 0 || age > 150) errors.age = "Age must be a whole number, e.g. 34.";
-  if (!form.gender) errors.gender = "Select a gender.";
+  if (!String(form.age).trim()) errors.age = msg("Enter the patient's age.");
+  else if (!Number.isInteger(age) || age < 0 || age > 150) errors.age = msg("Age must be a whole number, e.g. 34.");
+  if (!form.gender) errors.gender = msg("Select a gender.");
   return errors;
 }
 
 function FieldError({ id, message }) {
+  const { t } = useTranslation();
   if (!message) return null;
   return (
     <p id={id} className="flex items-center gap-1 text-sm font-medium text-destructive">
       <CircleAlert aria-hidden="true" className="h-4 w-4 shrink-0" />
-      {message}
+      {t(message)}
     </p>
   );
 }
@@ -42,6 +46,7 @@ function FieldError({ id, message }) {
 function AddPatient() {
   const navigate = useNavigate();
   const notify = useToast();
+  const { t } = useTranslation();
 
   const [form, setForm] = useState({
     name: "",
@@ -86,10 +91,10 @@ function AddPatient() {
     setSubmitting(true);
     try {
       await addPatient(payload);
-      notify({ message: "Patient added." });
+      notify({ message: t("Patient added.") });
       navigate("/doctor/patients");
     } catch (err) {
-      notify({ tone: "error", message: `Could not add patient: ${err.message}` });
+      notify({ tone: "error", message: t("Could not add patient: {{error}}", { error: err.message }) });
     } finally {
       setSubmitting(false);
     }
@@ -101,67 +106,67 @@ function AddPatient() {
   });
 
   return (
-    <DashboardShell role="Doctor" menu={doctorMenu} title="Add New Patient">
-      <PageHeading eyebrow="Doctor portal" title="Add a patient" description="The record is encrypted before it is stored." />
+    <DashboardShell role="Doctor" menu={doctorMenu} title={t("Add New Patient")}>
+      <PageHeading eyebrow={t("Doctor portal")} title={t("Add a patient")} description={t("The record is encrypted before it is stored.")} />
 
       <form onSubmit={submit} noValidate className="grid grid-cols-1 gap-6 lg:grid-cols-[2fr_1fr]">
         <Panel className="mb-0">
           <div className="flex flex-col gap-6">
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
               <div className="flex flex-col gap-2">
-                <Label htmlFor="patient-name">Full name <span aria-hidden="true">*</span></Label>
+                <Label htmlFor="patient-name">{t("Full name")} <span aria-hidden="true">*</span></Label>
                 <Input id="patient-name" autoComplete="off" required value={form.name} onChange={(e) => update("name", e.target.value)} {...invalid("name")} />
                 <FieldError id="patient-name-error" message={errors.name} />
               </div>
 
               <div className="flex flex-col gap-2">
-                <Label htmlFor="patient-age">Age <span aria-hidden="true">*</span></Label>
+                <Label htmlFor="patient-age">{t("Age")} <span aria-hidden="true">*</span></Label>
                 <Input id="patient-age" type="number" inputMode="numeric" min="0" required value={form.age} onChange={(e) => update("age", e.target.value)} {...invalid("age")} />
                 <FieldError id="patient-age-error" message={errors.age} />
               </div>
 
               <div className="flex flex-col gap-2">
-                <Label htmlFor="patient-gender">Gender <span aria-hidden="true">*</span></Label>
+                <Label htmlFor="patient-gender">{t("Gender")} <span aria-hidden="true">*</span></Label>
                 <Select value={form.gender} onValueChange={(v) => update("gender", v)}>
                   <SelectTrigger id="patient-gender" {...invalid("gender")}>
-                    <SelectValue placeholder="Select gender" />
+                    <SelectValue placeholder={t("Select gender")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Male">Male</SelectItem>
-                    <SelectItem value="Female">Female</SelectItem>
-                    <SelectItem value="Other">Other</SelectItem>
+                    <SelectItem value="Male">{t("Male")}</SelectItem>
+                    <SelectItem value="Female">{t("Female")}</SelectItem>
+                    <SelectItem value="Other">{t("Other")}</SelectItem>
                   </SelectContent>
                 </Select>
                 <FieldError id="patient-gender-error" message={errors.gender} />
               </div>
 
               <div className="flex flex-col gap-2">
-                <Label htmlFor="patient-contact">Contact number</Label>
+                <Label htmlFor="patient-contact">{t("Contact number")}</Label>
                 <Input id="patient-contact" type="tel" value={form.contact} onChange={(e) => update("contact", e.target.value)} />
               </div>
 
               <div className="flex flex-col gap-2">
-                <Label htmlFor="patient-admission">Admission date</Label>
+                <Label htmlFor="patient-admission">{t("Admission date")}</Label>
                 <Input id="patient-admission" type="date" value={form.admissionDate} onChange={(e) => update("admissionDate", e.target.value)} />
               </div>
             </div>
 
             <div className="flex flex-col gap-2">
-              <Label htmlFor="patient-diagnosis">Diagnosis / notes</Label>
+              <Label htmlFor="patient-diagnosis">{t("Diagnosis / notes")}</Label>
               <Textarea id="patient-diagnosis" value={form.diagnosis} onChange={(e) => update("diagnosis", e.target.value)} />
             </div>
 
-            <p className="text-sm text-muted-foreground">Fields marked * are required.</p>
+            <p className="text-sm text-muted-foreground">{t("Fields marked * are required.")}</p>
 
             <Button type="submit" disabled={submitting} className="self-start">
-              {submitting ? "Adding…" : "Add patient"}
+              {submitting ? t("Adding…") : t("Add patient")}
             </Button>
           </div>
         </Panel>
 
-        <Panel title="Encryption" className="mb-0">
+        <Panel title={t("Encryption")} className="mb-0">
           <fieldset className="flex flex-col gap-3">
-            <legend className="sr-only">Encryption algorithm</legend>
+            <legend className="sr-only">{t("Encryption algorithm")}</legend>
             {ALGORITHMS.map(([value, note]) => (
               <label
                 key={value}
@@ -181,7 +186,7 @@ function AddPatient() {
                   />
                   {value}
                 </span>
-                <small className="mt-1 pl-6 text-sm text-muted-foreground">{note}</small>
+                <small className="mt-1 pl-6 text-sm text-muted-foreground">{t(note)}</small>
               </label>
             ))}
           </fieldset>
@@ -189,7 +194,7 @@ function AddPatient() {
           <div className="mt-4 flex items-start gap-3 rounded-lg bg-muted p-4 text-sm text-foreground/90">
             <ShieldCheck aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
             <span>
-              The record is encrypted at rest and added to the hash chain, so later tampering can be detected.
+              {t("The record is encrypted at rest and added to the hash chain, so later tampering can be detected.")}
             </span>
           </div>
         </Panel>

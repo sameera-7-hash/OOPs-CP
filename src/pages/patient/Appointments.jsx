@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { BookOpenCheck, CalendarDays, Check, Clock, Plus, Stethoscope } from "lucide-react";
+import { Trans, useTranslation } from "react-i18next";
+import { BookOpenCheck, CalendarDays, Plus, Stethoscope } from "lucide-react";
 import { useCurrentUser } from "@/context/UserContext";
 import { useToast } from "@/context/ToastContext";
 import { getAppointments, getAvailability, bookAppointment } from "@/Services/api";
@@ -17,47 +18,32 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { cn } from "@/lib/utils";
 import { patientMenu } from "@/lib/nav";
 import { parseBookingPrefill } from "@/lib/navigation";
-import { sameTime } from "@/lib/time";
+import { sameTime, todayIst } from "@/lib/time";
+import { msg } from "@/i18n";
 import Notice from "@/components/feedback/Notice";
+import MockDoctorTag from "@/components/feedback/MockDoctorTag";
+import SlotChip from "@/components/booking/SlotChip";
+import DirectorySpecialists from "@/components/booking/DirectorySpecialists";
 
 function todayIso() {
-  return new Date().toISOString().slice(0, 10);
-}
-
-// A selectable time chip. It is a real radio input (so arrow keys move
-// between slots); the clock icon swaps to a check when selected.
-function SlotChip({ name, value, checked, onChange }) {
-  return (
-    <label
-      className={cn(
-        "relative flex h-10 cursor-pointer items-center gap-2 rounded-full border px-4 text-sm font-semibold transition-colors duration-200 has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-ring",
-        checked ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card text-foreground hover:border-primary"
-      )}
-    >
-      <input type="radio" name={name} value={value} checked={checked} onChange={onChange} className="sr-only" />
-      <span aria-hidden="true" className="relative h-4 w-4">
-        <Clock className={cn("absolute inset-0 h-4 w-4 transition-[opacity,transform] duration-200", checked ? "scale-50 opacity-0" : "opacity-100")} />
-        <Check className={cn("absolute inset-0 h-4 w-4 transition-[opacity,transform] duration-200", checked ? "opacity-100" : "scale-50 opacity-0")} />
-      </span>
-      {value}
-    </label>
-  );
+  return todayIst();
 }
 
 function Appointments() {
   const { user } = useCurrentUser();
   const notify = useToast();
+  const { t } = useTranslation();
 
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
 
-  // ?doctorId=&date=&time=&from=triage (e.g. from Condition guidance)
-  // opens the picker directly, seeded with whatever values are valid.
-  // It only pre-selects; the patient still confirms the booking.
+  // ?doctorId=&date=&time=&from=triage&condition=&specialty= (e.g. from
+  // Condition guidance or the Doctor directory) opens the picker directly,
+  // seeded with whatever values are valid. It only pre-selects; the
+  // patient still confirms the booking.
   const [searchParams] = useSearchParams();
   const [prefill] = useState(() => parseBookingPrefill(searchParams, todayIso()));
   const pendingSlot = useRef(prefill.doctorId && prefill.time ? prefill : null);
@@ -67,7 +53,11 @@ function Appointments() {
   const [bookingDate, setBookingDate] = useState(prefill.date || todayIso());
   const [doctorOptions, setDoctorOptions] = useState([]); // [{doctorId, doctorName, slots}]
   const [loadingSlots, setLoadingSlots] = useState(false);
-  const [chosen, setChosen] = useState(null); // {doctorId, doctorName, time}
+  const [chosen, setChosen] = useState(null); // {doctorId, doctorName, time, specialty?, directory?}
+  const [directoryRefresh, setDirectoryRefresh] = useState(0);
+  // Arriving from guidance or the directory, specialists come first.
+  const directoryFirst = Boolean(prefill.fromTriage || prefill.condition || prefill.specialty);
+  const pinnedDirectoryDoctor = prefill.doctorId?.startsWith("Z-") ? prefill.doctorId : null;
   const [reason, setReason] = useState("");
   const [booking, setBooking] = useState(false);
 
@@ -131,13 +121,19 @@ function Appointments() {
         date: bookingDate,
         time: chosen.time,
         reason,
+        specialty: chosen.specialty,
       });
-      notify({ message: "Appointment booked. You, your doctor and the nursing staff have been notified." });
+      notify({
+        message: chosen.directory
+          ? t("Appointment booked. You and the nursing staff have been notified.")
+          : t("Appointment booked. You, your doctor and the nursing staff have been notified."),
+      });
       cancelBooking();
       loadAppointments();
     } catch (err) {
-      notify({ tone: "error", message: `Could not book that slot: ${err.message}` });
+      notify({ tone: "error", message: t("Could not book that slot: {{error}}", { error: err.message }) });
       getAvailability({ date: bookingDate }).then(setDoctorOptions).catch(() => {});
+      setDirectoryRefresh((n) => n + 1);
     } finally {
       setBooking(false);
     }
@@ -147,17 +143,72 @@ function Appointments() {
     .map((doc) => ({ ...doc, openSlots: (doc.slots || []).filter((s) => !s.booked) }))
     .filter((doc) => doc.openSlots.length > 0);
 
+  const clinicSection = (
+    <section aria-labelledby="clinic-doctors-heading" className="flex flex-col gap-4">
+      <h3 id="clinic-doctors-heading" className="text-base font-semibold">{t("Beacon doctors")}</h3>
+      {loadingSlots && (
+        <div role="status" className="flex flex-col gap-3">
+          <span className="sr-only">{t("Loading available doctors…")}</span>
+          <Skeleton className="w-40" />
+          <div className="flex flex-wrap gap-2">
+            {[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-10 w-24 rounded-full" />)}
+          </div>
+        </div>
+      )}
+
+      {!loadingSlots && doctorsWithSlots.length === 0 && (
+        <EmptyState art={CalendarCheckArt} className="py-4">
+          {t("No Beacon doctors have open slots on this date yet. Try another date.")}
+        </EmptyState>
+      )}
+
+      <div className="flex flex-col gap-6">
+        {!loadingSlots && doctorsWithSlots.map((doc) => (
+          <fieldset key={doc.doctorId}>
+            <legend className="mb-3 flex items-center gap-2 text-sm font-semibold">
+              <Stethoscope aria-hidden="true" className="h-4 w-4 text-primary" />
+              {doc.doctorName}
+            </legend>
+            <div className="flex flex-wrap gap-2">
+              {doc.openSlots.map((s) => (
+                <SlotChip
+                  key={s.time}
+                  name="booking-slot"
+                  value={s.time}
+                  checked={Boolean(chosen && chosen.doctorId === doc.doctorId && chosen.time === s.time)}
+                  onChange={() => setChosen({ doctorId: doc.doctorId, doctorName: doc.doctorName, time: s.time })}
+                />
+              ))}
+            </div>
+          </fieldset>
+        ))}
+      </div>
+    </section>
+  );
+
+  const directorySection = (
+    <DirectorySpecialists
+      date={bookingDate}
+      condition={prefill.condition}
+      initialSpecialty={prefill.specialty}
+      pinnedDoctorId={pinnedDirectoryDoctor}
+      chosen={chosen}
+      onChoose={setChosen}
+      refreshKey={directoryRefresh}
+    />
+  );
+
   return (
-    <DashboardShell role="Patient" menu={patientMenu} title="Appointments">
+    <DashboardShell role="Patient" menu={patientMenu} title={t("Appointments")}>
       <PageHeading
-        eyebrow="Patient portal"
-        title="Appointments"
-        description="Book a doctor's open slot and see your upcoming visits."
+        eyebrow={t("Patient portal")}
+        title={t("Appointments")}
+        description={t("Book a doctor's open slot and see your upcoming visits.")}
         action={
           !bookingStage && (
             <Button onClick={startBooking}>
               <Plus aria-hidden="true" />
-              Book appointment
+              {t("Book appointment")}
             </Button>
           )
         }
@@ -166,27 +217,35 @@ function Appointments() {
       <Dialog open={bookingStage === "asking"} onOpenChange={(open) => !open && cancelBooking()}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Book an appointment?</DialogTitle>
+            <DialogTitle>{t("Book an appointment?")}</DialogTitle>
             <DialogDescription>
-              Next you&apos;ll pick a date, then one of a doctor&apos;s open time slots.
+              {t("Next you'll pick a date, then one of a doctor's open time slots.")}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={cancelBooking}>Not now</Button>
-            <Button onClick={() => setBookingStage("picking")}>Yes, continue</Button>
+            <Button variant="outline" onClick={cancelBooking}>{t("Not now")}</Button>
+            <Button onClick={() => setBookingStage("picking")}>{t("Yes, continue")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {bookingStage === "picking" && (
-        <Panel title="Book a slot" description="Only times a doctor has opened can be booked.">
+        <Panel title={t("Book a slot")} description={t("Only times a doctor has opened can be booked.")}>
           {prefill.fromTriage && (
             <Notice tone="info" icon={BookOpenCheck} className="mb-4">
-              You came here from Condition guidance. Pick a time below to book.
+              {prefill.condition ? (
+                <Trans
+                  i18nKey="You came here from Condition guidance for <strong>{{condition}}</strong>. Recommended specialists are listed first. Pick a time below to book."
+                  values={{ condition: prefill.condition }}
+                  components={{ strong: <strong /> }}
+                />
+              ) : (
+                t("You came here from Condition guidance. Recommended specialists are listed first. Pick a time below to book.")
+              )}
             </Notice>
           )}
           <div className="mb-6 flex max-w-xs flex-col gap-2">
-            <Label htmlFor="booking-date">Date</Label>
+            <Label htmlFor="booking-date">{t("Date")}</Label>
             <Input
               id="booking-date"
               type="date"
@@ -196,87 +255,62 @@ function Appointments() {
             />
           </div>
 
-          {loadingSlots && (
-            <div role="status" className="flex flex-col gap-3">
-              <span className="sr-only">Loading available doctors…</span>
-              <Skeleton className="w-40" />
-              <div className="flex flex-wrap gap-2">
-                {[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-10 w-24 rounded-full" />)}
-              </div>
-            </div>
-          )}
-
-          {!loadingSlots && doctorsWithSlots.length === 0 && (
-            <EmptyState art={CalendarCheckArt} className="py-4">
-              No doctors have open slots on this date yet. Try another date.
-            </EmptyState>
-          )}
-
-          <div className="flex flex-col gap-6">
-            {!loadingSlots && doctorsWithSlots.map((doc) => (
-              <fieldset key={doc.doctorId}>
-                <legend className="mb-3 flex items-center gap-2 text-sm font-semibold">
-                  <Stethoscope aria-hidden="true" className="h-4 w-4 text-primary" />
-                  {doc.doctorName}
-                </legend>
-                <div className="flex flex-wrap gap-2">
-                  {doc.openSlots.map((s) => (
-                    <SlotChip
-                      key={s.time}
-                      name="booking-slot"
-                      value={s.time}
-                      checked={Boolean(chosen && chosen.doctorId === doc.doctorId && chosen.time === s.time)}
-                      onChange={() => setChosen({ doctorId: doc.doctorId, doctorName: doc.doctorName, time: s.time })}
-                    />
-                  ))}
-                </div>
-              </fieldset>
-            ))}
+          <div className="flex flex-col gap-8">
+            {directoryFirst ? directorySection : clinicSection}
+            <hr className="border-border" />
+            {directoryFirst ? clinicSection : directorySection}
           </div>
 
           {chosen && (
             <div className="mt-6 flex animate-rise flex-col gap-4 border-t border-border pt-6">
               <div className="flex flex-col gap-2">
-                <Label htmlFor="reason">Reason for visit</Label>
+                <Label htmlFor="reason">{t("Reason for visit")}</Label>
                 <Textarea
                   id="reason"
-                  placeholder="Briefly describe why you're booking"
+                  placeholder={t("Briefly describe why you're booking")}
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
                 />
               </div>
 
               <p className="rounded-lg bg-secondary p-4 text-sm">
-                Booking with <strong>{chosen.doctorName}</strong> on <strong>{bookingDate}</strong> at{" "}
-                <strong>{chosen.time}</strong>.
+                <Trans
+                  i18nKey={
+                    chosen.specialty
+                      ? msg("Booking with <strong>{{doctor}}</strong> ({{specialty}}) on <strong>{{date}}</strong> at <strong>{{time}}</strong>.")
+                      : msg("Booking with <strong>{{doctor}}</strong> on <strong>{{date}}</strong> at <strong>{{time}}</strong>.")
+                  }
+                  values={{ doctor: chosen.doctorName, specialty: chosen.specialty, date: bookingDate, time: chosen.time }}
+                  components={{ strong: <strong /> }}
+                />
               </p>
 
               <Button onClick={confirmBooking} disabled={booking} className="self-start">
-                {booking ? "Booking…" : "Confirm booking"}
+                {booking ? t("Booking…") : t("Confirm booking")}
               </Button>
             </div>
           )}
 
           <Button variant="ghost" size="sm" className="mt-4" onClick={cancelBooking}>
-            Cancel
+            {t("Cancel")}
           </Button>
         </Panel>
       )}
 
-      <h2 className="mb-4 text-lg">Your appointments</h2>
+      <h2 className="mb-4 text-lg">{t("Your appointments")}</h2>
 
-      {loading && appointments.length === 0 && <SkeletonRows rows={3} label="Loading appointments…" />}
+      {loading && appointments.length === 0 && <SkeletonRows rows={3} label={t("Loading appointments…")} />}
       {!loading && loadError && (
-        <p role="alert" className="text-sm text-destructive">Couldn&apos;t load your appointments: {loadError}</p>
+        <p role="alert" className="text-sm text-destructive">{t("Couldn't load your appointments: {{error}}", { error: loadError })}</p>
       )}
       {!loading && !loadError && appointments.length === 0 && (
         <Card>
           <EmptyState
             art={CalendarCheckArt}
-            title="No appointments yet"
-            action={!bookingStage && <Button onClick={startBooking}>Book your first appointment</Button>}
+            title={t("No appointments yet")}
+            action={!bookingStage && <Button onClick={startBooking}>{t("Book your first appointment")}</Button>}
           >
-            Book a slot with a doctor and it will appear here.
+            {t("Book a slot with a doctor and it will appear here.")}
           </EmptyState>
         </Card>
       )}
@@ -292,7 +326,13 @@ function Appointments() {
 
               <div className="min-w-0 flex-1">
                 <h3 className="truncate text-base">{a.doctorName}</h3>
-                <p className="text-sm text-muted-foreground">{a.reason || "Consultation"}</p>
+                {a.directoryDoctor && (
+                  <p className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                    {a.specialty}
+                    <MockDoctorTag />
+                  </p>
+                )}
+                <p className="text-sm text-muted-foreground">{a.reason || t("Consultation")}</p>
               </div>
 
               <div className="flex items-center gap-3 sm:flex-col sm:items-end sm:gap-1">

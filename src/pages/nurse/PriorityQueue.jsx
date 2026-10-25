@@ -1,5 +1,6 @@
 import React from "react";
 import { ArrowDownWideNarrow } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import FadeIn from "@/components/FadeIn";
 import DashboardShell from "@/components/layout/DashboardShell";
 import PageHeading from "@/components/layout/PageHeading";
@@ -9,22 +10,24 @@ import PriorityBadge from "@/components/feedback/PriorityBadge";
 import { nurseMenu } from "@/lib/nav";
 
 // SAMPLE DATA: a demonstration of a priority queue, not backend data.
+// `room` is the room number.
 const PATIENTS = [
-  { priority: "Critical", id: "P101", name: "Amit Sharma", room: "Room 204" },
-  { priority: "Critical", id: "P118", name: "Patient", room: "Room 210" },
-  { priority: "High", id: "P104", name: "Neha Verma", room: "Room 108" },
-  { priority: "Medium", id: "P110", name: "Ravi Patel", room: "Room 312" },
-  { priority: "Normal", id: "P115", name: "Sneha Iyer", room: "Room 305" },
+  { priority: "Critical", id: "P101", name: "Amit Sharma", room: "204" },
+  { priority: "Critical", id: "P118", name: null, room: "210" },
+  { priority: "High", id: "P104", name: "Neha Verma", room: "108" },
+  { priority: "Medium", id: "P110", name: "Ravi Patel", room: "312" },
+  { priority: "Normal", id: "P115", name: "Sneha Iyer", room: "305" },
 ];
 
 function PriorityQueue() {
+  const { t } = useTranslation();
   return (
-    <DashboardShell role="Nurse" menu={nurseMenu} title="Priority Queue">
+    <DashboardShell role="Nurse" menu={nurseMenu} title={t("Priority Queue")}>
       <PageHeading
-        eyebrow="Nurse portal"
-        title="Emergency priority queue"
-        description="Patients ordered by priority, highest first."
-        sample="A demonstration of a priority queue. These patients aren't loaded from the backend."
+        eyebrow={t("Nurse portal")}
+        title={t("Emergency priority queue")}
+        description={t("Patients ordered by priority, highest first.")}
+        sample={t("A demonstration of a priority queue. These patients aren't loaded from the backend.")}
       />
 
       <Panel>
@@ -34,8 +37,8 @@ function PriorityQueue() {
               <div className="grid grid-cols-[auto_1fr] items-center gap-x-4 gap-y-1 rounded-lg border border-border bg-card p-4 text-sm sm:grid-cols-[110px_64px_1fr_auto]">
                 <PriorityBadge priority={patient.priority} />
                 <strong className="sm:order-none">{patient.id}</strong>
-                <span className="truncate">{patient.name}</span>
-                <span className="text-muted-foreground">{patient.room}</span>
+                <span className="truncate">{patient.name || t("Patient")}</span>
+                <span className="text-muted-foreground">{t("Room {{number}}", { number: patient.room })}</span>
               </div>
             </FadeIn>
           ))}
@@ -43,7 +46,7 @@ function PriorityQueue() {
       </Panel>
 
       <Notice icon={ArrowDownWideNarrow}>
-        A priority queue (heap) always serves the highest-priority patient first.
+        {t("A priority queue (heap) always serves the highest-priority patient first.")}
       </Notice>
     </DashboardShell>
   );

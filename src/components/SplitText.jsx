@@ -5,10 +5,18 @@ import React from "react";
 // the whole phrase; the animated letters are hidden from them. The total
 // stagger is capped (maxSpread) so long titles still finish quickly.
 // Under prefers-reduced-motion the CSS turns the animation off.
+//
+// Scripts such as Devanagari build one visible letter from several code
+// points (a consonant plus vowel signs, or a conjunct), so splitting them
+// would show broken glyphs. Non-Latin text animates word by word instead.
+const NON_LATIN = /[^\u0000-ɏ -⁯]/;
+
 function SplitText({ text, as: Tag = "span", className, delay = 0, maxSpread = 520, ...rest }) {
   const str = String(text ?? "");
-  const letters = str.replace(/\s+/g, "").length || 1;
-  const step = Math.min(28, maxSpread / letters);
+  const byWord = NON_LATIN.test(str);
+  const pieces = (word) => (byWord ? [word] : [...word]);
+  const letters = byWord ? str.split(/\s+/).filter(Boolean).length || 1 : str.replace(/\s+/g, "").length || 1;
+  const step = Math.min(byWord ? 90 : 28, maxSpread / letters);
   let index = 0;
 
   return (
@@ -19,7 +27,7 @@ function SplitText({ text, as: Tag = "span", className, delay = 0, maxSpread = 5
           <span key={w} aria-hidden="true"> </span>
         ) : (
           <span key={w} aria-hidden="true" className="split-word">
-            {[...word].map((ch, c) => {
+            {pieces(word).map((ch, c) => {
               const d = Math.round(delay + index++ * step);
               return (
                 <span key={c} className="split-letter" style={{ "--d": `${d}ms` }}>

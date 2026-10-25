@@ -1,7 +1,7 @@
 // Run with `npm test` (Node's built-in test runner, no extra dependency).
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { normalizeTime, sameTime, timeToMinutes } from "./time.js";
+import { formatIstDateTime, logLineToIst, normalizeTime, sameTime, timeToMinutes, todayIst } from "./time.js";
 
 test("normalizeTime: required cases", () => {
   assert.equal(normalizeTime("00:30"), "12:30 AM");
@@ -31,4 +31,20 @@ test("sameTime matches across formats", () => {
   assert.ok(!sameTime("09:00 AM", "9 pm"));
   assert.ok(!sameTime("junk", "junk"));
   assert.equal(timeToMinutes("00:00"), 0);
+});
+
+test("todayIst: uses the IST date, not the UTC one", () => {
+  // 20:00 UTC on the 23rd is 01:30 IST on the 24th.
+  assert.equal(todayIst(new Date("2026-10-23T20:00:00Z")), "2026-10-24");
+  assert.equal(todayIst(new Date("2026-10-24T09:00:00Z")), "2026-10-24");
+});
+
+test("logLineToIst: shifts the UTC stamp by +5:30", () => {
+  const out = logLineToIst("[2026-10-24T09:21:38Z] [INFO] login success: a@b.test");
+  assert.match(out, /^\[24 Oct 2026, 2:51:38 pm IST\] \[INFO\] login success: a@b\.test$/i);
+  assert.equal(logLineToIst("no stamp here"), "no stamp here");
+});
+
+test("formatIstDateTime: midnight UTC is 5:30 am IST", () => {
+  assert.match(formatIstDateTime("2026-10-24T00:00:00Z"), /^24 Oct 2026, 5:30 am IST$/i);
 });

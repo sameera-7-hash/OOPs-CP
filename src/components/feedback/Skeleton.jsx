@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 
 export function Skeleton({ className }) {
@@ -7,10 +8,11 @@ export function Skeleton({ className }) {
 
 // Placeholder rows shown while a list loads. The visible shimmer is
 // decorative; screen readers get the label instead.
-export function SkeletonRows({ rows = 3, label = "Loading…", className }) {
+export function SkeletonRows({ rows = 3, label, className }) {
+  const { t } = useTranslation();
   return (
     <div role="status" className={cn("flex flex-col gap-3", className)}>
-      <span className="sr-only">{label}</span>
+      <span className="sr-only">{label || t("Loading…")}</span>
       {Array.from({ length: rows }, (_, i) => (
         <div key={i} className="flex items-center gap-4 rounded-xl border border-border bg-card p-4">
           <Skeleton className="h-10 w-10 shrink-0 rounded-lg" />

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { ExternalLink, FileText } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useCurrentUser } from "@/context/UserContext";
 import { useToast } from "@/context/ToastContext";
 import { getPatients, getDocuments, uploadDocument, fileToBase64, documentContentUrl } from "@/Services/api";
@@ -15,6 +16,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { nurseMenu } from "@/lib/nav";
+import { formatIstDate, todayIst } from "@/lib/time";
+import { currentLocale } from "@/i18n";
 
 function textToBase64(text) {
   // btoa only handles Latin1; encodeURIComponent/unescape round-trip gets
@@ -27,6 +30,7 @@ const byNewest = (data) => [...data].sort((a, b) => b.createdAt.localeCompare(a.
 function Reports() {
   const { user } = useCurrentUser();
   const notify = useToast();
+  const { t } = useTranslation();
 
   const [patients, setPatients] = useState([]);
   const [patientId, setPatientId] = useState("");
@@ -59,11 +63,11 @@ function Reports() {
   const submit = async (e) => {
     e.preventDefault();
     if (!patientId) {
-      setFormError("Choose a patient.");
+      setFormError(t("Choose a patient."));
       return;
     }
     if (!reportText.trim() && !file) {
-      setFormError("Write a report, attach a file, or both.");
+      setFormError(t("Write a report, attach a file, or both."));
       return;
     }
     setFormError("");
@@ -83,7 +87,7 @@ function Reports() {
           note: reportText.trim(),
         });
       } else {
-        const filename = `Nurse Report - ${new Date().toISOString().slice(0, 10)}.txt`;
+        const filename = `Nurse Report - ${todayIst()}.txt`;
         await uploadDocument({
           patientId,
           patientName: selectedPatient?.name || "",
@@ -95,7 +99,7 @@ function Reports() {
         });
       }
 
-      notify({ message: "Report added. The patient and their doctor can now see it." });
+      notify({ message: t("Report added. The patient and their doctor can now see it.") });
       setReportText("");
       setFile(null);
       setFileInputKey((k) => k + 1);
@@ -103,28 +107,28 @@ function Reports() {
         .then((data) => setPatientDocs(byNewest(data)))
         .catch(() => {});
     } catch (err) {
-      notify({ tone: "error", message: `Could not add report: ${err.message}` });
+      notify({ tone: "error", message: t("Could not add report: {{error}}", { error: err.message }) });
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <DashboardShell role="Nurse" menu={nurseMenu} title="Patient Reports">
+    <DashboardShell role="Nurse" menu={nurseMenu} title={t("Patient Reports")}>
       <PageHeading
-        eyebrow="Nurse portal"
-        title="Patient reports"
-        description="Add a care report for a patient. The patient and their doctor can see it straight away."
+        eyebrow={t("Nurse portal")}
+        title={t("Patient reports")}
+        description={t("Add a care report for a patient. The patient and their doctor can see it straight away.")}
       />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[2fr_1fr]">
         <Panel className="mb-0">
           <form onSubmit={submit} noValidate className="flex flex-col gap-6">
             <div className="flex flex-col gap-2">
-              <Label htmlFor="report-patient">Patient <span aria-hidden="true">*</span></Label>
+              <Label htmlFor="report-patient">{t("Patient")} <span aria-hidden="true">*</span></Label>
               <Select value={patientId} onValueChange={(v) => { setPatientId(v); setFormError(""); }}>
                 <SelectTrigger id="report-patient">
-                  <SelectValue placeholder="Select a patient" />
+                  <SelectValue placeholder={t("Select a patient")} />
                 </SelectTrigger>
                 <SelectContent>
                   {patients.map((p) => (
@@ -135,17 +139,17 @@ function Reports() {
             </div>
 
             <div className="flex flex-col gap-2">
-              <Label htmlFor="report-text">Report</Label>
+              <Label htmlFor="report-text">{t("Report")}</Label>
               <Textarea
                 id="report-text"
-                placeholder="Vitals, observations, care notes…"
+                placeholder={t("Vitals, observations, care notes…")}
                 value={reportText}
                 onChange={(e) => setReportText(e.target.value)}
               />
             </div>
 
             <div className="flex flex-col gap-2">
-              <Label htmlFor="report-file">Attach a file (optional)</Label>
+              <Label htmlFor="report-file">{t("Attach a file (optional)")}</Label>
               <Input
                 key={fileInputKey}
                 id="report-file"
@@ -155,22 +159,22 @@ function Reports() {
                 aria-describedby="report-file-hint"
                 onChange={(e) => setFile(e.target.files?.[0] || null)}
               />
-              <p id="report-file-hint" className="text-sm text-muted-foreground">Accepted: .txt, .doc, .docx, .pdf</p>
+              <p id="report-file-hint" className="text-sm text-muted-foreground">{t("Accepted: .txt, .doc, .docx, .pdf")}</p>
             </div>
 
             {formError && <p role="alert" className="text-sm font-medium text-destructive">{formError}</p>}
 
             <Button type="submit" disabled={submitting} className="self-start">
-              {submitting ? "Adding…" : "Add report"}
+              {submitting ? t("Adding…") : t("Add report")}
             </Button>
           </form>
         </Panel>
 
-        <Panel title={selectedPatient ? `${selectedPatient.name}'s reports` : "Existing reports"} className="mb-0">
-          {!patientId && <p className="text-sm text-muted-foreground">Choose a patient to see their reports.</p>}
-          {patientId && loadingDocs && <SkeletonRows rows={2} label="Loading reports…" />}
+        <Panel title={selectedPatient ? t("{{name}}'s reports", { name: selectedPatient.name }) : t("Existing reports")} className="mb-0">
+          {!patientId && <p className="text-sm text-muted-foreground">{t("Choose a patient to see their reports.")}</p>}
+          {patientId && loadingDocs && <SkeletonRows rows={2} label={t("Loading reports…")} />}
           {patientId && !loadingDocs && patientDocs.length === 0 && (
-            <EmptyState art={FolderCrossArt} className="py-4">No reports for this patient yet.</EmptyState>
+            <EmptyState art={FolderCrossArt} className="py-4">{t("No reports for this patient yet.")}</EmptyState>
           )}
 
           <ul className="flex flex-col">
@@ -182,11 +186,11 @@ function Reports() {
                 <div className="min-w-0 flex-1">
                   <b className="block truncate text-sm font-semibold">{doc.filename}</b>
                   <small className="text-xs text-muted-foreground">
-                    {doc.uploaderRole === "Nurse" ? `From ${doc.uploaderName}` : "From patient"} · {new Date(doc.createdAt).toLocaleDateString()}
+                    {doc.uploaderRole === "Nurse" ? t("From {{name}}", { name: doc.uploaderName }) : t("From patient")} · {formatIstDate(doc.createdAt, currentLocale())}
                   </small>
                 </div>
                 <Button size="icon" variant="outline" asChild>
-                  <a href={documentContentUrl(doc.id)} target="_blank" rel="noreferrer" aria-label={`Open ${doc.filename} in a new tab`}>
+                  <a href={documentContentUrl(doc.id)} target="_blank" rel="noreferrer" aria-label={t("Open {{name}} in a new tab", { name: doc.filename })}>
                     <ExternalLink aria-hidden="true" />
                   </a>
                 </Button>

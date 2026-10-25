@@ -1,5 +1,5 @@
 ---
-title: PatientCare
+title: Beacon
 emoji: 🏥
 colorFrom: blue
 colorTo: green

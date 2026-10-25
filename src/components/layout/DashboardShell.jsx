@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { LogOut, Menu, Siren } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useCurrentUser } from "@/context/UserContext";
 import BrandMark from "@/components/BrandMark";
 import { Button } from "@/components/ui/button";
@@ -8,26 +9,29 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import NotificationBell from "@/components/NotificationBell";
 import ThemeToggle from "@/components/ThemeToggle";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { useEmergency } from "@/components/emergency/Emergency";
 import { cn } from "@/lib/utils";
 
 function Brand() {
+  const { t } = useTranslation();
   return (
     <div className="mb-6 flex items-center gap-3 px-2">
       <span className="grid h-10 w-10 place-items-center rounded-lg border border-border bg-card shadow-sm">
         <BrandMark className="h-7 w-7" />
       </span>
       <div>
-        <p className="text-base font-semibold leading-none">PatientCare</p>
-        <p className="mt-1 text-xs text-muted-foreground">Clinic management</p>
+        <p className="text-base font-semibold leading-none">Beacon</p>
+        <p className="mt-1 text-xs text-muted-foreground">{t("Clinic management")}</p>
       </div>
     </div>
   );
 }
 
 function NavList({ menu, onNavigate }) {
+  const { t } = useTranslation();
   return (
-    <nav aria-label="Main" className="flex flex-1 flex-col gap-1">
+    <nav aria-label={t("Main")} className="flex flex-1 flex-col gap-1">
       {menu.map((item) => {
         const Icon = item.icon;
         return (
@@ -46,7 +50,7 @@ function NavList({ menu, onNavigate }) {
             }
           >
             <Icon aria-hidden="true" className="h-5 w-5" />
-            <span>{item.label}</span>
+            <span>{t(item.label)}</span>
           </NavLink>
         );
       })}
@@ -55,6 +59,7 @@ function NavList({ menu, onNavigate }) {
 }
 
 function SidebarBottom({ onLogout }) {
+  const { t } = useTranslation();
   return (
     <div className="mt-auto border-t border-border pt-3">
       <Button
@@ -63,7 +68,7 @@ function SidebarBottom({ onLogout }) {
         onClick={onLogout}
       >
         <LogOut aria-hidden="true" />
-        Log out
+        {t("Log out")}
       </Button>
     </div>
   );
@@ -77,6 +82,12 @@ function DashboardShell({ role, menu, title, children }) {
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
   const { openEmergency } = useEmergency();
+  const { t } = useTranslation();
+
+  // `role` is the backend's English role name; these are its display labels.
+  const roleLabel = { Patient: t("Patient"), Doctor: t("Doctor"), Nurse: t("Nurse") }[role] || role;
+  const menuTitle = { Patient: t("Patient menu"), Doctor: t("Doctor menu"), Nurse: t("Nurse menu") }[role];
+  const defaultTitle = { Patient: t("Patient Dashboard"), Doctor: t("Doctor Dashboard"), Nurse: t("Nurse Dashboard") }[role];
 
   const handleLogout = () => {
     logout();
@@ -91,7 +102,7 @@ function DashboardShell({ role, menu, title, children }) {
         href="#main"
         className="sr-only z-50 rounded-lg bg-card px-4 py-2 shadow-md focus:not-sr-only focus:fixed focus:left-4 focus:top-4"
       >
-        Skip to content
+        {t("Skip to content")}
       </a>
 
       {/* Desktop sidebar */}
@@ -105,7 +116,7 @@ function DashboardShell({ role, menu, title, children }) {
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
         <SheetContent
           side="left"
-          title={`${role} menu`}
+          title={menuTitle}
           className="bg-brand-soft lg:hidden"
         >
           <Brand />
@@ -120,7 +131,7 @@ function DashboardShell({ role, menu, title, children }) {
             }}
           >
             <Siren aria-hidden="true" />
-            Emergency
+            {t("Emergency")}
           </Button>
           <SidebarBottom onLogout={handleLogout} />
         </SheetContent>
@@ -134,14 +145,15 @@ function DashboardShell({ role, menu, title, children }) {
               size="icon"
               className="lg:hidden"
               onClick={() => setMobileOpen(true)}
-              aria-label="Open menu"
+              aria-label={t("Open menu")}
             >
               <Menu aria-hidden="true" className="size-5!" />
             </Button>
-            <p className="truncate text-base font-semibold">{title || `${role} Dashboard`}</p>
+            <p className="truncate text-base font-semibold">{title || defaultTitle}</p>
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
+            <LanguageSwitcher />
             <ThemeToggle />
             <NotificationBell role={role} userId={user?.id} />
 
@@ -150,8 +162,8 @@ function DashboardShell({ role, menu, title, children }) {
                 <AvatarFallback>{initial}</AvatarFallback>
               </Avatar>
               <div className="hidden leading-tight sm:block">
-                <p className="text-sm font-semibold">{user?.name || role}</p>
-                <p className="text-xs text-muted-foreground">{role}</p>
+                <p className="text-sm font-semibold">{user?.name || roleLabel}</p>
+                <p className="text-xs text-muted-foreground">{roleLabel}</p>
               </div>
             </div>
           </div>

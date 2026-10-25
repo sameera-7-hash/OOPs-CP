@@ -131,8 +131,8 @@
   --color-coral: var(--coral);
 
   /* Type: humanist sans for UI, one serif for page titles only. */
-  --font-sans: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-serif: "Fraunces", Georgia, "Times New Roman", serif;
+  --font-sans: "Figtree", "Noto Sans Devanagari", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-serif: "Fraunces", "Noto Sans Devanagari", Georgia, "Times New Roman", serif;
 
   /* Radius: 12px cards, 8px controls, 999px chips. */
   --radius-sm: 6px;
@@ -623,6 +623,29 @@
   display: inline-block;
   animation: letter-in 420ms var(--ease-out) both;
   animation-delay: var(--d, 0ms);
+}
+
+/* Hindi (Devanagari). Vowel signs sit above and below the letters, so
+   lines need more height than the Latin-tuned leading-* utilities give,
+   and the line-reveal clip needs room above as well as below. Letter
+   spacing would pull joined letters apart, and there is no upper case.
+   Unlayered, so these beat the utilities. */
+:lang(hi) body {
+  line-height: 1.7;
+}
+:lang(hi) h1,
+:lang(hi) h2,
+:lang(hi) h3,
+:lang(hi) [class*="leading-"] {
+  line-height: 1.4;
+}
+:lang(hi) * {
+  letter-spacing: normal !important;
+  text-transform: none !important;
+}
+:lang(hi) .reveal-line {
+  padding-top: 0.15em;
+  padding-bottom: 0.2em;
 }
 
 /* Room at the bottom of every layout for the fixed Emergency pill, so it

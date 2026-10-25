@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { ExternalLink, FileText, FileType2, LoaderCircle, UploadCloud } from "lucide-react";
+import { Trans, useTranslation } from "react-i18next";
 import { useCurrentUser } from "@/context/UserContext";
 import { useToast } from "@/context/ToastContext";
 import { getDocuments, uploadDocument, fileToBase64, documentContentUrl } from "@/Services/api";
@@ -11,7 +12,9 @@ import { FolderCrossArt } from "@/components/art/Illustrations";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { formatIstDate } from "@/lib/time";
 import { patientMenu } from "@/lib/nav";
+import { currentLocale } from "@/i18n";
 
 const ACCEPTED_EXTENSIONS = [".txt", ".doc", ".docx", ".pdf"];
 
@@ -29,6 +32,7 @@ function isAccepted(file) {
 function MedicalRecords() {
   const { user } = useCurrentUser();
   const notify = useToast();
+  const { t } = useTranslation();
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
@@ -54,7 +58,7 @@ function MedicalRecords() {
     if (!user) return;
     const files = Array.from(fileList).filter(isAccepted);
     if (files.length === 0) {
-      notify({ tone: "error", message: "Only .txt, .doc, .docx and .pdf files are accepted." });
+      notify({ tone: "error", message: t("Only .txt, .doc, .docx and .pdf files are accepted.") });
       return;
     }
 
@@ -72,10 +76,10 @@ function MedicalRecords() {
           dataBase64,
         });
       }
-      notify({ message: files.length === 1 ? `${files[0].name} uploaded.` : `${files.length} files uploaded.` });
+      notify({ message: files.length === 1 ? t("{{name}} uploaded.", { name: files[0].name }) : t("{{count}} files uploaded.", { count: files.length }) });
       loadDocuments();
     } catch (err) {
-      notify({ tone: "error", message: `Could not upload file: ${err.message}` });
+      notify({ tone: "error", message: t("Could not upload file: {{error}}", { error: err.message }) });
     } finally {
       setUploading(false);
     }
@@ -88,11 +92,11 @@ function MedicalRecords() {
   };
 
   return (
-    <DashboardShell role="Patient" menu={patientMenu} title="My Reports">
+    <DashboardShell role="Patient" menu={patientMenu} title={t("My Reports")}>
       <PageHeading
-        eyebrow="Medical records"
-        title="My reports"
-        description="Upload your own documents, and see reports your care team has shared with you."
+        eyebrow={t("Medical records")}
+        title={t("My reports")}
+        description={t("Upload your own documents, and see reports your care team has shared with you.")}
       />
 
       <div
@@ -120,29 +124,29 @@ function MedicalRecords() {
           <UploadCloud aria-hidden="true" className="h-10 w-10 text-primary" />
         )}
         <p className="text-base">
-          <strong>Drag and drop</strong> a file here, or
+          <Trans i18nKey="<strong>Drag and drop</strong> a file here, or" components={{ strong: <strong /> }} />
         </p>
         <Button type="button" variant="outline" disabled={uploading} onClick={() => fileInputRef.current?.click()}>
-          Choose a file
+          {t("Choose a file")}
         </Button>
-        <small className="text-sm text-muted-foreground">Accepted: .txt, .doc, .docx, .pdf</small>
-        <p aria-live="polite" className="text-sm font-medium text-primary">{uploading ? "Uploading…" : ""}</p>
+        <small className="text-sm text-muted-foreground">{t("Accepted: .txt, .doc, .docx, .pdf")}</small>
+        <p aria-live="polite" className="text-sm font-medium text-primary">{uploading ? t("Uploading…") : ""}</p>
       </div>
 
-      <h2 className="mb-4 text-lg">Your documents</h2>
+      <h2 className="mb-4 text-lg">{t("Your documents")}</h2>
 
-      {loading && documents.length === 0 && <SkeletonRows rows={3} label="Loading reports…" />}
+      {loading && documents.length === 0 && <SkeletonRows rows={3} label={t("Loading reports…")} />}
       {!loading && loadError && (
-        <p role="alert" className="text-sm text-destructive">Couldn&apos;t load your reports: {loadError}</p>
+        <p role="alert" className="text-sm text-destructive">{t("Couldn't load your reports: {{error}}", { error: loadError })}</p>
       )}
       {!loading && !loadError && documents.length === 0 && (
         <Card>
           <EmptyState
             art={FolderCrossArt}
-            title="No reports yet"
-            action={<Button variant="outline" onClick={() => fileInputRef.current?.click()}>Upload a report</Button>}
+            title={t("No reports yet")}
+            action={<Button variant="outline" onClick={() => fileInputRef.current?.click()}>{t("Upload a report")}</Button>}
           >
-            Upload one above, or check back after your next visit.
+            {t("Upload one above, or check back after your next visit.")}
           </EmptyState>
         </Card>
       )}
@@ -166,9 +170,9 @@ function MedicalRecords() {
                 <div className="min-w-0 flex-1">
                   <h3 className="truncate text-base">{doc.filename}</h3>
                   <p className="mt-0.5 text-sm text-muted-foreground">
-                    {fromNurse ? `From ${doc.uploaderName || "your nurse"}` : "Uploaded by you"}
+                    {fromNurse ? t("From {{name}}", { name: doc.uploaderName || t("your nurse") }) : t("Uploaded by you")}
                     {" · "}
-                    {new Date(doc.createdAt).toLocaleDateString()}
+                    {formatIstDate(doc.createdAt, currentLocale())}
                   </p>
                   {doc.note && <p className="mt-1 text-sm text-foreground/90">{doc.note}</p>}
                 </div>
@@ -176,8 +180,8 @@ function MedicalRecords() {
                 <Button variant="outline" size="sm" asChild>
                   <a href={documentContentUrl(doc.id)} target="_blank" rel="noreferrer">
                     <ExternalLink aria-hidden="true" />
-                    View
-                    <span className="sr-only">{doc.filename} (opens in a new tab)</span>
+                    {t("View")}
+                    <span className="sr-only">{t("{{name}} (opens in a new tab)", { name: doc.filename })}</span>
                   </a>
                 </Button>
               </Card>

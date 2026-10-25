@@ -1,6 +1,8 @@
 // Thin client for the C++ patient-records backend.
 // When VITE_API_URL is unset, Vite proxies "/api" to localhost in development.
 
+import i18n from "@/i18n";
+
 const configuredApiUrl = import.meta.env.VITE_API_URL?.trim().replace(/\/+$/, "");
 const apiUrl = configuredApiUrl
   ? (/^https?:\/\//i.test(configuredApiUrl)
@@ -42,7 +44,7 @@ async function request(path, options = {}) {
     });
   } catch (err) {
     throw new Error(
-      "Could not reach the backend. Check VITE_API_URL and confirm the backend is running."
+      i18n.t("Could not reach the backend. Check VITE_API_URL and confirm the backend is running.")
     );
   }
 
@@ -55,7 +57,7 @@ async function request(path, options = {}) {
       clearSessionAndReload();
     }
     const err = new Error(
-      res.status === 401 ? "Please log in again." : data.error || `Request failed (${res.status})`
+      res.status === 401 ? i18n.t("Please log in again.") : data.error || i18n.t("Request failed ({{status}})", { status: res.status })
     );
     err.status = res.status;
     throw err;
@@ -161,12 +163,47 @@ export function getAvailability({ doctorId, date } = {}) {
   return request(`/availability${qs ? `?${qs}` : ""}`);
 }
 
-// Books a specific open slot. Throws if it was already taken.
-export function bookAppointment({ patientId, patientName, doctorId, doctorName, date, time, reason }) {
+// Books a specific open slot. Throws if it was already taken. For a
+// directory doctor (id "Z-…"), `specialty` records which of their
+// specialties the visit is for.
+export function bookAppointment({ patientId, patientName, doctorId, doctorName, date, time, reason, specialty }) {
   return request("/appointments", {
     method: "POST",
-    body: JSON.stringify({ patientId, patientName, doctorId, doctorName, date, time, reason }),
+    body: JSON.stringify({ patientId, patientName, doctorId, doctorName, date, time, reason, specialty }),
   });
+}
+
+// ---------------------------------------------------------------
+// Doctor directory: mock doctors from the Zocdoc dataset. They have no
+// logins; the backend generates their open times. Each doctor is
+// { id: "Z-0001", name, specialties: [...], mock: true }.
+// ---------------------------------------------------------------
+
+// -> [{ name, count }]
+export function getDoctorSpecialties() {
+  return request("/doctors/specialties");
+}
+
+// -> { total, offset, limit, doctors: [...] }
+export function getDirectoryDoctors({ specialty, q, offset = 0, limit = 25 } = {}) {
+  const params = new URLSearchParams({ offset: String(offset), limit: String(limit) });
+  if (specialty) params.set("specialty", specialty);
+  if (q) params.set("q", q);
+  return request(`/doctors?${params.toString()}`);
+}
+
+// -> { doctor, date, slots: [{ time, booked }] }
+export function getDoctorSlots({ doctorId, date }) {
+  return request(`/doctors/slots?${new URLSearchParams({ doctorId, date }).toString()}`);
+}
+
+// Pass `disease` (a Condition guidance name) or `specialty`.
+// -> { disease?, matched, specialties, date, doctors: [{ ...doctor, matchedSpecialty, slots: [{time, booked}] }] }
+export function getRecommendedDoctors({ disease, specialty, date, limit = 6 }) {
+  const params = new URLSearchParams({ date, limit: String(limit) });
+  if (specialty) params.set("specialty", specialty);
+  else if (disease) params.set("disease", disease);
+  return request(`/doctors/recommended?${params.toString()}`);
 }
 
 // GET /api/appointments?patientId= or ?doctorId= (omit both to get all --
@@ -217,7 +254,7 @@ export function fileToBase64(file) {
       const commaIndex = result.indexOf(",");
       resolve(commaIndex >= 0 ? result.slice(commaIndex + 1) : result);
     };
-    reader.onerror = () => reject(reader.error || new Error("Could not read file"));
+    reader.onerror = () => reject(reader.error || new Error(i18n.t("Could not read file")));
     reader.readAsDataURL(file);
   });
 }

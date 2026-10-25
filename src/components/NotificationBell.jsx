@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Bell } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { getNotifications, markNotificationRead } from "@/Services/api";
 import {
   DropdownMenu,
@@ -10,12 +11,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { formatIstDateTime } from "@/lib/time";
+import { currentLocale } from "@/i18n";
 
 // Reminder bell for the top bar. Polls /api/notifications for the current
 // role/user every 15s (appointment booking is what creates these, see
 // pushNotification() in main.cpp) and lets the viewer mark one read.
 function NotificationBell({ role, userId }) {
   const [items, setItems] = useState([]);
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (!role) return;
@@ -52,7 +56,7 @@ function NotificationBell({ role, userId }) {
           variant="ghost"
           size="icon"
           className="relative"
-          aria-label={unread > 0 ? `Reminders, ${unread} unread` : "Reminders"}
+          aria-label={unread > 0 ? t("Reminders, {{count}} unread", { count: unread }) : t("Reminders")}
         >
           <Bell aria-hidden="true" className="size-5!" />
           {unread > 0 && (
@@ -64,10 +68,10 @@ function NotificationBell({ role, userId }) {
       </DropdownMenuTrigger>
 
       <DropdownMenuContent>
-        <DropdownMenuLabel>Reminders</DropdownMenuLabel>
+        <DropdownMenuLabel>{t("Reminders")}</DropdownMenuLabel>
 
         {items.length === 0 && (
-          <p className="px-4 py-4 text-sm text-muted-foreground">You&apos;re all caught up.</p>
+          <p className="px-4 py-4 text-sm text-muted-foreground">{t("You're all caught up.")}</p>
         )}
 
         {items.map((n) => (
@@ -78,7 +82,7 @@ function NotificationBell({ role, userId }) {
           >
             <p className="text-foreground">{n.message}</p>
             <small className="mt-0.5 block text-xs text-muted-foreground">
-              {new Date(n.createdAt).toLocaleString()}
+              {formatIstDateTime(n.createdAt, currentLocale())}
             </small>
           </DropdownMenuItem>
         ))}
