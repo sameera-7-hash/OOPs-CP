@@ -123,6 +123,24 @@ export function login({ email, password }) {
   });
 }
 
+// Forgot password, step 1. Always { ok: true }, whether or not the email
+// has an account; a code is emailed only if it does.
+export function requestPasswordReset(email) {
+  return request("/auth/password/forgot", {
+    method: "POST",
+    body: JSON.stringify({ email }),
+  });
+}
+
+// Forgot password, step 2: the emailed 6-digit code plus the new password
+// (at least 8 characters). Signs the account out everywhere on success.
+export function resetPassword({ email, code, password }) {
+  return request("/auth/password/reset", {
+    method: "POST",
+    body: JSON.stringify({ email, code, password }),
+  });
+}
+
 export function logout() {
   return request("/auth/logout", { method: "POST" }).catch(() => {});
 }

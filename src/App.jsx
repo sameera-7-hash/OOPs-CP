@@ -15,6 +15,7 @@ import Landing from "./pages/Landing";
 import Home from "./pages/Home";
 const Login = lazy(() => import("./pages/Login"));
 const RoleSelection = lazy(() => import("./pages/RoleSelection"));
+const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
 
 const PatientDashboard = lazy(() => import("./pages/patient/PatientDashboard"));
 const PatientAppointments = lazy(() => import("./pages/patient/Appointments"));
@@ -117,6 +118,7 @@ function App() {
               <Route path="/home" element={<Home />} />
               <Route path="/role" element={<RoleSelection />} />
               <Route path="/login/:role" element={<Login />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
 
               {/* ================= PATIENT ================= */}
               <Route path="/patient/dashboard" element={<ProtectedRoute role="Patient"><PatientDashboard /></ProtectedRoute>} />

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { msg } from "@/i18n";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
@@ -57,7 +57,8 @@ function Login() {
   const [mode, setMode] = useState("login"); // "login" | "signup"
 
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  // ?email= is set when coming back from a password reset.
+  const [email, setEmail] = useState(searchParams.get("email") || "");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -197,7 +198,17 @@ function Login() {
             </div>
 
             <div className="flex flex-col gap-2">
-              <Label htmlFor="password">{t("Password")}</Label>
+              <div className="flex items-center justify-between gap-2">
+                <Label htmlFor="password">{t("Password")}</Label>
+                {mode === "login" && (
+                  <Link
+                    to={`/forgot-password?${new URLSearchParams({ role, ...(email ? { email } : {}) })}`}
+                    className="text-sm font-semibold text-primary underline-offset-4 hover:underline"
+                  >
+                    {t("Forgot password?")}
+                  </Link>
+                )}
+              </div>
               <div className="relative">
                 <Lock aria-hidden="true" className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
