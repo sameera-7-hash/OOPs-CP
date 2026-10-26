@@ -1,10 +1,36 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { ArrowRight } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import CursorFollower from "@/components/CursorFollower";
 import FluidTrail from "@/components/FluidTrail";
 import LiquidHeading from "@/components/motion/LiquidHeading";
+import { LightBloom } from "@/components/motion/LightBloom";
+import { arrival } from "@/lib/pageTransition";
+
+// The lamp in the painting, as a fraction of its width and height.
+const LAMP = { x: 0.757, y: 0.382 };
+// Exit choreography: text lifts away, the painting eases toward the lamp,
+// and its light blooms over the screen; Home loads under the full light.
+const LEAVE_MS = 2000;
+
+// Where the lamp is on screen right now: object-fit: cover at the image's
+// object-position, plus its slow CSS zoom about its transform-origin.
+function lampOnScreen(img) {
+  const box = img.parentElement.getBoundingClientRect(); // the img fills it (inset: 0), untransformed
+  const style = getComputedStyle(img);
+  const W = img.offsetWidth;
+  const H = img.offsetHeight;
+  const [px, py] = style.objectPosition.split(" ").map((v) => parseFloat(v) / 100);
+  const [ox, oy] = style.transformOrigin.split(" ").map((v) => parseFloat(v));
+  const zoom = style.transform === "none" ? 1 : new DOMMatrixReadOnly(style.transform).a;
+  const fit = Math.max(W / img.naturalWidth, H / img.naturalHeight);
+  const iw = img.naturalWidth * fit;
+  const ih = img.naturalHeight * fit;
+  const x = (W - iw) * px + iw * LAMP.x;
+  const y = (H - ih) * py + ih * LAMP.y;
+  return { x: box.left + ox + (x - ox) * zoom, y: box.top + oy + (y - oy) * zoom };
+}
 
 // A thin gold rule fading out at both ends, with a four-point star at its
 // centre. Frames the landing page top and bottom.
@@ -44,10 +70,28 @@ function BeaconOutline() {
 // the plain system cursor.
 function Landing() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const bgRef = useRef(null);
+  const [leaving, setLeaving] = useState(null); // lamp point once leaving
+
+  const enter = (event) => {
+    // New-tab clicks, reduced motion and repeat clicks take the plain link.
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0 || reduceMotion) return;
+    event.preventDefault();
+    if (leaving) return;
+    const img = bgRef.current;
+    const lamp = img?.naturalWidth ? lampOnScreen(img) : { x: window.innerWidth * 0.75, y: window.innerHeight * 0.4 };
+    setLeaving(lamp);
+    window.setTimeout(() => {
+      arrival.fromLanding = true;
+      arrival.lamp = lamp;
+      navigate("/home");
+    }, LEAVE_MS);
+  };
 
   return (
-    <main className="landing">
+    <main className={leaving ? "landing is-leaving" : "landing"}>
       <img
         ref={bgRef}
         className="landing__bg"
@@ -71,7 +115,7 @@ function Landing() {
           {t("Every health journey deserves guidance, clarity, and care you can trust. Let Beacon help you find your way.")}
         </LiquidHeading>
         <div className="landing__enter-wrap">
-          <Link to="/home" className="landing__enter">
+          <Link to="/home" className="landing__enter" onClick={enter}>
             <span className="landing__enter-glow" aria-hidden="true" />
             <span className="landing__enter-label">{t("Enter Beacon")}</span>
             <span className="landing__enter-icon" aria-hidden="true">
@@ -82,6 +126,7 @@ function Landing() {
       </section>
 
       <CursorFollower />
+      {leaving && <LightBloom x={leaving.x} y={leaving.y} phase="in" />}
     </main>
   );
 }

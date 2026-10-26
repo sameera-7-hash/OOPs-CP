@@ -14,6 +14,7 @@ import IconTile, { TONE_CYCLE } from "@/components/IconTile";
 import Photo from "@/components/Photo";
 import BrandMark from "@/components/BrandMark";
 import FloatingNav from "@/components/layout/FloatingNav";
+import { ArrivalLight } from "@/components/motion/LightBloom";
 import DragMarquee from "@/components/motion/DragMarquee";
 import { CalendarCheckArt, ClipboardChartArt, StethoscopeArt } from "@/components/art/Illustrations";
 
@@ -398,6 +399,7 @@ function Home() {
   const { t } = useTranslation();
   return (
     <div className="marketing min-h-screen bg-background text-foreground">
+      <ArrivalLight />
       <ScrollProgress />
       <SiteHeader />
       <main>

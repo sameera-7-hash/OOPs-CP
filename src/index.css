@@ -1255,6 +1255,67 @@
   to { transform: scale(1.06); }
 }
 
+/* ---- Leaving the landing (Landing.jsx enter) ---------------------- */
+.landing.is-leaving .landing__content > * {
+  animation: landing-leave 0.9s cubic-bezier(0.45, 0, 0.55, 1) forwards;
+}
+.landing.is-leaving .landing__content > :nth-child(2) { animation-delay: 0.1s; }
+.landing.is-leaving .landing__content > :nth-child(3) { animation-delay: 0.2s; }
+.landing.is-leaving .landing__content > :nth-child(4) { animation-delay: 0.3s; }
+.landing.is-leaving .landing__content > :nth-child(5) { animation-delay: 0.4s; }
+
+.landing.is-leaving .landing__rule {
+  animation: landing-leave-fade 0.8s ease forwards;
+}
+
+/* `scale` composes with the drift animation's transform, so the zoom
+   picks up from wherever the drift is. */
+.landing__bg {
+  transition: scale 2s cubic-bezier(0.45, 0, 0.55, 1);
+}
+
+.landing.is-leaving .landing__bg {
+  scale: 1.14;
+}
+
+@keyframes landing-leave {
+  to { opacity: 0; transform: translateY(-16px); filter: blur(6px); }
+}
+
+@keyframes landing-leave-fade {
+  to { opacity: 0; }
+}
+
+/* LightBloom: a 320vmax disc whose opaque part (to 65%) covers any screen
+   from wherever the lamp is; the rim fades so it never shows a hard edge. */
+.light-bloom {
+  position: fixed;
+  z-index: 10000;
+  width: 320vmax;
+  height: 320vmax;
+  margin: -160vmax 0 0 -160vmax;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(closest-side, #fffaf0 0%, #fdf0d8 22%, var(--background) 65%, transparent 100%);
+}
+
+.light-bloom--in {
+  transform: scale(0);
+  animation: light-bloom-in 1.5s 0.5s cubic-bezier(0.5, 0, 0.3, 1) forwards;
+}
+
+.light-bloom--out {
+  animation: light-bloom-out 1.3s 0.2s ease-in-out forwards;
+}
+
+@keyframes light-bloom-in {
+  to { transform: scale(1); }
+}
+
+@keyframes light-bloom-out {
+  to { opacity: 0; }
+}
+
 @keyframes landing-fade {
   from { opacity: 0; }
 }
