@@ -935,7 +935,7 @@
    in light and dark mode. */
 .landing {
   --landing-ink: #1b2c44;
-  --landing-muted: #3a4860;
+  --landing-muted: #2c3a52;
   --landing-sea: #1f6f73;
   --cursor-fill: rgb(255 255 255 / 0.35);
   --cursor-ring: rgb(255 255 255 / 0.3);
@@ -956,7 +956,7 @@
 .landing__bg {
   position: absolute;
   inset: 0;
-  z-index: -3;
+  z-index: -4;
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -975,15 +975,61 @@
   background: radial-gradient(60% 80% at 20% 50%, rgb(255 249 247 / 0.6), rgb(255 249 247 / 0.2) 55%, transparent 80%);
 }
 
-/* Fixed so its pixels line up with the pointer's viewport coordinates;
-   it stays behind the text inside .landing's stacking context. */
+/* Fixed so its pixels line up with the pointer's viewport coordinates.
+   It repaints the painting (rippled) while the fluid moves, so it sits
+   right above the <img> and below the veil and text. */
 .landing__fluid {
   position: fixed;
   inset: 0;
-  z-index: -1;
+  z-index: -3;
   width: 100vw;
   height: 100vh;
   pointer-events: none;
+}
+
+/* Glowing gold rules framing the page, inset to the content's side
+   padding; the star pulses softly like the lamp. */
+.landing__rule {
+  position: absolute;
+  left: clamp(24px, 7vw, 112px);
+  right: clamp(24px, 7vw, 112px);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  pointer-events: none;
+  filter: drop-shadow(0 0 3px rgb(246 200 122 / 0.9)) drop-shadow(0 0 10px rgb(246 200 122 / 0.55));
+  animation: landing-fade 1.6s ease both;
+}
+
+.landing__rule--top {
+  top: 28px;
+}
+
+.landing__rule--bottom {
+  bottom: calc(28px + env(safe-area-inset-bottom));
+}
+
+.landing__rule-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, transparent, #e0b25a);
+}
+
+.landing__rule-line:last-child {
+  background: linear-gradient(to left, transparent, #e0b25a);
+}
+
+.landing__rule-star {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  fill: #f2c46d;
+  animation: landing-star 3.5s ease-in-out infinite;
+}
+
+@keyframes landing-star {
+  0%, 100% { transform: scale(0.85); filter: drop-shadow(0 0 2px rgb(255 226 168 / 0.6)); }
+  50% { transform: scale(1.1); filter: drop-shadow(0 0 8px rgb(255 226 168 / 1)); }
 }
 
 .landing__content {
@@ -999,6 +1045,29 @@
 .landing__content > :nth-child(2) { animation-delay: 0.15s; }
 .landing__content > :nth-child(3) { animation-delay: 0.3s; }
 .landing__content > :nth-child(4) { animation-delay: 0.45s; }
+.landing__content > :nth-child(5) { animation-delay: 0.6s; }
+
+/* Line-art lighthouse above the text, glowing like the gold rules. */
+.landing__logo {
+  width: 60px;
+  height: 60px;
+  margin: 0 0 1.1rem -6px;
+  fill: none;
+  stroke: #d9a94e;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 3px rgb(246 200 122 / 0.85)) drop-shadow(0 0 9px rgb(246 200 122 / 0.45));
+}
+
+.landing__logo-rays {
+  animation: landing-rays 3.5s ease-in-out infinite;
+}
+
+@keyframes landing-rays {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 1; }
+}
 
 .landing__eyebrow {
   display: inline-flex;
@@ -1036,79 +1105,144 @@
   margin: 0 0 2.25rem;
   font-family: "Cormorant Garamond", "Beacon Devanagari", Georgia, serif;
   font-size: clamp(1.2rem, 1.5vw, 1.4rem);
-  font-weight: 500;
+  font-weight: 600;
   line-height: 1.6;
   color: var(--landing-muted);
+  /* A soft light halo lifts the text off the cloud texture. */
+  text-shadow: 0 0 10px rgb(255 249 247 / 0.85), 0 0 2px rgb(255 249 247 / 0.6);
 }
 
-/* Lit by the beacon: deep teal pill, gold rim, and a gold halo that
-   breathes like the lamp. The halo lives on ::before (so its animation
-   never fights the hover shadow) and the brighter hover glow on ::after. */
+/* Deep teal pill with a gold rim, Cinzel semibold for a clear call to
+   action, and a plain drop shadow that lifts on hover. On hover the pill narrows and clears to a gold outline while a gold
+   diamond carrying the arrow slides out beside it. Hover is read from the
+   fixed-size wrapper, so the shrinking pill never slips out from under the
+   pointer and flickers. */
+.landing__enter-wrap {
+  position: relative;
+  width: 236px;
+  height: 54px;
+}
+
 .landing__enter {
   position: relative;
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 0.8rem;
-  padding: 0.85rem 1.7rem 0.85rem 1.95rem;
+  justify-content: center;
+  width: 236px;
+  height: 54px;
   border: 1px solid rgb(246 200 122 / 0.7);
   border-radius: 9999px;
-  background: linear-gradient(135deg, #0f7a6e, #0b5d54);
+  /* Pastel pink-to-blue frosted glass, from the painting's sky. */
+  background-color: #e6dcf0;
+  background-image: linear-gradient(120deg, rgb(248 214 228 / 0.92), rgb(214 222 248 / 0.92));
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
   box-shadow:
-    0 12px 28px -10px rgb(8 52 47 / 0.6),
-    0 0 18px rgb(246 200 122 / 0.18),
-    inset 0 1px 0 rgb(255 255 255 / 0.22);
-  font-family: "Pinyon Script", "Beacon Devanagari", cursive;
-  font-size: 30px;
+    0 4px 12px rgb(0 0 0 / 0.15),
+    inset 0 1px 0 rgb(255 255 255 / 0.8),
+    inset 0 -8px 16px rgb(120 100 160 / 0.12);
+  font-family: "Cinzel", "Beacon Devanagari", Georgia, serif;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
   line-height: 1;
-  color: #fdf3dc;
+  color: var(--landing-ink);
   text-decoration: none;
-  transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.45s ease;
+  transition: all 0.35s ease;
 }
 
-.landing__enter::before,
-.landing__enter::after {
-  content: "";
+/* Soft blurred blobs of periwinkle, rose and peach glowing inside the
+   pill's right end, drifting slowly. Clipped to
+   the pill by its own layer, so the arrow diamond outside isn't clipped. */
+.landing__enter-glow {
   position: absolute;
-  inset: -1px;
+  inset: 0;
+  overflow: hidden;
   border-radius: inherit;
   pointer-events: none;
 }
 
-.landing__enter::before {
-  animation: landing-beacon 3.5s ease-in-out infinite;
+.landing__enter-glow::before,
+.landing__enter-glow::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(12px);
+  animation: landing-glow-drift 7s ease-in-out infinite alternate;
 }
 
-.landing__enter::after {
-  box-shadow: 0 0 34px 8px rgb(246 200 122 / 0.5);
+/* Periwinkle up top, rose below it. */
+.landing__enter-glow::before {
+  top: -45%;
+  right: 4%;
+  width: 46%;
+  height: 120%;
+  background: radial-gradient(closest-side, rgb(120 150 255 / 0.85), rgb(120 150 255 / 0) 100%);
+}
+
+.landing__enter-glow::after {
+  bottom: -55%;
+  right: 16%;
+  width: 40%;
+  height: 120%;
+  background: radial-gradient(closest-side, rgb(244 130 172 / 0.8), rgb(255 179 122 / 0.45) 55%, rgb(255 179 122 / 0) 100%);
+  animation-delay: -3.5s;
+}
+
+@keyframes landing-glow-drift {
+  to { transform: translate(-14px, 4px) scale(1.12); }
+}
+
+.landing__enter-label {
+  position: relative;
+  text-shadow: 0 1px 0 rgb(255 255 255 / 0.6);
+}
+
+.landing__enter-icon {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  margin-top: -19px;
+  border: 2px solid #c9973a;
   opacity: 0;
-  transition: opacity 0.45s ease;
+  transform: rotate(45deg);
+  transition: all 0.35s ease;
 }
 
-.landing__enter svg {
-  width: 1.15rem;
-  height: 1.15rem;
-  color: #f6c87a;
-  transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+.landing__enter-icon svg {
+  width: 20px;
+  height: 20px;
+  color: #a8771f;
+  transform: rotate(-45deg);
 }
 
-.landing__enter:hover,
+.landing__enter-wrap:hover .landing__enter,
 .landing__enter:focus-visible {
-  color: #fdf3dc;
+  width: 192px;
+  border: 1px solid #c9973a;
+  /* A whisper of cream, not fully clear, so the gold text stays
+     readable on the pale sky. */
+  background-color: rgb(253 243 220 / 0.55);
+  background-image: none;
   box-shadow:
-    0 18px 36px -12px rgb(8 52 47 / 0.65),
-    0 0 26px rgb(246 200 122 / 0.3),
-    inset 0 1px 0 rgb(255 255 255 / 0.28);
-  transform: translateY(-2px);
+    0 8px 20px rgb(0 0 0 / 0.18),
+    inset 0 1px 0 rgb(255 255 255 / 0.6);
+  color: #7d540c;
 }
 
-.landing__enter:hover::after,
-.landing__enter:focus-visible::after {
+.landing__enter-wrap:hover .landing__enter-label,
+.landing__enter:focus-visible .landing__enter-label {
+  text-shadow: none;
+}
+
+.landing__enter-wrap:hover .landing__enter-icon,
+.landing__enter:focus-visible .landing__enter-icon {
+  right: -58px;
   opacity: 1;
-}
-
-.landing__enter:hover svg,
-.landing__enter:focus-visible svg {
-  transform: translateX(5px);
 }
 
 /* Dark teal ring, clear against the pale sky. */
@@ -1117,13 +1251,12 @@
   outline-offset: 5px;
 }
 
-@keyframes landing-beacon {
-  0%, 100% { box-shadow: 0 0 12px 0 rgb(246 200 122 / 0.22); }
-  50% { box-shadow: 0 0 26px 6px rgb(246 200 122 / 0.45); }
-}
-
 @keyframes landing-drift {
   to { transform: scale(1.06); }
+}
+
+@keyframes landing-fade {
+  from { opacity: 0; }
 }
 
 @keyframes landing-rise {
@@ -1135,7 +1268,7 @@
 @media (max-width: 640px) {
   .landing {
     align-items: flex-end;
-    padding: 24px 24px calc(48px + env(safe-area-inset-bottom));
+    padding: 24px 24px calc(72px + env(safe-area-inset-bottom));
   }
 
   .landing__bg {
@@ -1150,6 +1283,12 @@
     font-size: 0.72rem;
   }
 
+  .landing__logo {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 0.8rem;
+  }
+
   .landing__lede {
     margin-bottom: 1.75rem;
   }
@@ -1157,8 +1296,12 @@
 
 @media (prefers-reduced-motion: reduce) {
   .landing__bg,
-  .landing__content > *,
-  .landing__enter::before {
+  .landing__rule,
+  .landing__rule-star,
+  .landing__logo-rays,
+  .landing__enter-glow::before,
+  .landing__enter-glow::after,
+  .landing__content > * {
     animation: none;
   }
 }

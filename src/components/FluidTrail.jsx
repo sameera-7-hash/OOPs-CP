@@ -4,9 +4,12 @@ import { useEffect, useRef } from "react";
 // Pavel Dobryakov's WebGL-Fluid-Simulation) that the pointer stirs with
 // coloured dye, using their settings. The dye cycles through PALETTE and is
 // drawn as translucent ink, not additive light, so it reads on a light
-// background. Mouse and pen only, skipped for reduced motion or without
-// WebGL half-float support, and the loop stops a few seconds after the
-// pointer goes still.
+// background. Given an `image` (a ref to an <img> behind the canvas), it
+// also redraws that image bent by the flow, so the picture itself ripples
+// like water; when the flow settles the canvas clears and the <img> shows
+// through unchanged. Mouse and pen only, skipped for reduced motion or
+// without WebGL half-float support, and the loop stops a few seconds after
+// the pointer goes still.
 const CONFIG = {
   downsample: 3, // sim grid = viewport >> 3
   densityDissipation: 0.98,
@@ -17,6 +20,9 @@ const CONFIG = {
   splatRadius: 0.00175,
   velocityForce: 10,
   dyeStrength: 0.38,
+  // Image displacement per unit of flow velocity (in screen UV), and its cap.
+  imageDistort: 0.0001,
+  imageDistortMax: 0.04,
   idleMs: 4000,
 };
 
@@ -151,16 +157,34 @@ const shaders = {
       gl_FragColor = vec4(velocity, 0.0, 1.0);
     }`,
   // Dye as ink: the hue at full saturation, coverage from its strength.
+  // With an image, the image is drawn underneath, sampled at a point pushed
+  // along the flow; uImageMap maps top-left screen UV to image UV
+  // (xy = scale, zw = offset), matching the <img>'s object-fit and zoom.
   display: `
     precision highp float;
     varying vec2 vUv;
     uniform sampler2D uTexture;
+    uniform sampler2D uVelocity;
+    uniform sampler2D uImage;
+    uniform float uImageOn;
+    uniform vec4 uImageMap;
+    uniform float uDistort;
+    uniform float uDistortMax;
     void main () {
       vec3 dye = texture2D(uTexture, vUv).rgb;
       float strength = max(dye.r, max(dye.g, dye.b));
       float alpha = clamp(strength * 1.4, 0.0, 0.7);
       vec3 color = dye / max(strength, 0.0001);
-      gl_FragColor = vec4(color * alpha, alpha);
+      if (uImageOn < 0.5) {
+        gl_FragColor = vec4(color * alpha, alpha);
+        return;
+      }
+      vec2 offset = texture2D(uVelocity, vUv).xy * uDistort;
+      float len = length(offset);
+      if (len > uDistortMax) offset *= uDistortMax / len;
+      vec2 screen = vec2(vUv.x, 1.0 - vUv.y) - vec2(offset.x, -offset.y);
+      vec3 image = texture2D(uImage, screen * uImageMap.xy + uImageMap.zw).rgb;
+      gl_FragColor = vec4(mix(image, color, alpha), 1.0);
     }`,
 };
 
@@ -242,12 +266,16 @@ function createFluid(canvas) {
   let simW = 0;
   let simH = 0;
   let targets = null;
+  let imageTexture = null;
 
+  // The display is drawn at device resolution (so the image stays sharp);
+  // the sim grid follows the CSS size.
   const resize = () => {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    simW = Math.max(1, canvas.width >> CONFIG.downsample);
-    simH = Math.max(1, canvas.height >> CONFIG.downsample);
+    const ratio = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.round(window.innerWidth * ratio);
+    canvas.height = Math.round(window.innerHeight * ratio);
+    simW = Math.max(1, window.innerWidth >> CONFIG.downsample);
+    simH = Math.max(1, window.innerHeight >> CONFIG.downsample);
     if (targets) {
       for (const t of Object.values(targets)) {
         for (const fbo of t.read ? [t.read, t.write] : [t]) {
@@ -291,7 +319,7 @@ function createFluid(canvas) {
     let u = use("splat");
     bindTextures(u, { uTarget: velocity.read });
     gl.uniform1f(u.aspectRatio, canvas.width / canvas.height);
-    gl.uniform2f(u.point, x / canvas.width, 1 - y / canvas.height);
+    gl.uniform2f(u.point, x / window.innerWidth, 1 - y / window.innerHeight);
     gl.uniform3f(u.color, dx, -dy, 1);
     gl.uniform1f(u.radius, CONFIG.splatRadius);
     blit(velocity.write);
@@ -359,10 +387,30 @@ function createFluid(canvas) {
     velocity.swap();
   };
 
-  const render = () => {
+  const setImage = (img) => {
+    imageTexture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, imageTexture);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+  };
+
+  // `imageMap` is [scaleX, scaleY, offsetX, offsetY], or null to draw dye only.
+  const render = (imageMap) => {
     gl.viewport(0, 0, canvas.width, canvas.height);
     const u = use("display");
-    bindTextures(u, { uTexture: targets.density.read });
+    const withImage = Boolean(imageTexture && imageMap);
+    bindTextures(u, {
+      uTexture: targets.density.read,
+      uVelocity: targets.velocity.read,
+      uImage: { texture: withImage ? imageTexture : targets.density.read.texture },
+    });
+    gl.uniform1f(u.uImageOn, withImage ? 1 : 0);
+    if (withImage) gl.uniform4f(u.uImageMap, ...imageMap);
+    gl.uniform1f(u.uDistort, CONFIG.imageDistort);
+    gl.uniform1f(u.uDistortMax, CONFIG.imageDistortMax);
     blit(null);
   };
 
@@ -372,10 +420,37 @@ function createFluid(canvas) {
     gl.clear(gl.COLOR_BUFFER_BIT);
   };
 
-  return { resize, splat, step, project, render, clear };
+  return { resize, splat, step, project, render, clear, setImage };
 }
 
-function FluidTrail({ className }) {
+// Where the <img> actually paints: object-fit: cover at its object-position
+// inside its layout box (which can be taller than the viewport when the page
+// scrolls), then its CSS scale animation about its transform-origin.
+// Returned as the linear map from top-left screen UV to image UV that the
+// display shader uses.
+function coverMap(img) {
+  const box = img.parentElement.getBoundingClientRect(); // the img fills it (inset: 0), untransformed
+  const W = img.offsetWidth;
+  const H = img.offsetHeight;
+  const style = getComputedStyle(img);
+  const [px, py] = style.objectPosition.split(" ").map((v) => parseFloat(v) / 100);
+  const [ox, oy] = style.transformOrigin.split(" ").map((v) => parseFloat(v));
+  const zoom = style.transform === "none" ? 1 : new DOMMatrixReadOnly(style.transform).a;
+  const fit = Math.max(W / img.naturalWidth, H / img.naturalHeight);
+  const iw = img.naturalWidth * fit;
+  const ih = img.naturalHeight * fit;
+  const offX = (W - iw) * px;
+  const offY = (H - ih) * py;
+  // viewport px -> box px: p - box; -> unzoomed: (b - o) / zoom + o; -> image UV: (q - off) / size
+  return [
+    window.innerWidth / (zoom * iw),
+    window.innerHeight / (zoom * ih),
+    ((-box.left - ox) / zoom + ox - offX) / iw,
+    ((-box.top - oy) / zoom + oy - offY) / ih,
+  ];
+}
+
+function FluidTrail({ className, image }) {
   const canvasRef = useRef(null);
 
   useEffect(() => {
@@ -386,6 +461,20 @@ function FluidTrail({ className }) {
     const canvas = canvasRef.current;
     const fluid = createFluid(canvas);
     if (!fluid || !fluid.resize()) return undefined;
+
+    // Upload the background once it has decoded (whichever srcset size the
+    // browser picked); until then the trail draws dye only.
+    const img = image?.current;
+    let imageReady = false;
+    const loadImage = () => {
+      if (!img || imageReady || !img.naturalWidth) return;
+      fluid.setImage(img);
+      imageReady = true;
+    };
+    if (img) {
+      if (img.complete) loadImage();
+      else img.addEventListener("load", loadImage, { once: true });
+    }
 
     const pointer = { x: 0, y: 0, dx: 0, dy: 0, moved: false, seen: false };
     let frame = 0;
@@ -406,7 +495,7 @@ function FluidTrail({ className }) {
         pointer.dy = 0;
       }
       fluid.project(dt);
-      fluid.render();
+      fluid.render(imageReady ? coverMap(img) : null);
 
       if (now - lastMove > CONFIG.idleMs) {
         fluid.clear();
@@ -449,9 +538,10 @@ function FluidTrail({ className }) {
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("resize", onResize);
       canvas.removeEventListener("webglcontextlost", onLost);
+      img?.removeEventListener("load", loadImage);
       cancelAnimationFrame(frame);
     };
-  }, []);
+  }, [image]);
 
   return <canvas ref={canvasRef} className={className} aria-hidden="true" />;
 }
