@@ -377,12 +377,17 @@
   display: inline-block;
   overflow: hidden;
   vertical-align: top;
-  /* Room inside the mask for descenders and Devanagari matras. */
-  padding: 0.12em 0.04em 0.14em;
-  margin: -0.12em -0.04em -0.14em;
+  /* Room inside the mask for Abril's deep descenders (g, y, commas). */
+  padding: 0.2em 0.08em 0.32em;
+  margin: -0.2em -0.08em -0.32em;
 }
 .reveal-word > span {
   display: inline-block;
+  /* The sheen paints the text through a background clipped to the glyphs,
+     and a background only covers the box: pad it past the descenders and
+     ascenders so no part of a letter is left unpainted. */
+  padding: 0.12em 0.06em 0.28em;
+  margin: -0.12em -0.06em -0.28em;
   transform-origin: 0% 100%;
   transition: transform 1000ms var(--ease-soft), opacity 700ms var(--ease-out), filter 900ms var(--ease-out);
   transition-delay: var(--word-delay, 0ms);
