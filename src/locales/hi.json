@@ -513,7 +513,6 @@
   "Could not book that slot: {{error}}": "वह स्लॉट बुक नहीं हो सका: {{error}}",
   "Beacon doctors": "Beacon के डॉक्टर",
   "Loading available doctors…": "उपलब्ध डॉक्टर लोड हो रहे हैं…",
-  "No Beacon doctors have open slots on this date yet. Try another date.": "इस तारीख़ पर Beacon के किसी डॉक्टर का अभी कोई स्लॉट खाली नहीं है। कोई दूसरी तारीख़ चुनें।",
   "Book a doctor's open slot and see your upcoming visits.": "किसी डॉक्टर का खाली स्लॉट बुक करें और अपनी आने वाली विज़िट देखें।",
   "Book appointment": "अपॉइंटमेंट बुक करें",
   "Book an appointment?": "अपॉइंटमेंट बुक करें?",
@@ -659,5 +658,9 @@
   "Enter the 6-digit code from the email.": "ईमेल में आया 6 अंकों का कोड डालें।",
   "Your new password must be at least {{count}} characters.": "आपका नया पासवर्ड कम से कम {{count}} अक्षरों का होना चाहिए।",
   "The two passwords don't match.": "दोनों पासवर्ड मेल नहीं खाते।",
-  "That code is invalid or has expired. Request a new one.": "यह कोड गलत है या उसकी समय-सीमा खत्म हो गई है। नया कोड मँगाएँ।"
+  "That code is invalid or has expired. Request a new one.": "यह कोड गलत है या उसकी समय-सीमा खत्म हो गई है। नया कोड मँगाएँ।",
+
+  "No Beacon doctor has opened times on this date.": "इस तारीख के लिए किसी Beacon डॉक्टर ने समय नहीं खोला है।",
+  "Show {{date}}": "{{date}} देखें",
+  "Browse specialists": "विशेषज्ञ देखें"
 }

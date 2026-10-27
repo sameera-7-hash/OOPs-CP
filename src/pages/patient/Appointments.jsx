@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Trans, useTranslation } from "react-i18next";
-import { BookOpenCheck, CalendarDays, Plus, Stethoscope } from "lucide-react";
+import { ArrowRight, BookOpenCheck, CalendarDays, Plus, Stethoscope } from "lucide-react";
 import { useCurrentUser } from "@/context/UserContext";
 import { useToast } from "@/context/ToastContext";
 import { getAppointments, getAvailability, bookAppointment } from "@/Services/api";
@@ -21,7 +21,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { patientMenu } from "@/lib/nav";
 import { parseBookingPrefill } from "@/lib/navigation";
 import { sameTime, todayIst } from "@/lib/time";
-import { msg } from "@/i18n";
+import { currentLocale, msg } from "@/i18n";
 import Notice from "@/components/feedback/Notice";
 import MockDoctorTag from "@/components/feedback/MockDoctorTag";
 import SlotChip from "@/components/booking/SlotChip";
@@ -74,6 +74,14 @@ function Appointments() {
   };
 
   useEffect(loadAppointments, [user]);
+
+  // Every date's availability, to point at the next day a Beacon doctor
+  // has open slots when the chosen date has none.
+  const [allAvailability, setAllAvailability] = useState([]);
+  useEffect(() => {
+    if (bookingStage !== "picking") return;
+    getAvailability().then(setAllAvailability).catch(() => setAllAvailability([]));
+  }, [bookingStage, directoryRefresh]);
 
   useEffect(() => {
     if (bookingStage !== "picking") return;
@@ -143,6 +151,24 @@ function Appointments() {
     .map((doc) => ({ ...doc, openSlots: (doc.slots || []).filter((s) => !s.booked) }))
     .filter((doc) => doc.openSlots.length > 0);
 
+  // The next date (after the chosen one if possible, else the soonest
+  // upcoming) on which any Beacon doctor still has an open slot.
+  const openDates = [
+    ...new Set(
+      allAvailability
+        .filter((rec) => rec.date >= todayIso() && rec.date !== bookingDate && (rec.slots || []).some((s) => !s.booked))
+        .map((rec) => rec.date)
+    ),
+  ].sort();
+  const nextOpenDate = openDates.find((d) => d > bookingDate) || openDates[0];
+  const shortDate = (iso) =>
+    new Date(`${iso}T00:00:00Z`).toLocaleDateString(currentLocale(), { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" });
+
+  const browseSpecialists = () => {
+    document.getElementById("directory-heading")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    document.getElementById("directory-specialty")?.focus({ preventScroll: true });
+  };
+
   const clinicSection = (
     <section aria-labelledby="clinic-doctors-heading" className="flex flex-col gap-4">
       <h3 id="clinic-doctors-heading" className="text-base font-semibold">{t("Beacon doctors")}</h3>
@@ -157,9 +183,24 @@ function Appointments() {
       )}
 
       {!loadingSlots && doctorsWithSlots.length === 0 && (
-        <EmptyState art={CalendarCheckArt} className="py-4">
-          {t("No Beacon doctors have open slots on this date yet. Try another date.")}
-        </EmptyState>
+        <div className="flex flex-col gap-3 rounded-xl border border-dashed border-border bg-muted/50 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <p className="flex items-start gap-2 text-sm">
+            <CalendarDays aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+            {t("No Beacon doctor has opened times on this date.")}
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {nextOpenDate && (
+              <Button size="sm" variant="outline" className="arrow-nudge" onClick={() => setBookingDate(nextOpenDate)}>
+                {t("Show {{date}}", { date: shortDate(nextOpenDate) })}
+                <ArrowRight aria-hidden="true" />
+              </Button>
+            )}
+            <Button size="sm" variant="outline" onClick={browseSpecialists}>
+              <Stethoscope aria-hidden="true" />
+              {t("Browse specialists")}
+            </Button>
+          </div>
+        </div>
       )}
 
       <div className="flex flex-col gap-6">
