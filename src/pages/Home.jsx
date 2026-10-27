@@ -179,12 +179,12 @@ function Hero() {
             lineClassNames={["", "text-primary", "text-primary"]}
             delay={0.15}
           />
-          <FadeIn as="p" delay={0.6} className="mt-6 text-lg text-foreground/80">
+          <FadeIn as="p" delay={1.0} className="mt-6 text-lg text-foreground/80">
             {t(
               "Beacon brings patients, doctors and nurses into one calm, organised system. Book an open slot with the right doctor, share reports with the care team, and keep every record encrypted and tamper-evident. Not sure who to see? Condition guidance points the way."
             )}
           </FadeIn>
-          <FadeIn delay={0.75} className="mt-8 flex flex-wrap gap-3">
+          <FadeIn delay={1.15} className="mt-8 flex flex-wrap gap-3">
             <Magnetic>
               <Button size="lg" className="pulse-once arrow-nudge" onClick={() => navigate("/role")}>
                 {t("Get started")}
@@ -195,7 +195,7 @@ function Hero() {
               <a href="#how">{t("How it works")}</a>
             </Button>
           </FadeIn>
-          <FadeIn delay={0.9} className="mt-8 flex flex-wrap gap-3">
+          <FadeIn delay={1.3} className="mt-8 flex flex-wrap gap-3">
             <FeatureChip icon={CalendarCheck}>{t("Only open slots can be booked")}</FeatureChip>
             <FeatureChip icon={Lock}>{t("Records encrypted at rest")}</FeatureChip>
             <FeatureChip icon={Compass}>{t("Guidance for 41 conditions")}</FeatureChip>

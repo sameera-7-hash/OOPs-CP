@@ -366,21 +366,58 @@
   transform: scale(1.15);
 }
 
-/* Headline revealed line by line from behind a mask (RevealLines.jsx). */
-.reveal-line {
+/* Headline opening (RevealLines.jsx): words rise from behind their own
+   masks, unblurring and untilting, then a beam of sand light sweeps
+   across once. Only transform/opacity/filter animate on the way in; the
+   sheen moves a background gradient clipped to the text. */
+.reveal-words__line {
   display: block;
-  overflow: hidden;
-  /* Room for descenders inside the clip. */
-  padding-bottom: 0.1em;
-  margin-bottom: -0.1em;
 }
-.reveal-line > span {
+.reveal-word {
   display: inline-block;
-  transition: transform 900ms var(--ease-soft);
-  transition-delay: var(--line-delay, 0ms);
+  overflow: hidden;
+  vertical-align: top;
+  /* Room inside the mask for descenders and Devanagari matras. */
+  padding: 0.12em 0.04em 0.14em;
+  margin: -0.12em -0.04em -0.14em;
 }
-.motion-ok .reveal-lines:not(.is-in) .reveal-line > span {
-  transform: translateY(110%);
+.reveal-word > span {
+  display: inline-block;
+  transform-origin: 0% 100%;
+  transition: transform 1000ms var(--ease-soft), opacity 700ms var(--ease-out), filter 900ms var(--ease-out);
+  transition-delay: var(--word-delay, 0ms);
+}
+.motion-ok .reveal-words:not(.is-in) .reveal-word > span {
+  opacity: 0;
+  filter: blur(8px);
+  transform: translateY(105%) rotate(7deg);
+}
+
+/* Hindi: one plain fade for the whole headline (see RevealLines.jsx). */
+.reveal-words--plain {
+  transition: opacity 600ms var(--ease-out) var(--plain-delay, 0ms);
+}
+.motion-ok .reveal-words--plain:not(.is-in) {
+  opacity: 0;
+}
+
+/* The beam: each word's own colour with a bright band that passes over it.
+   currentColor is the line's colour (ink, or primary on lines 2-3). */
+@media (prefers-reduced-motion: no-preference) {
+  .motion-ok .reveal-words.is-in .reveal-word > span {
+    background-image: linear-gradient(105deg, currentColor 0 42%,
+      color-mix(in srgb, var(--sand) 70%, #ffffff) 50%, currentColor 58% 100%);
+    background-size: 260% 100%;
+    background-position: 100% 0;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: word-sheen 1100ms var(--ease-soft) var(--sheen-delay, 0ms) 1 both;
+  }
+}
+@keyframes word-sheen {
+  from { background-position: 100% 0; }
+  to { background-position: 0% 0; }
 }
 
 /* Hero photo: settles from a slight zoom once it has loaded. */
@@ -600,10 +637,10 @@
   .reveal,
   .reveal img,
   .reveal[data-reveal="clip"] > *,
-  .reveal-line > span {
+  .reveal-word > span {
     opacity: 1 !important;
     transform: none !important;
-    clip-path: none !important;
+    filter: none !important;
   }
 }
 
@@ -685,10 +722,6 @@
 :lang(hi) * {
   letter-spacing: normal !important;
   text-transform: none !important;
-}
-:lang(hi) .reveal-line {
-  padding-top: 0.15em;
-  padding-bottom: 0.2em;
 }
 
 /* Room at the bottom of every layout for the fixed Emergency pill, so it
@@ -1513,13 +1546,15 @@
   .reveal,
   .reveal img,
   .reveal[data-reveal="clip"] > *,
-  .reveal-line > span,
+  .reveal-word > span,
+  .reveal-words--plain,
   .hero-zoom img,
   .parallax-layer,
   .magnetic {
     opacity: 1 !important;
     transform: none !important;
     clip-path: none !important;
+    filter: none !important;
   }
 
   /* Hover-only content stays visible without the motion. */
