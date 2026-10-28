@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="70" viewBox="0 0 860 70" role="img" aria-label="Not sure who to see? Beacon points the way.; 41 conditions -> clear, safe next steps.; 3,438 doctors across 102 specialties.; Records: AES-256 + a SHA-256 hash chain.; Live now at beacon-oop.vercel.app">
+  <!-- A typewriter line cycling through what Beacon does. Each line is
+       revealed by a clip rect that steps forward one character at a time;
+       textLength pins the text width so any monospace font lines up. -->
+  <style>
+    @keyframes k0 { 0.00% { opacity: 1; transform: translateX(0); } 10.00% { opacity: 1; transform: translateX(593.4px); } 17.20% { opacity: 1; transform: translateX(593.4px); } 19.60% { opacity: 1; transform: translateX(0); } 19.61%, 100% { opacity: 0; transform: translateX(0); } }
+    .k0 { animation: k0 21.0s steps(43, end) infinite; }
+    @keyframes k1 { 0%, 19.99% { opacity: 0; transform: translateX(0); } 20.00% { opacity: 1; transform: translateX(0); } 30.00% { opacity: 1; transform: translateX(552.0px); } 37.20% { opacity: 1; transform: translateX(552.0px); } 39.60% { opacity: 1; transform: translateX(0); } 39.61%, 100% { opacity: 0; transform: translateX(0); } }
+    .k1 { animation: k1 21.0s steps(40, end) infinite; }
+    @keyframes k2 { 0%, 39.99% { opacity: 0; transform: translateX(0); } 40.00% { opacity: 1; transform: translateX(0); } 50.00% { opacity: 1; transform: translateX(510.6px); } 57.20% { opacity: 1; transform: translateX(510.6px); } 59.60% { opacity: 1; transform: translateX(0); } 59.61%, 100% { opacity: 0; transform: translateX(0); } }
+    .k2 { animation: k2 21.0s steps(37, end) infinite; }
+    @keyframes k3 { 0%, 59.99% { opacity: 0; transform: translateX(0); } 60.00% { opacity: 1; transform: translateX(0); } 70.00% { opacity: 1; transform: translateX(552.0px); } 77.20% { opacity: 1; transform: translateX(552.0px); } 79.60% { opacity: 1; transform: translateX(0); } 79.61%, 100% { opacity: 0; transform: translateX(0); } }
+    .k3 { animation: k3 21.0s steps(40, end) infinite; }
+    @keyframes k4 { 0%, 79.99% { opacity: 0; transform: translateX(0); } 80.00% { opacity: 1; transform: translateX(0); } 90.00% { opacity: 1; transform: translateX(455.4px); } 97.20% { opacity: 1; transform: translateX(455.4px); } 99.60% { opacity: 1; transform: translateX(0); } 99.61%, 100% { opacity: 0; transform: translateX(0); } }
+    .k4 { animation: k4 21.0s steps(33, end) infinite; }
+    @media (prefers-reduced-motion: reduce) { .k0, .k1, .k2, .k3, .k4 { animation: none; } .k0 { transform: translateX(593.4px); } }
+  </style>
+  <rect x="1" y="1" width="858" height="68" rx="34.0" fill="#FFF8EC" stroke="#EADBC4"/>
+  
+  <clipPath id="c0"><rect class="k0" x="-464.1" y="10" width="597.4" height="50"/></clipPath>
+  <text clip-path="url(#c0)" x="133.3" y="44" textLength="593.4" lengthAdjust="spacingAndGlyphs" font-family="ui-monospace,'Cascadia Code',Consolas,Menlo,'Courier New',monospace" font-size="23" fill="#15202E">Not sure who to see? Beacon points the way.</text>
+  <rect class="k0" x="135.3" y="22" width="3" height="30" fill="#0F766E"/>
+  <clipPath id="c1"><rect class="k1" x="-402.0" y="10" width="556.0" height="50"/></clipPath>
+  <text clip-path="url(#c1)" x="154.0" y="44" textLength="552.0" lengthAdjust="spacingAndGlyphs" font-family="ui-monospace,'Cascadia Code',Consolas,Menlo,'Courier New',monospace" font-size="23" fill="#15202E">41 conditions → clear, safe next steps.</text>
+  <rect class="k1" x="156.0" y="22" width="3" height="30" fill="#0F766E"/>
+  <clipPath id="c2"><rect class="k2" x="-339.9" y="10" width="514.6" height="50"/></clipPath>
+  <text clip-path="url(#c2)" x="174.7" y="44" textLength="510.6" lengthAdjust="spacingAndGlyphs" font-family="ui-monospace,'Cascadia Code',Consolas,Menlo,'Courier New',monospace" font-size="23" fill="#15202E">3,438 doctors across 102 specialties.</text>
+  <rect class="k2" x="176.7" y="22" width="3" height="30" fill="#0F766E"/>
+  <clipPath id="c3"><rect class="k3" x="-402.0" y="10" width="556.0" height="50"/></clipPath>
+  <text clip-path="url(#c3)" x="154.0" y="44" textLength="552.0" lengthAdjust="spacingAndGlyphs" font-family="ui-monospace,'Cascadia Code',Consolas,Menlo,'Courier New',monospace" font-size="23" fill="#15202E">Records: AES-256 + a SHA-256 hash chain.</text>
+  <rect class="k3" x="156.0" y="22" width="3" height="30" fill="#0F766E"/>
+  <clipPath id="c4"><rect class="k4" x="-257.1" y="10" width="459.4" height="50"/></clipPath>
+  <text clip-path="url(#c4)" x="202.3" y="44" textLength="455.4" lengthAdjust="spacingAndGlyphs" font-family="ui-monospace,'Cascadia Code',Consolas,Menlo,'Courier New',monospace" font-size="23" fill="#15202E">Live now at beacon-oop.vercel.app</text>
+  <rect class="k4" x="204.3" y="22" width="3" height="30" fill="#0F766E"/>
+</svg>

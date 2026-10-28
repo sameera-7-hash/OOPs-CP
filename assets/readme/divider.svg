@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="28" viewBox="0 0 1200 28" role="img" aria-label="divider">
+  <!-- Section divider for the README: a teal-to-gold rule with a beam of
+       light sweeping along it, like a lighthouse. Pure SVG + CSS, so it
+       renders (and animates) in GitHub's image proxy with no external
+       requests. Respects prefers-reduced-motion. -->
+  <defs>
+    <linearGradient id="rule" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0" stop-color="#0F766E" stop-opacity="0"/>
+      <stop offset=".15" stop-color="#0F766E"/>
+      <stop offset=".5" stop-color="#5EC4B6"/>
+      <stop offset=".85" stop-color="#F4B400"/>
+      <stop offset="1" stop-color="#F4B400" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="beam" cx=".5" cy=".5" r=".5">
+      <stop offset="0" stop-color="#FFF6C8"/>
+      <stop offset=".35" stop-color="#FFD54F" stop-opacity=".85"/>
+      <stop offset="1" stop-color="#FFD54F" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <style>
+    .beam { animation: sweep 4.5s cubic-bezier(.45,0,.55,1) infinite; }
+    @keyframes sweep { 0% { transform: translateX(-160px); } 100% { transform: translateX(1360px); } }
+    .dot { animation: blink 4.5s ease-in-out infinite; }
+    .d2 { animation-delay: 1.5s; } .d3 { animation-delay: 3s; }
+    @keyframes blink { 0%, 100% { opacity: .35; } 50% { opacity: 1; } }
+    @media (prefers-reduced-motion: reduce) { .beam, .dot { animation: none; } .beam { transform: translateX(600px); } }
+  </style>
+  <rect x="0" y="12" width="1200" height="4" rx="2" fill="url(#rule)"/>
+  <circle class="dot" cx="300" cy="14" r="5" fill="#0F766E"/>
+  <circle class="dot d2" cx="600" cy="14" r="6" fill="#5EC4B6"/>
+  <circle class="dot d3" cx="900" cy="14" r="5" fill="#F4B400"/>
+  <ellipse class="beam" cx="0" cy="14" rx="120" ry="13" fill="url(#beam)"/>
+</svg>

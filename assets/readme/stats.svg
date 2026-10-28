@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="176" viewBox="0 0 1120 176" role="img" aria-label="41 conditions, 3,438 doctors, 102 specialties, 100,000 PBKDF2 rounds, 2 languages">
+  <!-- Beacon by the numbers: cards rise in one after another and a gold
+       rule grows across each. Numbers are checked against the code/data. -->
+  <defs>
+    <linearGradient id="num" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0F766E"/><stop offset="1" stop-color="#15202E"/></linearGradient>
+    <linearGradient id="bar" x1="0" x2="1"><stop offset="0" stop-color="#0F766E"/><stop offset=".5" stop-color="#5EC4B6"/><stop offset="1" stop-color="#F4B400"/></linearGradient>
+  </defs>
+  <style>
+    .card { animation: rise .8s cubic-bezier(.2,.7,.2,1) both; }
+    @keyframes rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+    .bar { animation: grow 1s ease-out both; }
+    @keyframes grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+    @media (prefers-reduced-motion: reduce) { .card, .bar { animation: none; } }
+  </style>
+  
+  <g class="card" style="animation-delay:0.15s">
+    <rect x="10" y="10" width="204" height="156" rx="18" fill="#FFFBF3" stroke="#EADBC4"/>
+    <rect class="bar" style="animation-delay:0.50s; transform-origin:34px 0" x="34" y="30" width="156" height="4" rx="2" fill="url(#bar)"/>
+    <text x="34" y="98" font-family="'Segoe UI','Helvetica Neue',Helvetica,Arial,'Noto Sans Devanagari','Nirmala UI',sans-serif" font-size="46" font-weight="800" letter-spacing="-1" fill="url(#num)">41</text>
+    <text x="34" y="128" font-family="'Segoe UI','Helvetica Neue',Helvetica,Arial,'Noto Sans Devanagari','Nirmala UI',sans-serif" font-size="15" fill="#3A4A5E">conditions with</text>
+    <text x="34" y="149" font-family="'Segoe UI','Helvetica Neue',Helvetica,Arial,'Noto Sans Devanagari','Nirmala UI',sans-serif" font-size="15" fill="#3A4A5E">step-by-step guidance</text>
+  </g>
+  <g class="card" style="animation-delay:0.30s">
+    <rect x="234" y="10" width="204" height="156" rx="18" fill="#FFFBF3" stroke="#EADBC4"/>
+    <rect class="bar" style="animation-delay:0.65s; transform-origin:258px 0" x="258" y="30" width="156" height="4" rx="2" fill="url(#bar)"/>
+    <text x="258" y="98" font-family="'Segoe UI','Helvetica Neue',Helvetica,Arial,'Noto Sans Devanagari','Nirmala UI',sans-serif" font-size="46" font-weight="800" letter-spacing="-1" fill="url(#num)">3,438</text>
+    <text x="258" y="128" font-family="'Segoe UI','Helvetica Neue',Helvetica,Arial,'Noto Sans Devanagari','Nirmala UI',sans-serif" font-size="15" fill="#3A4A5E">doctors in the</text>
+    <text x="258" y="149" font-family="'Segoe UI','Helvetica Neue',Helvetica,Arial,'Noto Sans Devanagari','Nirmala UI',sans-serif" font-size="15" fill="#3A4A5E">bookable directory</text>
+  </g>
+  <g class="card" style="animation-delay:0.45s">
+    <rect x="458" y="10" width="204" height="156" rx="18" fill="#FFFBF3" stroke="#EADBC4"/>
+    <rect class="bar" style="animation-delay:0.80s; transform-origin:482px 0" x="482" y="30" width="156" height="4" rx="2" fill="url(#bar)"/>
+    <text x="482" y="98" font-family="'Segoe UI','Helvetica Neue',Helvetica,Arial,'Noto Sans Devanagari','Nirmala UI',sans-serif" font-size="46" font-weight="800" letter-spacing="-1" fill="url(#num)">102</text>
+    <text x="482" y="128" font-family="'Segoe UI','Helvetica Neue',Helvetica,Arial,'Noto Sans Devanagari','Nirmala UI',sans-serif" font-size="15" fill="#3A4A5E">medical specialties</text>
+    <text x="482" y="149" font-family="'Segoe UI','Helvetica Neue',Helvetica,Arial,'Noto Sans Devanagari','Nirmala UI',sans-serif" font-size="15" fill="#3A4A5E">to search and filter</text>
+  </g>
+  <g class="card" style="animation-delay:0.60s">
+    <rect x="682" y="10" width="204" height="156" rx="18" fill="#FFFBF3" stroke="#EADBC4"/>
+    <rect class="bar" style="animation-delay:0.95s; transform-origin:706px 0" x="706" y="30" width="156" height="4" rx="2" fill="url(#bar)"/>
+    <text x="706" y="98" font-family="'Segoe UI','Helvetica Neue',Helvetica,Arial,'Noto Sans Devanagari','Nirmala UI',sans-serif" font-size="46" font-weight="800" letter-spacing="-1" fill="url(#num)">100k</text>
+    <text x="706" y="128" font-family="'Segoe UI','Helvetica Neue',Helvetica,Arial,'Noto Sans Devanagari','Nirmala UI',sans-serif" font-size="15" fill="#3A4A5E">PBKDF2 rounds</text>
+    <text x="706" y="149" font-family="'Segoe UI','Helvetica Neue',Helvetica,Arial,'Noto Sans Devanagari','Nirmala UI',sans-serif" font-size="15" fill="#3A4A5E">behind every password</text>
+  </g>
+  <g class="card" style="animation-delay:0.75s">
+    <rect x="906" y="10" width="204" height="156" rx="18" fill="#FFFBF3" stroke="#EADBC4"/>
+    <rect class="bar" style="animation-delay:1.10s; transform-origin:930px 0" x="930" y="30" width="156" height="4" rx="2" fill="url(#bar)"/>
+    <text x="930" y="98" font-family="'Segoe UI','Helvetica Neue',Helvetica,Arial,'Noto Sans Devanagari','Nirmala UI',sans-serif" font-size="46" font-weight="800" letter-spacing="-1" fill="url(#num)">2</text>
+    <text x="930" y="128" font-family="'Segoe UI','Helvetica Neue',Helvetica,Arial,'Noto Sans Devanagari','Nirmala UI',sans-serif" font-size="15" fill="#3A4A5E">languages:</text>
+    <text x="930" y="149" font-family="'Segoe UI','Helvetica Neue',Helvetica,Arial,'Noto Sans Devanagari','Nirmala UI',sans-serif" font-size="15" fill="#3A4A5E">English and हिन्दी</text>
+  </g>
+</svg>
