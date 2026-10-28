@@ -22,6 +22,7 @@ const PatientAppointments = lazy(() => import("./pages/patient/Appointments"));
 const MedicalRecords = lazy(() => import("./pages/patient/MedicalRecords"));
 const Prescriptions = lazy(() => import("./pages/patient/Prescriptions"));
 const MedicalHistory = lazy(() => import("./pages/patient/MedicalHistory"));
+const PatientProfile = lazy(() => import("./pages/patient/Profile"));
 
 const DoctorDashboard = lazy(() => import("./pages/doctor/DoctorDashboard"));
 const Patients = lazy(() => import("./pages/doctor/Patients"));
@@ -31,6 +32,7 @@ const DoctorAppointments = lazy(() => import("./pages/doctor/Appointments"));
 const Analytics = lazy(() => import("./pages/doctor/Analytics"));
 const UndoRedo = lazy(() => import("./pages/doctor/UndoRedo"));
 const BackupRestore = lazy(() => import("./pages/doctor/BackupRestore"));
+const ClinicProfile = lazy(() => import("./pages/doctor/ClinicProfile"));
 
 const NurseDashboard = lazy(() => import("./pages/nurse/NurseDashboard"));
 const NursePatients = lazy(() => import("./pages/nurse/Patients"));
@@ -68,6 +70,9 @@ function loadStoredUser() {
 
 function AuthProvider({ children }) {
   const [user, setUser] = useState(loadStoredUser);
+  // True right after a deliberate logout, so ProtectedRoute sends the
+  // page being left to the homepage instead of a login screen.
+  const [signedOut, setSignedOut] = useState(false);
 
   // Applied once so the chosen theme is visible even on the Home/Login
   // screens, not just after a dashboard (with its own ThemeToggle) mounts.
@@ -83,6 +88,7 @@ function AuthProvider({ children }) {
   // /api/auth/signup returned.
   const login = (authedUser, token) => {
     setUser(authedUser);
+    setSignedOut(false);
     try {
       localStorage.setItem("pc_user", JSON.stringify(authedUser));
       localStorage.setItem("pc_token", token);
@@ -93,6 +99,7 @@ function AuthProvider({ children }) {
 
   const logout = () => {
     logoutApi(); // best-effort server-side invalidate; fire-and-forget
+    setSignedOut(true);
     setUser(null);
     try {
       localStorage.removeItem("pc_user");
@@ -102,7 +109,7 @@ function AuthProvider({ children }) {
     }
   };
 
-  return <UserContext.Provider value={{ user, login, logout }}>{children}</UserContext.Provider>;
+  return <UserContext.Provider value={{ user, signedOut, login, logout }}>{children}</UserContext.Provider>;
 }
 
 function App() {
@@ -126,6 +133,7 @@ function App() {
               <Route path="/patient/reports" element={<ProtectedRoute role="Patient"><MedicalRecords /></ProtectedRoute>} />
               <Route path="/patient/prescriptions" element={<ProtectedRoute role="Patient"><Prescriptions /></ProtectedRoute>} />
               <Route path="/patient/history" element={<ProtectedRoute role="Patient"><MedicalHistory /></ProtectedRoute>} />
+              <Route path="/patient/profile" element={<ProtectedRoute role="Patient"><PatientProfile /></ProtectedRoute>} />
 
               {/* ================= DOCTOR ================= */}
               <Route path="/doctor/dashboard" element={<ProtectedRoute role="Doctor"><DoctorDashboard /></ProtectedRoute>} />
@@ -136,6 +144,7 @@ function App() {
               <Route path="/doctor/analytics" element={<ProtectedRoute role="Doctor"><Analytics /></ProtectedRoute>} />
               <Route path="/doctor/undo-redo" element={<ProtectedRoute role="Doctor"><UndoRedo /></ProtectedRoute>} />
               <Route path="/doctor/backup-restore" element={<ProtectedRoute role="Doctor"><BackupRestore /></ProtectedRoute>} />
+              <Route path="/doctor/profile" element={<ProtectedRoute role="Doctor"><ClinicProfile /></ProtectedRoute>} />
 
               {/* ================= NURSE ================= */}
               <Route path="/nurse/dashboard" element={<ProtectedRoute role="Nurse"><NurseDashboard /></ProtectedRoute>} />

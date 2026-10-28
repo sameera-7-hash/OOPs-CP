@@ -4,7 +4,7 @@ import { createContext, useContext } from "react";
 // any page/layout can read "who am I" (for the top-right name, notification
 // polling, or stamping patientId/doctorId onto a request) without every
 // page in the tree having to accept and forward a `user` prop by hand.
-export const UserContext = createContext({ user: null, login: () => {}, logout: () => {} });
+export const UserContext = createContext({ user: null, signedOut: false, login: () => {}, logout: () => {} });
 
 export function useCurrentUser() {
   return useContext(UserContext);

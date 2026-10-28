@@ -6,6 +6,7 @@ import { useCurrentUser } from "@/context/UserContext";
 import BrandMark from "@/components/BrandMark";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import ProfileDialog from "@/components/profile/ProfileDialog";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import NotificationBell from "@/components/NotificationBell";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -81,6 +82,7 @@ function DashboardShell({ role, menu, title, children }) {
   const { user, logout } = useCurrentUser();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
   const { openEmergency } = useEmergency();
   const { t } = useTranslation();
 
@@ -89,9 +91,11 @@ function DashboardShell({ role, menu, title, children }) {
   const menuTitle = { Patient: t("Patient menu"), Doctor: t("Doctor menu"), Nurse: t("Nurse menu") }[role];
   const defaultTitle = { Patient: t("Patient Dashboard"), Doctor: t("Doctor Dashboard"), Nurse: t("Nurse Dashboard") }[role];
 
+  // Every logout lands on the homepage. Navigate first: clearing the user
+  // first would let ProtectedRoute redirect this page to a login screen.
   const handleLogout = () => {
+    navigate("/", { replace: true });
     logout();
-    navigate("/");
   };
 
   const initial = user?.name ? user.name.charAt(0).toUpperCase() : role.charAt(0);
@@ -157,15 +161,21 @@ function DashboardShell({ role, menu, title, children }) {
             <ThemeToggle />
             <NotificationBell role={role} userId={user?.id} />
 
-            <div className="flex items-center gap-2 pl-1">
+            <button
+              type="button"
+              onClick={() => setProfileOpen(true)}
+              aria-label={t("Open my profile")}
+              className="flex items-center gap-2 rounded-full py-1 pl-1 pr-1 text-left transition-colors hover:bg-secondary sm:pr-3"
+            >
               <Avatar className="h-9 w-9">
                 <AvatarFallback>{initial}</AvatarFallback>
               </Avatar>
-              <div className="hidden leading-tight sm:block">
-                <p className="text-sm font-semibold">{user?.name || roleLabel}</p>
-                <p className="text-xs text-muted-foreground">{roleLabel}</p>
-              </div>
-            </div>
+              <span className="hidden leading-tight sm:block">
+                <span className="block text-sm font-semibold">{user?.name || roleLabel}</span>
+                <span className="block text-xs text-muted-foreground">{roleLabel}</span>
+              </span>
+            </button>
+            <ProfileDialog open={profileOpen} onOpenChange={setProfileOpen} user={user} role={role} />
           </div>
         </header>
 

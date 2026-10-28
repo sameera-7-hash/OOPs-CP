@@ -16,7 +16,7 @@ import { Skeleton, SkeletonRows } from "@/components/feedback/Skeleton";
 import { CalendarCheckArt, FolderCrossArt } from "@/components/art/Illustrations";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import ProfileDialog, { ProfileItem } from "@/components/profile/ProfileDialog";
 import { patientMenu } from "@/lib/nav";
 import { formatIstDate, todayIst } from "@/lib/time";
 import { currentLocale } from "@/i18n";
@@ -172,34 +172,19 @@ function PatientDashboard() {
 
       <Notice icon={ShieldCheck}>{t("Patient records are stored encrypted on the clinic server.")}</Notice>
 
-      <Dialog open={profileOpen} onOpenChange={setProfileOpen}>
-        <DialogContent className="text-center">
-          <DialogHeader className="items-center pr-0 text-center">
-            <Avatar className="mx-auto mb-2 h-16 w-16">
-              <AvatarFallback className="text-xl">{initial}</AvatarFallback>
-            </Avatar>
-            <DialogTitle>{user?.name || t("Patient")}</DialogTitle>
-            <p className="text-sm text-muted-foreground">{t("Patient")}</p>
-          </DialogHeader>
-
-          <dl className="grid grid-cols-1 gap-3 text-left sm:grid-cols-2">
-            <ProfileItem label={t("Name")} value={user?.name || "—"} />
-            <ProfileItem label={t("Email")} value={user?.email || "—"} />
+      <ProfileDialog
+        open={profileOpen}
+        onOpenChange={setProfileOpen}
+        user={user}
+        role="Patient"
+        extra={
+          <>
             <ProfileItem label={t("Reports")} value={t("{{count}} available", { count: documents.length })} />
             <ProfileItem label={t("Health status")} value={<span className="flex items-center gap-2">{t("Good")} <SampleTag /></span>} />
-          </dl>
-        </DialogContent>
-      </Dialog>
+          </>
+        }
+      />
     </DashboardShell>
-  );
-}
-
-function ProfileItem({ label, value }) {
-  return (
-    <div className="rounded-lg bg-muted p-3">
-      <dt className="text-xs text-muted-foreground">{label}</dt>
-      <dd className="mt-0.5 break-words text-sm font-semibold">{value}</dd>
-    </div>
   );
 }
 

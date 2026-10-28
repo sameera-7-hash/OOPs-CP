@@ -1,10 +1,14 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Trans, useTranslation } from "react-i18next";
-import { ArrowRight, BookOpenCheck, CalendarDays, Plus, Stethoscope } from "lucide-react";
+import { ArrowRight, BookOpenCheck, Building2, CalendarDays, MapPin, Plus, Stethoscope } from "lucide-react";
 import { useCurrentUser } from "@/context/UserContext";
 import { useToast } from "@/context/ToastContext";
-import { getAppointments, getAvailability, bookAppointment } from "@/Services/api";
+import { getAppointments, getAvailability, getClinics, bookAppointment } from "@/Services/api";
+import { bookingReady, useProfile } from "@/hooks/useProfile";
+import PatientProfileForm from "@/components/profile/PatientProfileForm";
+import ClinicMapCard from "@/components/map/ClinicMapCard";
+import { distanceKm, formatDistance } from "@/lib/geo";
 import DashboardShell from "@/components/layout/DashboardShell";
 import PageHeading from "@/components/layout/PageHeading";
 import Panel from "@/components/layout/Panel";
@@ -74,6 +78,19 @@ function Appointments() {
   };
 
   useEffect(loadAppointments, [user]);
+
+  // Booking needs a phone number and a location on the profile; until
+  // both are there, the booking panel asks for them first.
+  const { profile, setProfile } = useProfile();
+  const origin = profile?.location;
+  const needsProfile = Boolean(profile) && !bookingReady(profile);
+
+  // Beacon doctors' clinic pins, shown when one of them is picked.
+  const [clinics, setClinics] = useState([]);
+  useEffect(() => {
+    if (bookingStage === "picking") getClinics().then(setClinics).catch(() => setClinics([]));
+  }, [bookingStage]);
+  const clinicOf = (doctorId) => clinics.find((c) => c.doctorId === doctorId)?.clinic;
 
   // Every date's availability, to point at the next day a Beacon doctor
   // has open slots when the chosen date has none.
@@ -206,9 +223,16 @@ function Appointments() {
       <div className="flex flex-col gap-6">
         {!loadingSlots && doctorsWithSlots.map((doc) => (
           <fieldset key={doc.doctorId}>
-            <legend className="mb-3 flex items-center gap-2 text-sm font-semibold">
+            <legend className="mb-3 flex flex-wrap items-center gap-2 text-sm font-semibold">
               <Stethoscope aria-hidden="true" className="h-4 w-4 text-primary" />
               {doc.doctorName}
+              {clinicOf(doc.doctorId) && (
+                <span className="flex items-center gap-1 font-normal text-muted-foreground">
+                  <Building2 aria-hidden="true" className="h-3.5 w-3.5" />
+                  {clinicOf(doc.doctorId).name}
+                  {origin && ` · ${formatDistance(distanceKm(origin, clinicOf(doc.doctorId)))}`}
+                </span>
+              )}
             </legend>
             <div className="flex flex-wrap gap-2">
               {doc.openSlots.map((s) => (
@@ -235,6 +259,7 @@ function Appointments() {
       pinnedDoctorId={pinnedDirectoryDoctor}
       chosen={chosen}
       onChoose={setChosen}
+      origin={origin}
       refreshKey={directoryRefresh}
     />
   );
@@ -270,7 +295,27 @@ function Appointments() {
         </DialogContent>
       </Dialog>
 
-      {bookingStage === "picking" && (
+      {bookingStage === "picking" && needsProfile && (
+        <Panel
+          title={t("Before you book")}
+          description={t("Add your phone number and location. Doctors use the number to reach you, and the location shows doctors near you.")}
+        >
+          <PatientProfileForm
+            profile={profile}
+            required
+            submitLabel={t("Save and continue")}
+            onSaved={(saved) => {
+              setProfile(saved);
+              notify({ message: t("Profile saved.") });
+            }}
+          />
+          <Button variant="ghost" size="sm" className="mt-4" onClick={cancelBooking}>
+            {t("Cancel")}
+          </Button>
+        </Panel>
+      )}
+
+      {bookingStage === "picking" && profile && !needsProfile && (
         <Panel title={t("Book a slot")} description={t("Only times a doctor has opened can be booked.")}>
           {prefill.fromTriage && (
             <Notice tone="info" icon={BookOpenCheck} className="mb-4">
@@ -285,6 +330,14 @@ function Appointments() {
               )}
             </Notice>
           )}
+          <Notice tone="info" icon={MapPin} className="mb-4">
+            {t("Directory doctors are shown as nearby, around your area: the dataset doesn't have their exact addresses. Beacon doctors show the exact clinic pin they set.")}
+            {origin?.label && (
+              <span className="mt-1.5 block text-xs font-medium text-muted-foreground">
+                {t("Your area: {{area}}.", { area: origin.label })}
+              </span>
+            )}
+          </Notice>
           <div className="mb-6 flex max-w-xs flex-col gap-2">
             <Label htmlFor="booking-date">{t("Date")}</Label>
             <Input
@@ -304,6 +357,9 @@ function Appointments() {
 
           {chosen && (
             <div className="mt-6 flex animate-rise flex-col gap-4 border-t border-border pt-6">
+              {!chosen.directory && (
+                <ClinicMapCard doctorName={chosen.doctorName} clinic={clinicOf(chosen.doctorId)} origin={origin} />
+              )}
               <div className="flex flex-col gap-2">
                 <Label htmlFor="reason">{t("Reason for visit")}</Label>
                 <Textarea

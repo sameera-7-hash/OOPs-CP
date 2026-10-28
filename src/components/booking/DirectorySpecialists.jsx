@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Stethoscope } from "lucide-react";
+import { MapPin, Stethoscope } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { getDoctorSlots, getDoctorSpecialties, getRecommendedDoctors } from "@/Services/api";
 import SlotChip from "@/components/booking/SlotChip";
@@ -9,6 +9,7 @@ import Notice from "@/components/feedback/Notice";
 import { Skeleton } from "@/components/feedback/Skeleton";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { approxPositionNear, distanceKm, formatDistance } from "@/lib/geo";
 
 // Select value for "the specialties mapped to the guidance condition".
 const RECOMMENDED = "__recommended";
@@ -20,7 +21,8 @@ const isSunday = (iso) => new Date(`${iso}T00:00:00`).getDay() === 0;
 // specialists recommended for that condition; otherwise the patient picks
 // a specialty. `pinnedDoctorId` (from the Doctor directory page's Book
 // button) is listed first when it has open times on `date`.
-function DirectorySpecialists({ date, condition, initialSpecialty, pinnedDoctorId, chosen, onChoose, refreshKey }) {
+// `origin` (the patient's location) adds an approximate distance per doctor.
+function DirectorySpecialists({ date, condition, initialSpecialty, pinnedDoctorId, chosen, onChoose, refreshKey, origin }) {
   const [specialties, setSpecialties] = useState([]);
   const [specialty, setSpecialty] = useState(initialSpecialty || (condition ? RECOMMENDED : ""));
   const [result, setResult] = useState(null);
@@ -154,6 +156,12 @@ function DirectorySpecialists({ date, condition, initialSpecialty, pinnedDoctorI
               <Stethoscope aria-hidden="true" className="h-4 w-4 text-primary" />
               {doc.name}
               <span className="font-normal text-muted-foreground">{doc.matchedSpecialty}</span>
+              {origin && (
+                <span className="flex items-center gap-1 font-normal text-muted-foreground">
+                  <MapPin aria-hidden="true" className="h-3.5 w-3.5" />
+                  {t("about {{distance}}", { distance: formatDistance(distanceKm(origin, approxPositionNear(doc.id, origin))) })}
+                </span>
+              )}
               <MockDoctorTag />
             </legend>
             <div className="flex flex-wrap gap-2">

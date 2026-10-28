@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { CalendarPlus, ChevronLeft, ChevronRight, Contact, Search, Stethoscope } from "lucide-react";
+import { CalendarPlus, ChevronLeft, ChevronRight, Contact, MapPin, MapPinned, Search, Stethoscope } from "lucide-react";
 import { useCurrentUser } from "@/context/UserContext";
-import { getDirectoryDoctors, getDoctorSpecialties } from "@/Services/api";
+import { getClinics, getDirectoryDoctors, getDoctorSpecialties } from "@/Services/api";
+import { useProfile } from "@/hooks/useProfile";
+import NearbyDoctorsMap from "@/components/map/NearbyDoctorsMap";
+import { approxPositionNear, distanceKm, formatDistance } from "@/lib/geo";
 import DashboardShell from "@/components/layout/DashboardShell";
 import PageHeading from "@/components/layout/PageHeading";
 import Panel from "@/components/layout/Panel";
@@ -51,6 +54,14 @@ function DoctorDirectory() {
     getDoctorSpecialties().then(setSpecialties).catch(() => setSpecialties([]));
   }, []);
 
+  // Patients get a "near you" map around the location on their profile.
+  const { profile } = useProfile();
+  const origin = canBook ? profile?.location : null;
+  const [clinics, setClinics] = useState([]);
+  useEffect(() => {
+    if (canBook) getClinics().then(setClinics).catch(() => setClinics([]));
+  }, [canBook]);
+
   // Debounce typing so each keystroke isn't a request.
   useEffect(() => {
     const timer = window.setTimeout(() => setQuery(search.trim()), 250);
@@ -93,6 +104,47 @@ function DoctorDirectory() {
           "These doctors come from a public dataset and don't have Beacon logins. Patients can book their generated open times; the doctors themselves are never notified."
         )}
       </Notice>
+
+      {canBook && profile && (
+        <Panel
+          title={t("Doctors near you")}
+          description={
+            origin
+              ? t("Beacon clinics are shown where their doctors pinned them. Directory doctors are placed around your area, because the dataset doesn't include their exact addresses.")
+              : undefined
+          }
+        >
+          {origin ? (
+            <>
+              <NearbyDoctorsMap
+                origin={origin}
+                doctors={doctors}
+                clinics={clinics}
+                bookingPath={(doc) => bookingPath(doc, specialty)}
+                className="h-80 sm:h-96"
+              />
+              <p className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-xs text-muted-foreground">
+                <span className="flex items-center gap-1.5"><span className="map-key map-key--patient" />{t("You")}</span>
+                <span className="flex items-center gap-1.5"><span className="map-key map-key--clinic" />{t("Beacon clinic (exact)")}</span>
+                <span className="flex items-center gap-1.5"><span className="map-key map-key--directory" />{t("Directory doctor (approximate)")}</span>
+              </p>
+            </>
+          ) : (
+            <Notice
+              icon={MapPinned}
+              title={t("Add your location to see doctors near you")}
+              action={
+                <Link to="/patient/profile" className={cn(buttonVariants({ size: "sm" }), "no-underline")}>
+                  <MapPin aria-hidden="true" />
+                  {t("Set location")}
+                </Link>
+              }
+            >
+              {t("Pin your area on your profile and this map will show doctors around you.")}
+            </Notice>
+          )}
+        </Panel>
+      )}
 
       <Panel>
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end">
@@ -167,6 +219,14 @@ function DoctorDirectory() {
                       </div>
                     </div>
                   </div>
+                  {origin && (
+                    <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <MapPin aria-hidden="true" className="h-3.5 w-3.5 text-primary" />
+                      {t("About {{distance}} away (approximate)", {
+                        distance: formatDistance(distanceKm(origin, approxPositionNear(doc.id, origin))),
+                      })}
+                    </p>
+                  )}
                   <div className="mt-auto flex flex-wrap items-center justify-between gap-2">
                     <MockDoctorTag />
                     {canBook && (

@@ -21,6 +21,8 @@ export function getToken() {
   }
 }
 
+// The session is gone (expired, or the server restarted): sign out and
+// go to the homepage, like any other logout.
 function clearSessionAndReload() {
   try {
     localStorage.removeItem("pc_token");
@@ -28,7 +30,7 @@ function clearSessionAndReload() {
   } catch {
     // ignore
   }
-  window.location.reload();
+  window.location.replace("/");
 }
 
 async function request(path, options = {}) {
@@ -52,7 +54,7 @@ async function request(path, options = {}) {
   if (!res.ok) {
     // The session is gone (expired, or the server restarted -- sessions
     // are in-memory only). Nothing else on the page will work either, so
-    // send the user back to log in rather than showing a wall of 401s.
+    // sign out to the homepage rather than showing a wall of 401s.
     if (res.status === 401 && token) {
       clearSessionAndReload();
     }
@@ -208,6 +210,27 @@ export function getDirectoryDoctors({ specialty, q, offset = 0, limit = 25 } = {
   if (specialty) params.set("specialty", specialty);
   if (q) params.set("q", q);
   return request(`/doctors?${params.toString()}`);
+}
+
+// ---------------------------------------------------------------
+// Profile: optional phone + location (Patient) or clinic (Doctor).
+// ---------------------------------------------------------------
+
+// -> { user, profile: { phone?, location?: {lat, lng, label}, clinic?: {name, address, lat, lng} } }
+export function getProfile() {
+  return request("/profile");
+}
+
+// Partial update: send only the fields to change; null or "" clears one.
+// -> { profile }
+export function saveProfile(patch) {
+  return request("/profile", { method: "POST", body: JSON.stringify(patch) });
+}
+
+// Beacon doctors who have pinned their clinic.
+// -> [{ doctorId, doctorName, clinic: { name, address, lat, lng } }]
+export function getClinics() {
+  return request("/clinics");
 }
 
 // -> { doctor, date, slots: [{ time, booked }] }

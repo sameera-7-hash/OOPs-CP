@@ -1532,6 +1532,140 @@
   transform: none;
 }
 
+/* ---- Maps (BeaconMap.jsx) --------------------------------------- */
+
+/* Leaflet's panes use z-index up to 1000; isolate them so the map never
+   paints over the sticky header, dialogs or the Emergency pill. */
+.beacon-map {
+  position: relative;
+  isolation: isolate;
+  z-index: 0;
+  overflow: hidden;
+  border-radius: 0.75rem;
+  border: 1px solid var(--border);
+  background: var(--muted);
+}
+.beacon-map .leaflet-container {
+  font-family: var(--font-sans);
+  background: var(--muted);
+}
+/* Tailwind's preflight (img max-width/height:auto) breaks tile layout. */
+.beacon-map img {
+  max-width: none !important;
+  height: auto;
+}
+.beacon-map .leaflet-popup-content-wrapper {
+  border-radius: 0.75rem;
+  box-shadow: var(--shadow-md);
+}
+.beacon-map .leaflet-popup-content {
+  margin: 0.75rem 0.9rem;
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+
+/* Zoom buttons, attribution and popups in the app's own colours. */
+.beacon-map .leaflet-bar {
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 0.6rem;
+  box-shadow: var(--shadow-sm);
+}
+.beacon-map .leaflet-bar a {
+  width: 34px;
+  height: 34px;
+  line-height: 32px;
+  color: var(--foreground);
+  background: var(--card);
+  border-bottom-color: var(--border);
+  transition: background-color 150ms var(--ease-out), color 150ms var(--ease-out);
+}
+.beacon-map .leaflet-bar a:hover,
+.beacon-map .leaflet-bar a:focus-visible {
+  background: var(--secondary);
+  color: var(--primary);
+}
+.beacon-map .leaflet-bar a.leaflet-disabled {
+  color: var(--muted-foreground);
+  background: var(--muted);
+}
+.beacon-map .leaflet-control-attribution {
+  border-top-left-radius: 0.5rem;
+  background: color-mix(in srgb, var(--card) 85%, transparent);
+  color: var(--muted-foreground);
+  font-size: 10px;
+}
+.beacon-map .leaflet-control-attribution a {
+  color: var(--primary);
+}
+.beacon-map .leaflet-popup-content-wrapper,
+.beacon-map .leaflet-popup-tip {
+  background: var(--popover);
+  color: var(--popover-foreground);
+}
+.beacon-map .leaflet-popup-content strong {
+  display: block;
+  margin-bottom: 0.15rem;
+  font-size: 0.9rem;
+}
+.beacon-map .leaflet-popup-content a {
+  display: inline-block;
+  margin-top: 0.35rem;
+}
+.beacon-map a.leaflet-popup-close-button {
+  top: 6px;
+  right: 6px;
+  color: var(--muted-foreground);
+}
+.beacon-map .leaflet-container:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: -2px;
+}
+
+/* Dark theme: OSM tiles are bright, so dim them to sit with the UI. */
+:root[data-theme="dark"] .beacon-map .leaflet-tile-pane {
+  filter: brightness(0.72) contrast(1.08) saturate(0.85);
+}
+
+/* Teardrop pins: a rotated square with one sharp corner at the point. */
+.map-pin {
+  display: grid;
+  place-items: center;
+  width: var(--pin);
+  height: var(--pin);
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  border: 2px solid #ffffff;
+  box-shadow: 0 4px 10px color-mix(in srgb, var(--shadow-color) 30%, transparent);
+  color: #ffffff;
+  transition: transform 200ms var(--ease-out);
+}
+.map-pin svg {
+  width: 52%;
+  height: 52%;
+  transform: rotate(45deg);
+}
+.map-pin--patient { background: var(--olive, var(--primary)); }
+.map-pin--clinic { background: var(--brand-800); }
+.map-pin--directory { background: var(--mint); color: var(--ink); }
+.map-pin.is-active {
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--sand) 80%, transparent),
+    0 6px 14px color-mix(in srgb, var(--shadow-color) 35%, transparent);
+}
+/* Legend swatches under the map. */
+.map-key {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+}
+.map-key--patient { background: var(--olive, var(--primary)); }
+.map-key--clinic { background: var(--brand-800); }
+.map-key--directory { background: var(--mint); }
+.leaflet-marker-icon:hover .map-pin {
+  transform: rotate(-45deg) scale(1.1);
+}
+
 /* Reduced motion: every animation and transition becomes instant. */
 @media (prefers-reduced-motion: reduce) {
   html {

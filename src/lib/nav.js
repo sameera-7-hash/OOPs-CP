@@ -17,6 +17,7 @@ import {
   ClipboardList,
   BookOpenCheck,
   Stethoscope,
+  Building2,
 } from "lucide-react";
 import { msg } from "@/i18n";
 
@@ -34,6 +35,7 @@ export const doctorMenu = [
   { label: msg("Backup & Restore"), icon: Save, path: "/doctor/backup-restore" },
   { label: msg("Condition guidance"), icon: BookOpenCheck, path: "/guidance" },
   { label: msg("Doctor directory"), icon: Stethoscope, path: "/doctors" },
+  { label: msg("My clinic"), icon: Building2, path: "/doctor/profile" },
 ];
 
 export const nurseMenu = [
