@@ -52,14 +52,19 @@ async function request(path, options = {}) {
 
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
+    // On log in / sign up / password reset a 401 means the credentials
+    // were rejected, not that a session expired: pass the server's reason
+    // through (e.g. "invalid email or password").
+    const credentialCall = /^\/auth\/(login|signup|password\/)/.test(path);
+    const sessionGone = res.status === 401 && !credentialCall;
     // The session is gone (expired, or the server restarted -- sessions
     // are in-memory only). Nothing else on the page will work either, so
     // sign out to the homepage rather than showing a wall of 401s.
-    if (res.status === 401 && token) {
+    if (sessionGone && token) {
       clearSessionAndReload();
     }
     const err = new Error(
-      res.status === 401 ? i18n.t("Please log in again.") : data.error || i18n.t("Request failed ({{status}})", { status: res.status })
+      sessionGone ? i18n.t("Please log in again.") : data.error || i18n.t("Request failed ({{status}})", { status: res.status })
     );
     err.status = res.status;
     throw err;

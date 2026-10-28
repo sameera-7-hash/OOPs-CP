@@ -724,5 +724,8 @@
 
   "Not added": "नहीं जोड़ा गया",
   "Edit profile": "प्रोफ़ाइल बदलें",
-  "Open my profile": "मेरी प्रोफ़ाइल खोलें"
+  "Open my profile": "मेरी प्रोफ़ाइल खोलें",
+
+  "Too many failed attempts. Wait a minute, then try again.": "बहुत ज़्यादा गलत कोशिशें हो गईं। एक मिनट रुकें, फिर कोशिश करें।",
+  "That email and password don't match an account. Check them, or use Forgot password.": "यह ईमेल और पासवर्ड किसी अकाउंट से मेल नहीं खाते। इन्हें जाँचें, या 'पासवर्ड भूल गए' इस्तेमाल करें।"
 }

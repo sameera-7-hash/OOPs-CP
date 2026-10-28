@@ -100,7 +100,16 @@ function Login() {
       const next = safeNextPath(searchParams.get("next"), window.location.origin);
       navigate(next || DASHBOARD_PATH[result.user.role] || "/");
     } catch (err) {
-      setError(err.message);
+      // The server's two log-in refusals, in the user's language.
+      if (mode === "login" && err.status === 401) {
+        setError(
+          /too many/i.test(err.message)
+            ? t("Too many failed attempts. Wait a minute, then try again.")
+            : t("That email and password don't match an account. Check them, or use Forgot password.")
+        );
+      } else {
+        setError(err.message);
+      }
     } finally {
       setSubmitting(false);
     }
