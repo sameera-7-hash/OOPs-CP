@@ -11,7 +11,7 @@ const __dirname = path.dirname(__filename);
 // same-origin relative paths and avoid dealing with CORS in dev.
 export default defineConfig({
   plugins: [tailwindcss()],
-  base: './',
+  base: '/',
   envDir: path.resolve(__dirname, ".."),
   resolve: {
     alias: {
