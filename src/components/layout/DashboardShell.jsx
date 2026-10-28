@@ -91,10 +91,11 @@ function DashboardShell({ role, menu, title, children }) {
   const menuTitle = { Patient: t("Patient menu"), Doctor: t("Doctor menu"), Nurse: t("Nurse menu") }[role];
   const defaultTitle = { Patient: t("Patient Dashboard"), Doctor: t("Doctor Dashboard"), Nurse: t("Nurse Dashboard") }[role];
 
-  // Every logout lands on the homepage. Navigate first: clearing the user
-  // first would let ProtectedRoute redirect this page to a login screen.
+  // Every logout lands on the homepage (/home, not the "/" splash page).
+  // Navigate first: clearing the user first would let ProtectedRoute
+  // redirect this page to a login screen.
   const handleLogout = () => {
-    navigate("/", { replace: true });
+    navigate("/home", { replace: true });
     logout();
   };
 

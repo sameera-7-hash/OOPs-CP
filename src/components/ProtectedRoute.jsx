@@ -18,7 +18,7 @@ function ProtectedRoute({ role, roles, children }) {
 
   if (!user) {
     // Just logged out: every logout ends on the homepage.
-    if (signedOut) return <Navigate to="/" replace />;
+    if (signedOut) return <Navigate to="/home" replace />;
     if (allowed.length === 1 && allowed[0] === "Patient") {
       const next = encodeURIComponent(`${location.pathname}${location.search}`);
       return <Navigate to={`/login/Patient?next=${next}`} replace />;

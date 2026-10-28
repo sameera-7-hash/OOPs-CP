@@ -30,7 +30,7 @@ function clearSessionAndReload() {
   } catch {
     // ignore
   }
-  window.location.replace("/");
+  window.location.replace("/home");
 }
 
 async function request(path, options = {}) {
