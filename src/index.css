@@ -973,7 +973,8 @@
    in light and dark mode. */
 .landing {
   --landing-ink: #1b2c44;
-  --landing-muted: #2c3a52;
+  /* Deep plum for the headline and lede. */
+  --landing-plum: #3d263a;
   --landing-sea: #1f6f73;
   --cursor-fill: rgb(255 255 255 / 0.35);
   --cursor-ring: rgb(255 255 255 / 0.3);
@@ -1134,7 +1135,7 @@
   font-weight: 500;
   line-height: 1.12;
   letter-spacing: 0.01em;
-  color: var(--landing-ink);
+  color: var(--landing-plum);
   text-wrap: balance;
 }
 
@@ -1145,7 +1146,7 @@
   font-size: clamp(1.2rem, 1.5vw, 1.4rem);
   font-weight: 600;
   line-height: 1.6;
-  color: var(--landing-muted);
+  color: var(--landing-plum);
   /* A soft light halo lifts the text off the cloud texture. */
   text-shadow: 0 0 10px rgb(255 249 247 / 0.85), 0 0 2px rgb(255 249 247 / 0.6);
 }
